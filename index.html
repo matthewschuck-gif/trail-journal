@@ -1,1 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trail Journal — Camp Mountaineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --trail: #2c4a35;
+  --trail-mid: #3d6b4f;
+  --trail-light: #e8f2ec;
+  --trail-deep: #1a2e1f;
+  --gold: #c9a84c;
+  --gold-light: #fdf5df;
+  --gold-dark: #8a6820;
+  --bark: #7a5c3a;
+  --bark-light: #f5ede0;
+  --paper: #faf6ef;
+  --paper-dark: #f0e8d8;
+  --paper-mid: #e8ddc8;
+  --ink: #1c1a14;
+  --ink-mid: #4a4438;
+  --ink-light: #8a8070;
+  --red: #b03030;
+  --red-light: #fdf0ee;
+  --sky: #4a7fa8;
+  --border: #d8ceb8;
+  --shadow-warm: 0 4px 24px rgba(44,74,53,0.12);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* subtle topo texture overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(44,74,53,0.025) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(44,74,53,0.015) 60px);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── PRIVACY BAR ── */
+.privacy-bar {
+  position: relative; z-index: 10;
+  background: var(--trail-deep);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.72rem; text-align: center;
+  padding: 6px 16px; letter-spacing: 0.05em;
+  font-family: 'Barlow', sans-serif;
+}
+.privacy-bar strong { color: #a8d5b5; }
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--trail);
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  border-bottom: 3px solid var(--gold);
+}
+.header-inner {
+  max-width: 860px; margin: 0 auto;
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 14px;
+}
+.header-emblem {
+  width: 44px; height: 44px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+.header-text h1 {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.35rem; color: white; line-height: 1.1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.header-text span {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.68rem; color: rgba(255,255,255,0.55);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 500;
+}
+.header-initial {
+  margin-left: auto;
+  background: var(--gold); color: var(--trail-deep);
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.2rem;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.header-initial.show { display: flex; animation: popIn 0.3s ease; }
+
+/* ── TRAIL PROGRESS ── */
+.trail-progress-bar {
+  height: 4px; background: rgba(255,255,255,0.1);
+  position: sticky; top: 73px; z-index: 199;
+}
+.trail-progress-fill {
+  height: 100%; background: var(--gold);
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  width: 0%;
+  box-shadow: 0 0 8px rgba(201,168,76,0.6);
+}
+
+.steps-bar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  position: sticky; top: 77px; z-index: 198;
+}
+.steps-inner {
+  display: flex; max-width: 860px; margin: 0 auto;
+}
+.step-pip {
+  flex: 1; text-align: center; padding: 10px 4px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.62rem; font-weight: 600; color: var(--ink-light);
+  border-bottom: 3px solid transparent;
+  letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4;
+  transition: all 0.3s;
+}
+.step-pip.active { color: var(--trail); border-bottom-color: var(--trail); font-weight: 700; }
+.step-pip.done { color: var(--gold-dark); border-bottom-color: var(--gold); }
+
+/* ── QUALITY METER ── */
+.quality-float {
+  position: fixed; bottom: 20px; right: 20px; z-index: 300;
+  background: white; border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px; min-width: 164px;
+  box-shadow: var(--shadow-warm);
+  opacity: 0; transform: translateY(8px); transition: all 0.35s;
+}
+.quality-float.show { opacity: 1; transform: translateY(0); }
+.q-label {
+  font-size: 0.65rem; font-weight: 700; color: var(--ink-light);
+  letter-spacing: 0.07em; text-transform: uppercase;
+  display: flex; justify-content: space-between; margin-bottom: 6px;
+}
+.q-label span { color: var(--trail); font-family: 'Walter Turncoat', cursive; font-size: 0.8rem; letter-spacing: 0; }
+.q-track {
+  height: 5px; background: var(--paper-mid); border-radius: 3px; overflow: hidden;
+}
+.q-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.4s ease, background 0.4s;
+  background: var(--red); width: 0%;
+}
+.q-fill.med { background: var(--gold); }
+.q-fill.good { background: var(--trail-mid); }
+.q-msg { font-size: 0.67rem; color: var(--ink-light); margin-top: 5px; line-height: 1.4; }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 860px; margin: 0 auto;
+  padding: 36px 24px 110px;
+  position: relative; z-index: 1;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; animation: trailIn 0.4s ease; }
+@keyframes trailIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes popIn { from{transform:scale(0.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+@keyframes shake {
+  0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}
+  40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}
+}
+
+/* ── SECTION HEAD ── */
+.section-head { margin-bottom: 32px; }
+.trail-marker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 5px 14px;
+  border-radius: 20px; margin-bottom: 14px;
+}
+.marker-green { background: var(--trail); color: white; }
+.marker-gold { background: var(--gold); color: var(--trail-deep); }
+.marker-bark { background: var(--bark); color: white; }
+.section-head h2 {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 2.2rem; line-height: 1.15; margin-bottom: 10px;
+  color: var(--ink);
+}
+.section-head h2 em { color: var(--trail); font-style: normal; }
+.section-head p {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem; color: var(--ink-mid); line-height: 1.7; max-width: 560px;
+}
+
+/* ── JOURNAL CARD ── */
+.jcard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-warm);
+  position: relative;
+  overflow: hidden;
+}
+/* left spine line — trail marker */
+.jcard::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%;
+  background: var(--paper-mid);
+  transition: background 0.3s;
+}
+.jcard.answered::before { background: var(--trail-mid); }
+
+.jcard-label {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.74rem; font-weight: 700; color: var(--trail);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+}
+.jcard-sub {
+  font-size: 0.87rem; color: var(--ink-light); margin-bottom: 14px; line-height: 1.6;
+}
+
+/* ── FORM ELEMENTS ── */
+textarea, input[type="text"] {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 13px 15px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.93rem; color: var(--ink);
+  background: var(--paper);
+  resize: vertical; line-height: 1.65;
+  transition: border-color 0.2s, background 0.2s;
+}
+textarea:focus, input[type="text"]:focus {
+  outline: none; border-color: var(--trail-mid); background: white;
+}
+textarea { min-height: 90px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.ig label {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.76rem; color: var(--ink-light); font-weight: 600;
+  display: block; margin-bottom: 5px;
+}
+
+/* ── VALIDATION ── */
+.field-error { border-color: var(--red) !important; background: #fff8f8 !important; }
+.val-msg {
+  display: none; margin-top: 9px; padding: 10px 14px;
+  background: var(--red-light); border: 1.5px solid var(--red);
+  border-radius: 8px; font-size: 0.8rem; color: var(--red);
+  line-height: 1.5; font-weight: 500; gap: 8px;
+}
+.val-msg.show { display: flex; align-items: flex-start; }
+.val-msg::before { content: '✋'; flex-shrink: 0; }
+.shaking { animation: shake 0.4s ease; }
+
+/* ── WELCOME SCREEN ── */
+.welcome-hero {
+  background: var(--trail);
+  border-radius: 20px; padding: 52px 44px;
+  color: white; text-align: center; margin-bottom: 22px;
+  position: relative; overflow: hidden;
+}
+.welcome-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 25%, rgba(201,168,76,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 75%, rgba(255,255,255,0.04) 0%, transparent 50%);
+}
+/* topographic lines on hero */
+.welcome-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    -35deg,
+    transparent, transparent 28px,
+    rgba(255,255,255,0.03) 28px, rgba(255,255,255,0.03) 29px
+  );
+}
+.welcome-hero > * { position: relative; z-index: 1; }
+.welcome-icon { font-size: 3.8rem; margin-bottom: 16px; }
+.welcome-hero h2 {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 2.4rem; margin-bottom: 8px; line-height: 1.15;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+.welcome-hero .tagline {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.85rem; opacity: 0.7;
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 28px;
+}
+.welcome-hero p {
+  font-size: 0.95rem; opacity: 0.82; line-height: 1.75;
+  max-width: 420px; margin: 0 auto 32px;
+}
+.name-entry {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.name-bubble {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--gold); color: var(--trail-deep);
+  font-family: 'Walter Turncoat', cursive; font-size: 2.2rem;
+  display: none; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.name-bubble.show { display: flex; animation: popIn 0.35s ease; }
+.name-field-input {
+  background: rgba(255,255,255,0.14);
+  border: 2px solid rgba(255,255,255,0.28);
+  border-radius: 10px; padding: 14px 22px;
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.5rem; color: white;
+  text-align: center; width: 220px;
+  letter-spacing: 0.12em;
+}
+.name-field-input::placeholder {
+  opacity: 0.38; letter-spacing: 0.04em;
+  font-size: 1rem; font-family: 'Barlow', sans-serif;
+}
+.name-field-input:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,0.2); }
+.name-hint { font-size: 0.73rem; opacity: 0.5; letter-spacing: 0.03em; margin-top: 2px; }
+
+/* ── EMOTION PICKER ── */
+.emotion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 8px; margin-top: 10px;
+}
+.emo-btn {
+  border: 2px solid var(--border); border-radius: 10px; padding: 10px 6px;
+  text-align: center; font-family: 'Barlow', sans-serif;
+  font-size: 0.76rem; font-weight: 600;
+  cursor: pointer; background: var(--paper);
+  transition: all 0.15s; color: var(--ink);
+}
+.emo-btn:hover { border-color: var(--trail-mid); background: var(--trail-light); transform: translateY(-1px); }
+.emo-btn.on { border-color: var(--trail); background: var(--trail); color: white; transform: translateY(-1px); }
+.emo-btn .ej { font-size: 1.45rem; display: block; margin-bottom: 4px; }
+
+/* ── INTENSITY SLIDER ── */
+.intensity-wrap { margin-top: 16px; display: none; }
+.intensity-wrap.show { display: block; animation: trailIn 0.3s ease; }
+.int-label {
+  font-size: 0.78rem; font-weight: 600; color: var(--ink-mid);
+  margin-bottom: 8px; display: flex; justify-content: space-between;
+}
+.int-label span { color: var(--trail); font-family: 'Walter Turncoat', cursive; font-size: 0.95rem; letter-spacing: 0; }
+input[type="range"] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+  background: linear-gradient(to right, var(--trail-mid) 0%, var(--gold) 50%, var(--red) 100%);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: white; border: 3px solid var(--trail); cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.int-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--ink-light); margin-top: 4px; }
+
+/* ── YES/NO ── */
+.yn-group { display: flex; gap: 10px; margin-top: 10px; }
+.yn-btn {
+  padding: 10px 26px; border: 2px solid var(--border);
+  border-radius: 9px; font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  background: var(--paper); transition: all 0.15s; color: var(--ink-light);
+}
+.yn-btn.on { border-color: var(--trail); background: var(--trail); color: white; }
+
+/* ── CPS FLIP CARDS ── */
+.cps-banner {
+  background: linear-gradient(135deg, var(--trail-deep) 0%, var(--trail) 100%);
+  border-radius: var(--radius); padding: 24px 26px; color: white; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.cps-banner::after {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cps-banner h3 { font-family: 'Walter Turncoat', cursive; font-size: 1.4rem; margin-bottom: 8px; }
+.cps-banner p { font-size: 0.87rem; opacity: 0.82; line-height: 1.65; }
+.flip-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin: 14px 0; }
+.flip-card { perspective: 1000px; height: 186px; cursor: pointer; }
+.flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+}
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px; text-align: center;
+}
+.flip-front {
+  background: white; border: 2px solid var(--border); color: var(--ink);
+}
+.flip-front .ficon { font-size: 2rem; margin-bottom: 10px; }
+.flip-front .fq {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.82rem; font-weight: 700; color: var(--trail); line-height: 1.45;
+}
+.flip-front .ftap { font-size: 0.67rem; color: var(--ink-light); margin-top: 7px; }
+.flip-back {
+  background: var(--trail); color: white; transform: rotateY(180deg);
+}
+.flip-back .fan-label {
+  font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0.55; margin-bottom: 8px; font-family: 'Barlow', sans-serif;
+}
+.cps-ta {
+  width: 100%; background: rgba(255,255,255,0.14);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: 7px; padding: 8px 10px;
+  font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: white;
+  resize: none; line-height: 1.5; min-height: 70px;
+}
+.cps-ta::placeholder { opacity: 0.42; }
+.cps-ta:focus { outline: none; border-color: var(--gold); }
+
+/* ── RIPPLE VISUAL ── */
+.ripple-wrap {
+  position: relative; height: 270px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 20px 0 6px;
+}
+.r-ring {
+  position: absolute; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.55s ease;
+}
+.r-ring:nth-child(1) { width: 80px; height: 80px; background: var(--trail); border-color: var(--trail); z-index: 4; }
+.r-ring:nth-child(2) { width: 145px; height: 145px; z-index: 3; }
+.r-ring:nth-child(3) { width: 208px; height: 208px; z-index: 2; }
+.r-ring:nth-child(4) { width: 268px; height: 268px; z-index: 1; }
+.r-ring.lit { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+.r-center {
+  color: white; font-family: 'Walter Turncoat', cursive;
+  font-size: 1.7rem; line-height: 1;
+}
+.r-tag {
+  position: absolute; bottom: -20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.66rem; color: var(--ink-light);
+  font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  white-space: nowrap; text-align: center; width: 100%;
+}
+.r-names {
+  position: absolute; top: 10px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.72rem; color: var(--ink-mid);
+  font-weight: 600; text-align: center; line-height: 1.5;
+}
+.ripple-note {
+  font-family: 'Barlow', sans-serif; font-style: italic;
+  font-size: 0.82rem; color: var(--ink-light); text-align: center; margin-top: 4px;
+}
+
+/* ── HURT PEOPLE INPUTS ── */
+.hurt-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 12px; }
+.hurt-grid input { font-size: 0.82rem; padding: 9px 10px; }
+
+/* ── CONSEQUENCE PICKER ── */
+.con-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.con-cat {
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; background: var(--paper);
+}
+.con-cat h4 {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.73rem; font-weight: 700; color: var(--trail);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+}
+.con-cat label {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem; line-height: 1.45; margin-bottom: 8px; cursor: pointer;
+}
+.con-cat input[type="checkbox"] { accent-color: var(--trail); margin-top: 1px; flex-shrink: 0; }
+.sel-count { font-size: 0.74rem; color: var(--ink-light); margin-top: 9px; }
+
+/* ── DRAG RANK ── */
+.rank-reveal { display: none; margin-top: 20px; animation: trailIn 0.4s ease; }
+.rank-reveal.show { display: block; }
+.rank-title {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.75rem; font-weight: 700; color: var(--trail);
+  letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px;
+}
+.rank-zone {
+  min-height: 64px; background: var(--paper);
+  border: 2px dashed var(--border); border-radius: 10px;
+  padding: 10px; display: flex; flex-direction: column; gap: 8px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.rank-zone.drag-over { border-color: var(--trail); background: var(--trail-light); }
+.rank-item {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 11px 14px;
+  font-family: 'Barlow', sans-serif; font-size: 0.83rem;
+  cursor: grab; display: flex; align-items: center; gap: 10px;
+  transition: all 0.15s; user-select: none;
+}
+.rank-item:hover { border-color: var(--trail-mid); }
+.rank-item:active { cursor: grabbing; opacity: 0.75; }
+.rank-item.dragging { opacity: 0.35; }
+.rank-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--trail); color: white;
+  font-family: 'Walter Turncoat', cursive; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.drag-handle { color: var(--ink-light); font-size: 0.9rem; }
+
+/* ── TRAIT PICKER ── */
+.trait-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(172px,1fr)); gap: 10px; margin-top: 10px; }
+.trait-btn {
+  border: 2px solid var(--border); border-radius: var(--radius);
+  padding: 14px 14px; text-align: left;
+  font-family: 'Barlow', sans-serif; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; background: var(--paper);
+  transition: all 0.15s; color: var(--ink); line-height: 1.45;
+}
+.trait-btn:hover { border-color: var(--trail-mid); background: var(--trail-light); transform: translateY(-1px); }
+.trait-btn.on { border-color: var(--trail); background: var(--trail); color: white; transform: translateY(-1px); }
+.trait-specifics label {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.85rem; margin-bottom: 9px; cursor: pointer; line-height: 1.5;
+}
+.trait-specifics input[type="checkbox"] { accent-color: var(--trail); margin-top: 2px; flex-shrink: 0; }
+
+/* ── CREATIVE PICKER ── */
+.creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px,1fr)); gap: 9px; margin-top: 10px; }
+.creative-btn {
+  border: 2px solid var(--border); border-radius: 10px; padding: 14px 10px;
+  text-align: center; font-family: 'Barlow', sans-serif; font-size: 0.76rem; font-weight: 600;
+  cursor: pointer; background: var(--paper); transition: all 0.15s; color: var(--ink);
+}
+.creative-btn:hover { border-color: var(--gold); background: var(--gold-light); transform: translateY(-1px); }
+.creative-btn.on { border-color: var(--gold-dark); background: var(--gold); color: var(--trail-deep); transform: translateY(-1px); }
+.creative-btn .ce { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+
+/* ── AI PANELS ── */
+.ai-journal {
+  background: linear-gradient(135deg, #1a2e1e 0%, #0d1c10 100%);
+  border-radius: var(--radius); padding: 30px 32px; margin: 20px 0;
+  color: white; position: relative; overflow: hidden;
+}
+.ai-journal::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(201,168,76,0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ai-journal::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    -30deg, transparent, transparent 30px,
+    rgba(255,255,255,0.015) 30px, rgba(255,255,255,0.015) 31px
+  );
+}
+.ai-journal > * { position: relative; z-index: 1; }
+.ai-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.ai-badge {
+  background: var(--gold); color: var(--trail-deep);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 4px 11px; border-radius: 20px;
+}
+.ai-title {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.35rem; color: white; margin-bottom: 16px; line-height: 1.35;
+}
+.ai-body { font-family: 'Barlow', sans-serif; font-size: 0.9rem; line-height: 1.85; color: rgba(255,255,255,0.88); }
+.ai-body p { margin-bottom: 13px; }
+.ai-body strong { color: #a8d5b5; }
+.ai-thinking { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.5); font-size: 0.85rem; padding: 10px 0; }
+.spin { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.15); border-top-color: var(--gold); border-radius: 50%; animation: rotating 0.8s linear infinite; flex-shrink: 0; }
+@keyframes rotating { to { transform: rotate(360deg); } }
+
+/* ── PAUSE BLOCK ── */
+.pause-block {
+  background: var(--gold-light); border: 2px solid var(--gold);
+  border-radius: var(--radius); padding: 28px 26px; margin: 28px 0; text-align: center;
+}
+.pause-icon { font-size: 2.4rem; margin-bottom: 14px; }
+.pause-block h3 { font-family: 'Walter Turncoat', cursive; font-size: 1.5rem; margin-bottom: 8px; }
+.pause-block p { font-family: 'Barlow', sans-serif; font-size: 0.88rem; color: var(--ink-mid); line-height: 1.65; max-width: 480px; margin: 0 auto; }
+.pause-btn {
+  margin-top: 18px; padding: 13px 30px;
+  background: var(--trail); color: white; border: none; border-radius: 9px;
+  font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(44,74,53,0.3);
+}
+.pause-btn:hover { background: var(--trail-mid); transform: translateY(-1px); }
+
+/* ── STAFF PANEL ── */
+.staff-wrap {
+  background: white; border: 2px solid #7c4dbb;
+  border-radius: var(--radius); padding: 26px; margin-top: 24px;
+}
+.staff-hd {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #7c4dbb; margin-bottom: 18px;
+}
+.staff-sec { margin-bottom: 18px; }
+.staff-sec h4 {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.7rem; font-weight: 700; color: var(--ink-light);
+  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+}
+.staff-item {
+  background: var(--paper); border-radius: 8px; padding: 12px 14px;
+  margin-bottom: 7px; font-family: 'Barlow', sans-serif;
+  font-size: 0.85rem; line-height: 1.6; border-left: 3px solid #7c4dbb;
+}
+.staff-item.flag { border-left-color: var(--red); background: var(--red-light); }
+.staff-item.warn { border-left-color: var(--gold); background: var(--gold-light); }
+.staff-item.good { border-left-color: var(--trail-mid); background: var(--trail-light); }
+.ins-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em;
+}
+.ins-low { background: var(--red-light); color: var(--red); }
+.ins-med { background: var(--gold-light); color: var(--gold-dark); }
+.ins-high { background: var(--trail-light); color: var(--trail); }
+
+/* CPS SCRIPT */
+.cps-script-block {
+  background: var(--trail-light); border: 2px solid var(--trail-mid);
+  border-radius: var(--radius); padding: 22px; margin-top: 14px;
+}
+.cps-script-block h4 {
+  font-family: 'Walter Turncoat', cursive; font-size: 1.05rem;
+  color: var(--trail); margin-bottom: 14px;
+}
+.script-line { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+.script-spk {
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--trail); background: white; border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0;
+}
+.script-txt { font-family: 'Barlow', sans-serif; font-style: italic; font-size: 0.85rem; color: var(--ink-mid); line-height: 1.65; }
+
+/* ── READING PANEL ── */
+.reading-panel {
+  background: linear-gradient(135deg, #131a2a 0%, #0d1118 100%);
+  border-radius: var(--radius); padding: 28px; margin-top: 20px; color: white;
+}
+.reading-panel p { font-family: 'Barlow', sans-serif; font-size: 0.86rem; color: rgba(255,255,255,0.6); margin: 10px 0 16px; }
+.read-list { list-style: none; }
+.read-list li {
+  padding: 12px 14px; margin-bottom: 9px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 9px; border-left: 3px solid #7dd3a8;
+  font-family: 'Barlow', sans-serif; font-size: 0.84rem; line-height: 1.55;
+}
+.read-list li strong { display: block; color: #7dd3a8; margin-bottom: 3px; }
+.read-list li em { color: rgba(255,255,255,0.45); font-size: 0.75rem; }
+
+/* ── NAV BUTTONS ── */
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; gap: 12px; }
+.btn-back {
+  padding: 12px 24px; border: 2px solid var(--border); border-radius: 9px;
+  background: transparent; color: var(--ink-light);
+  font-family: 'Barlow', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-back:hover { border-color: var(--ink-light); color: var(--ink); }
+.btn-next {
+  padding: 13px 34px; border: none; border-radius: 9px;
+  background: var(--trail); color: white;
+  font-family: 'Barlow', sans-serif; font-size: 0.92rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(44,74,53,0.32);
+}
+.btn-next:hover { background: var(--trail-mid); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(44,74,53,0.38); }
+.btn-submit {
+  width: 100%; padding: 16px; border: none; border-radius: 9px;
+  background: var(--trail); color: white;
+  font-family: 'Barlow', sans-serif; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(44,74,53,0.3);
+}
+.btn-submit:hover { background: var(--trail-mid); }
+
+/* ── DONE ── */
+.done-hero { text-align: center; padding: 52px 0 28px; }
+.done-hero .d-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
+.done-hero h2 { font-family: 'Walter Turncoat', cursive; font-size: 2.4rem; margin-bottom: 12px; }
+.done-hero p { font-family: 'Barlow', sans-serif; color: var(--ink-mid); font-size: 0.95rem; line-height: 1.75; max-width: 480px; margin: 0 auto 26px; }
+.done-detail {
+  background: var(--trail-light); border: 1px solid var(--trail-mid);
+  border-radius: var(--radius); padding: 18px 22px;
+  font-family: 'Barlow', sans-serif; font-size: 0.86rem; color: var(--trail); line-height: 1.85; margin-bottom: 26px;
+}
+
+/* ── MISC ── */
+.hidden { display: none !important; }
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+@media (max-width: 580px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .hurt-grid { grid-template-columns: 1fr 1fr; }
+  .con-grid { grid-template-columns: 1fr; }
+  .trait-grid { grid-template-columns: 1fr 1fr; }
+  .flip-grid { grid-template-columns: 1fr; }
+  .welcome-hero { padding: 32px 22px; }
+  .section-head h2 { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="privacy-bar">🔒 <strong>Privacy protected</strong> — Only your first initial is stored. No full names. All responses are anonymized.</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-emblem">⛺</div>
+    <div class="header-text">
+      <h1>Trail Journal</h1>
+      <span>Camp Mountaineer · Ephrata Middle School</span>
+    </div>
+    <div class="header-initial" id="hdr-initial"></div>
+  </div>
+</header>
+
+<div class="trail-progress-bar"><div class="trail-progress-fill" id="progress-fill"></div></div>
+<div class="steps-bar">
+  <div class="steps-inner">
+    <div class="step-pip active" id="pip-0">Welcome</div>
+    <div class="step-pip" id="pip-1">Part 1</div>
+    <div class="step-pip" id="pip-2">Reading</div>
+    <div class="step-pip" id="pip-3">Part 2</div>
+    <div class="step-pip" id="pip-4">Part 3</div>
+    <div class="step-pip" id="pip-done">Done</div>
+  </div>
+</div>
+
+<!-- QUALITY METER -->
+<div class="quality-float" id="qmeter">
+  <div class="q-label">Reflection Depth <span id="qpct">0%</span></div>
+  <div class="q-track"><div class="q-fill" id="qfill"></div></div>
+  <div class="q-msg" id="qmsg">Keep going — add more detail.</div>
+</div>
+
+<main class="main">
+
+<!-- ═══ SCREEN 0: WELCOME ═══ -->
+<div class="screen active" id="screen-0">
+  <div class="welcome-hero">
+    <div class="welcome-icon">⛺</div>
+    <h2>Your Trail Journal</h2>
+    <div class="tagline">Camp Mountaineer · The Path Back</div>
+    <p>Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward. Take your time — honest answers matter.</p>
+    <div class="name-entry">
+      <div class="name-bubble" id="name-bubble"></div>
+      <input type="text" class="name-field-input" id="name-inp" placeholder="Your first name" maxlength="30" autocomplete="off" spellcheck="false">
+      <div class="name-hint">Only your first initial will be kept — your full name is never stored.</div>
+    </div>
+  </div>
+  <div class="jcard">
+    <div class="jcard-label">📖 Before You Begin</div>
+    <p style="font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--ink-mid);line-height:1.75">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. The AI will write a short reading just for you after Part 1, and help build a plan at the end. Take this seriously — your honest effort here is the first step back on the trail.</p>
+  </div>
+  <div class="nav-row"><div></div><button class="btn-next" onclick="begin()">Start My Journal →</button></div>
+</div>
+
+<!-- ═══ SCREEN 1: PART 1 ═══ -->
+<div class="screen" id="screen-1">
+  <div class="section-head">
+    <div class="trail-marker marker-green">⛰ Part 1 of 3 — The Incident</div>
+    <h2>What <em>Happened?</em></h2>
+    <p>Think back carefully. Answer every question with as much honest detail as you can. The more you put in, the more this journal can help you find your way back.</p>
+  </div>
+
+  <div class="jcard" id="jc-what">
+    <div class="jcard-label">Describe the Situation</div>
+    <div class="jcard-sub">What action or actions brought you here today? Tell the full story in your own words.</div>
+    <textarea id="q-what" placeholder="Write what happened from the beginning. Be specific — where were you, what did you do, how did it start?" rows="5"></textarea>
+    <div class="val-msg" id="e-what">This needs more detail. Write at least a few complete sentences — what actually happened, from the beginning.</div>
+  </div>
+
+  <div class="jcard" id="jc-details">
+    <div class="jcard-label">The Details</div>
+    <div class="grid2">
+      <div class="ig">
+        <label>Who else was involved?</label>
+        <input type="text" id="q-who" placeholder="First names or descriptions of others…">
+        <div class="val-msg" id="e-who">Please name who was involved.</div>
+      </div>
+      <div class="ig">
+        <label>Who witnessed it?</label>
+        <input type="text" id="q-witness" placeholder="Who else saw what happened?">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="ig">
+        <label>Where did it happen?</label>
+        <input type="text" id="q-where" placeholder="Hallway, classroom, cafeteria…">
+        <div class="val-msg" id="e-where">Please tell us where this happened.</div>
+      </div>
+      <div class="ig">
+        <label>When / what were you doing?</label>
+        <input type="text" id="q-when" placeholder="Period, lunch, passing time…">
+        <div class="val-msg" id="e-when">Tell us when and what you were doing.</div>
+      </div>
+    </div>
+    <div class="ig">
+      <label>What were you thinking at the time?</label>
+      <input type="text" id="q-think" placeholder="Be honest — what was actually going through your mind?">
+      <div class="val-msg" id="e-think">Give a real answer here — what were you actually thinking?</div>
+    </div>
+  </div>
+
+  <div class="jcard" id="jc-why">
+    <div class="jcard-label">Why Did You Do It?</div>
+    <div class="jcard-sub">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
+    <textarea id="q-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
+    <div class="val-msg" id="e-why">This is one of the most important questions. Write your real reasoning — even if it's hard to say.</div>
+  </div>
+
+  <!-- CPS FLIP CARDS -->
+  <div class="jcard">
+    <div class="jcard-label">🔍 Digging Deeper — Collaborative Problem Solving</div>
+    <div class="cps-banner">
+      <h3>What was really going on?</h3>
+      <p>Behind most conflicts there's an unsolved problem — something you needed or were worried about. Tap each card to flip it and answer the question inside. This helps figure out the real root of what happened.</p>
+    </div>
+    <div class="flip-grid">
+      <div class="flip-card" id="fc1" onclick="flipCard(1)">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="ficon">🔍</div>
+            <div class="fq">What was the unsolved problem before this happened?</div>
+            <div class="ftap">Tap to flip →</div>
+          </div>
+          <div class="flip-face flip-back">
+            <div class="fan-label">The problem was…</div>
+            <textarea class="cps-ta" id="cps1" rows="4" placeholder="Write your answer here…" onclick="event.stopPropagation()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card" id="fc2" onclick="flipCard(2)">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="ficon">💭</div>
+            <div class="fq">What were YOU worried about or needing?</div>
+            <div class="ftap">Tap to flip →</div>
+          </div>
+          <div class="flip-face flip-back">
+            <div class="fan-label">My concern or need…</div>
+            <textarea class="cps-ta" id="cps2" rows="4" placeholder="I was worried about / I needed…" onclick="event.stopPropagation()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="flip-card" id="fc3" onclick="flipCard(3)">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="ficon">👥</div>
+            <div class="fq">What do you think the other person was worried about or needing?</div>
+            <div class="ftap">Tap to flip →</div>
+          </div>
+          <div class="flip-face flip-back">
+            <div class="fan-label">Their concern or need…</div>
+            <textarea class="cps-ta" id="cps3" rows="4" placeholder="They were probably worried about / needed…" onclick="event.stopPropagation()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMOTIONS -->
+  <div class="jcard" id="jc-emo-during">
+    <div class="jcard-label">Emotions During</div>
+    <div class="jcard-sub">Pick up to 2 emotions you felt before or during what happened.</div>
+    <div class="emotion-grid" id="emo-during">
+      <button class="emo-btn" data-g="during" data-v="Angry"><span class="ej">😠</span>Angry</button>
+      <button class="emo-btn" data-g="during" data-v="Frustrated"><span class="ej">😤</span>Frustrated</button>
+      <button class="emo-btn" data-g="during" data-v="Embarrassed"><span class="ej">😳</span>Embarrassed</button>
+      <button class="emo-btn" data-g="during" data-v="Scared"><span class="ej">😨</span>Scared</button>
+      <button class="emo-btn" data-g="during" data-v="Sad"><span class="ej">😔</span>Sad</button>
+      <button class="emo-btn" data-g="during" data-v="Overwhelmed"><span class="ej">😵</span>Overwhelmed</button>
+      <button class="emo-btn" data-g="during" data-v="Jealous"><span class="ej">😒</span>Jealous</button>
+      <button class="emo-btn" data-g="during" data-v="Lonely"><span class="ej">🥺</span>Lonely</button>
+      <button class="emo-btn" data-g="during" data-v="Bored"><span class="ej">😑</span>Bored</button>
+      <button class="emo-btn" data-g="during" data-v="Excited"><span class="ej">😄</span>Excited</button>
+      <button class="emo-btn" data-g="during" data-v="Anxious"><span class="ej">😰</span>Anxious</button>
+      <button class="emo-btn" data-g="during" data-v="Hurt"><span class="ej">💔</span>Hurt</button>
+    </div>
+    <div class="intensity-wrap" id="int-during-wrap">
+      <div class="int-label">How intense was that feeling? <span id="int-during-val">3 — Moderate</span></div>
+      <input type="range" id="int-during" min="1" max="5" value="3">
+      <div class="int-labels"><span>Very mild</span><span>Moderate</span><span>Overwhelming</span></div>
+    </div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">How Do You Feel Right Now?</div>
+    <div class="jcard-sub">Pick up to 2 emotions you feel at this moment, sitting here reflecting.</div>
+    <div class="emotion-grid" id="emo-now">
+      <button class="emo-btn" data-g="now" data-v="Regretful"><span class="ej">😞</span>Regretful</button>
+      <button class="emo-btn" data-g="now" data-v="Sorry"><span class="ej">🙏</span>Sorry</button>
+      <button class="emo-btn" data-g="now" data-v="Embarrassed"><span class="ej">😳</span>Embarrassed</button>
+      <button class="emo-btn" data-g="now" data-v="Calm"><span class="ej">😌</span>Calm</button>
+      <button class="emo-btn" data-g="now" data-v="Still Angry"><span class="ej">😠</span>Still Angry</button>
+      <button class="emo-btn" data-g="now" data-v="Hopeful"><span class="ej">🌟</span>Hopeful</button>
+      <button class="emo-btn" data-g="now" data-v="Proud"><span class="ej">💪</span>Proud</button>
+      <button class="emo-btn" data-g="now" data-v="Confused"><span class="ej">😕</span>Confused</button>
+      <button class="emo-btn" data-g="now" data-v="Numb"><span class="ej">😶</span>Numb</button>
+      <button class="emo-btn" data-g="now" data-v="Worried"><span class="ej">😟</span>Worried</button>
+      <button class="emo-btn" data-g="now" data-v="Motivated"><span class="ej">🔥</span>Motivated</button>
+      <button class="emo-btn" data-g="now" data-v="Relieved"><span class="ej">😮‍💨</span>Relieved</button>
+    </div>
+    <div class="intensity-wrap" id="int-now-wrap">
+      <div class="int-label">How strong is that feeling right now? <span id="int-now-val">3 — Moderate</span></div>
+      <input type="range" id="int-now" min="1" max="5" value="3">
+      <div class="int-labels"><span>Very mild</span><span>Moderate</span><span>Very strong</span></div>
+    </div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Did Your Emotions Change?</div>
+    <div class="jcard-sub">Compare how you felt during the situation vs. how you feel right now reflecting on it.</div>
+    <div class="yn-group">
+      <button class="yn-btn" id="yn-y" onclick="setYN('yes')">YES</button>
+      <button class="yn-btn" id="yn-n" onclick="setYN('no')">NO</button>
+    </div>
+    <div id="yn-extra" class="hidden" style="margin-top:12px">
+      <textarea id="q-yn" rows="3" placeholder="Explain the change — or why you feel the same way now as you did then…"></textarea>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="goTo(0)">← Back</button>
+    <button class="btn-next" onclick="doPart1()">Continue to Reading →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2: READING ═══ -->
+<div class="screen" id="screen-2">
+  <div class="section-head">
+    <div class="trail-marker marker-green">📖 Reading Break</div>
+    <h2>A Note <em>Just for You</em></h2>
+    <p>Before your conference, read what's below. It was written based on what you just shared — take your time with it.</p>
+  </div>
+  <div class="ai-journal" id="ai-article">
+    <div class="ai-thinking" id="ai-thinking-1"><div class="spin"></div>Writing your personalized entry…</div>
+  </div>
+  <div class="pause-block">
+    <div class="pause-icon">✋</div>
+    <h3>Time to Check In</h3>
+    <p>Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</p>
+    <button class="pause-btn" onclick="goTo(3)">Check-in done — continue to Part 2 →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3: PART 2 ═══ -->
+<div class="screen" id="screen-3">
+  <div class="section-head">
+    <div class="trail-marker marker-gold">🏕 Part 2 of 3 — The Repair</div>
+    <h2>Making <em>Things Right</em></h2>
+    <p>Restorative thinking isn't just about accepting a consequence — it's about truly repairing what was broken. Think carefully about each person affected and what it would actually take to make this right.</p>
+  </div>
+
+  <!-- RIPPLE -->
+  <div class="jcard">
+    <div class="jcard-label">🌊 The Ripple Effect</div>
+    <div class="jcard-sub">Every action touches more people than we realize. Name who was hurt below and watch the ripple grow.</div>
+    <div class="hurt-grid">
+      <input type="text" class="hurt-p" placeholder="Person 1" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 2" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 3" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 4" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 5" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 6" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 7" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 8" oninput="updateRipple()">
+    </div>
+    <div class="ripple-wrap" id="ripple-wrap">
+      <div class="r-ring" id="rr1"><div class="r-center" id="r-init">?</div><div class="r-tag">You</div></div>
+      <div class="r-ring" id="rr2"><div class="r-names" id="r-names" style="top:12px"></div><div class="r-tag">Direct Impact</div></div>
+      <div class="r-ring" id="rr3"><div class="r-tag">Classroom / Group</div></div>
+      <div class="r-ring" id="rr4"><div class="r-tag">School Community</div></div>
+    </div>
+    <p class="ripple-note">Add names above to see the ripple of impact expand.</p>
+  </div>
+
+  <div class="jcard" id="jc-makeright">
+    <div class="jcard-label">What Needs to Happen to Make Things Right?</div>
+    <div class="jcard-sub">Think about each person affected. What would truly repair this — not just apologize, but genuinely make it right?</div>
+    <textarea id="q-makeright" rows="4" placeholder="For each person I hurt, making it right would mean…"></textarea>
+    <div class="val-msg" id="e-makeright">Give a thoughtful answer — what do YOU think should actually happen to repair this?</div>
+  </div>
+
+  <!-- CONSEQUENCE PICKER + DRAG RANK -->
+  <div class="jcard">
+    <div class="jcard-label">Choose Up to 3 Ideas</div>
+    <div class="jcard-sub">Think about what's realistic, who you need help from, and when you can do it. Then you'll rank them by priority.</div>
+    <div class="con-grid">
+      <div class="con-cat">
+        <h4>🙌 Service</h4>
+        <label><input type="checkbox" class="cc" value="Clean a space (cafeteria, classroom, hallways)"> Clean a space</label>
+        <label><input type="checkbox" class="cc" value="An act of kindness for someone else"> Act of kindness</label>
+        <label><input type="checkbox" class="cc" value="Write appreciation cards to adults or peers"> Write appreciation cards</label>
+        <label><input type="checkbox" class="cc" value="Take on a daily building responsibility"> Building responsibility</label>
+      </div>
+      <div class="con-cat">
+        <h4>🤝 Repair</h4>
+        <label><input type="checkbox" class="cc" value="Write an apology letter"> Apology letter</label>
+        <label><input type="checkbox" class="cc" value="Apologize in person"> Apologize in person</label>
+        <label><input type="checkbox" class="cc" value="Fix or replace something broken"> Fix or replace something</label>
+        <label><input type="checkbox" class="cc" value="Make something to give to the person I hurt"> Make something for them</label>
+      </div>
+      <div class="con-cat">
+        <h4>📚 Skill Building</h4>
+        <label><input type="checkbox" class="cc" value="Read or research the skill I need"> Read on the topic</label>
+        <label><input type="checkbox" class="cc" value="Meet with a counselor or trusted adult for check-ins"> Counselor check-ins</label>
+        <label><input type="checkbox" class="cc" value="Create a lesson to help others avoid the same mistake"> Create a lesson for others</label>
+        <label><input type="checkbox" class="cc" value="Join an extracurricular"> Join an extracurricular</label>
+      </div>
+      <div class="con-cat">
+        <h4>📄 Creative Product</h4>
+        <label><input type="checkbox" class="cc" value="Create a story or picture book about a related skill"> Story or picture book</label>
+        <label><input type="checkbox" class="cc" value="Create a slideshow or poster"> Slideshow or poster</label>
+        <label><input type="checkbox" class="cc" value="Write a narrative or poem"> Narrative or poem</label>
+        <label><input type="checkbox" class="cc" value="Create a song or visual display"> Song or visual display</label>
+      </div>
+    </div>
+    <p class="sel-count" id="sel-count">0 of 3 selected</p>
+    <div class="rank-reveal" id="rank-reveal">
+      <div class="rank-title">Now drag to rank them — most impactful at the top ↑</div>
+      <div class="rank-zone" id="rank-zone"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="onDrop(event)"></div>
+    </div>
+  </div>
+
+  <div class="jcard" id="jc-bestidea">
+    <div class="jcard-label">Why Is That Your Best Idea?</div>
+    <textarea id="q-bestidea" rows="3" placeholder="Explain why your top-ranked choice makes the most sense for this specific situation…"></textarea>
+    <div class="val-msg" id="e-bestidea">Explain your thinking — why does this choice actually make the most sense?</div>
+  </div>
+
+  <div class="jcard" id="jc-plan">
+    <div class="jcard-label">What Is Your Plan to Follow Through?</div>
+    <div class="jcard-sub">Be specific — who do you need to talk to, when will you do it, and what help do you need?</div>
+    <textarea id="q-plan" rows="3" placeholder="My plan is to… I will need help from… I will do this by…"></textarea>
+    <div class="val-msg" id="e-plan">Be specific — what will you actually do, when, and who will help you?</div>
+  </div>
+
+  <div class="jcard" id="jc-diff">
+    <div class="jcard-label">What Will You Do Differently Next Time?</div>
+    <div class="jcard-sub">Think about a specific skill or strategy you could use the next time you're in a similar situation — before things escalate.</div>
+    <textarea id="q-diff" rows="3" placeholder="Next time I'm in a similar situation, instead of… I will…"></textarea>
+    <div class="val-msg" id="e-diff">Write a real strategy — what will you actually do differently?</div>
+  </div>
+
+  <div class="pause-block">
+    <div class="pause-icon">✋</div>
+    <h3>Time to Check In</h3>
+    <p>Raise your hand and let the adult in the room know you're ready to review your repair plan together before moving to Part 3.</p>
+    <button class="pause-btn" onclick="goTo(4)">Check-in done — continue to Part 3 →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 4: PART 3 ═══ -->
+<div class="screen" id="screen-4">
+  <div class="section-head">
+    <div class="trail-marker marker-bark">🗺 Part 3 of 3 — The Path Forward</div>
+    <h2>Your <em>Growth Plan</em></h2>
+    <p>The last leg of the trail. Choose the Life Ready Graduate trait you most need to develop, and commit to how you'll demonstrate it before you leave today.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Which LRG Trait Do You Most Need to Grow In?</div>
+    <div class="jcard-sub">Choose the one that directly connects to what happened — not the easiest one, the most honest one.</div>
+    <div class="trait-grid">
+      <button class="trait-btn" data-t="Healthy Living, Wellness, &amp; Self-Awareness" onclick="pickTrait(this)">Healthy Living, Wellness, &amp; Self-Awareness</button>
+      <button class="trait-btn" data-t="Communication &amp; Empathy" onclick="pickTrait(this)">Communication &amp; Empathy</button>
+      <button class="trait-btn" data-t="Honesty, Integrity, &amp; Responsibility" onclick="pickTrait(this)">Honesty, Integrity, &amp; Responsibility</button>
+      <button class="trait-btn" data-t="Critical Thinking &amp; Problem Solving" onclick="pickTrait(this)">Critical Thinking &amp; Problem Solving</button>
+      <button class="trait-btn" data-t="Collaborative &amp; Teamwork" onclick="pickTrait(this)">Collaborative &amp; Teamwork</button>
+      <button class="trait-btn" data-t="Adaptability &amp; Flexibility" onclick="pickTrait(this)">Adaptability &amp; Flexibility</button>
+      <button class="trait-btn" data-t="Resilience &amp; Grit" onclick="pickTrait(this)">Resilience &amp; Grit</button>
+      <button class="trait-btn" data-t="Continual Learning &amp; Growth Mindset" onclick="pickTrait(this)">Continual Learning &amp; Growth Mindset</button>
+      <button class="trait-btn" data-t="Creativity &amp; Innovation" onclick="pickTrait(this)">Creativity &amp; Innovation</button>
+      <button class="trait-btn" data-t="Civics, Leadership, &amp; Service" onclick="pickTrait(this)">Civics, Leadership, &amp; Service</button>
+      <button class="trait-btn" data-t="Digital Literacy &amp; Tech Proficiency" onclick="pickTrait(this)">Digital Literacy &amp; Tech Proficiency</button>
+      <button class="trait-btn" data-t="Content Mastery &amp; Financial Literacy" onclick="pickTrait(this)">Content Mastery &amp; Financial Literacy</button>
+    </div>
+  </div>
+
+  <div id="trait-spec-card" class="jcard hidden">
+    <div class="jcard-label" id="trait-spec-label">Specific Areas</div>
+    <div class="jcard-sub">Check every statement that specifically applies to you.</div>
+    <div id="trait-spec-list" class="trait-specifics"></div>
+  </div>
+
+  <div id="trait-why-card" class="jcard hidden">
+    <div class="jcard-label">Why Did You Choose This Trait?</div>
+    <textarea id="q-traitwhy" rows="3" placeholder="Explain the direct connection between this trait and what happened…"></textarea>
+    <div class="val-msg" id="e-traitwhy">Explain the connection — why does this trait relate to what happened?</div>
+  </div>
+
+  <div id="creative-card" class="jcard hidden">
+    <div class="jcard-label">How Will You Demonstrate This Trait?</div>
+    <div class="jcard-sub">Choose one creative format. You must complete your creation before leaving today.</div>
+    <div class="creative-grid">
+      <button class="creative-btn" data-cv="Act It Out / Script" onclick="pickCreative(this)"><span class="ce">🎭</span>Act it Out</button>
+      <button class="creative-btn" data-cv="Public Service Announcement" onclick="pickCreative(this)"><span class="ce">📢</span>PSA</button>
+      <button class="creative-btn" data-cv="Visual Poster or Slides" onclick="pickCreative(this)"><span class="ce">🖼️</span>Visual/Slides</button>
+      <button class="creative-btn" data-cv="Creative Writing or Story" onclick="pickCreative(this)"><span class="ce">✍️</span>Creative Writing</button>
+      <button class="creative-btn" data-cv="Poetry" onclick="pickCreative(this)"><span class="ce">📝</span>Poetry</button>
+      <button class="creative-btn" data-cv="Video" onclick="pickCreative(this)"><span class="ce">🎥</span>Video</button>
+      <button class="creative-btn" data-cv="Comic Strip" onclick="pickCreative(this)"><span class="ce">💬</span>Comic Strip</button>
+      <button class="creative-btn" data-cv="Rap or Song" onclick="pickCreative(this)"><span class="ce">🎵</span>Rap / Song</button>
+      <button class="creative-btn" data-cv="Dance or Movement" onclick="pickCreative(this)"><span class="ce">💃</span>Dance</button>
+      <button class="creative-btn" data-cv="Sculpture or 3D Display" onclick="pickCreative(this)"><span class="ce">🗿</span>3D Display</button>
+      <button class="creative-btn" data-cv="Coding (Scratch)" onclick="pickCreative(this)"><span class="ce">🎮</span>Code It</button>
+      <button class="creative-btn" data-cv="My Own Idea" onclick="pickCreative(this)"><span class="ce">💡</span>My Own Idea</button>
+    </div>
+    <div id="creative-detail" class="hidden" style="margin-top:16px">
+      <div class="jcard-label" style="margin-bottom:8px">Describe What You'll Create</div>
+      <textarea id="q-creative" rows="3" placeholder="Briefly describe what you'll make and what you'll need…"></textarea>
+    </div>
+  </div>
+
+  <div id="submit-card" class="jcard hidden">
+    <div class="jcard-label">Before You Submit</div>
+    <p style="font-family:'Barlow',sans-serif;font-size:.87rem;color:var(--ink-mid);line-height:1.75;margin-bottom:14px">By submitting, you confirm that you completed this journal honestly and understand that a member of the office team will follow up with you to finalize your plan. Your plan may be adjusted to ensure it is appropriate, realistic, and timely.</p>
+    <div style="background:var(--gold-light);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.8rem;color:#7a6000;line-height:1.65;margin-bottom:18px">
+      ⚠️ If you did not complete this journal honestly, or if you do not follow through on your plan, an additional detention may be issued.
+    </div>
+    <button class="btn-submit" onclick="doSubmit()">Submit My Trail Journal ✓</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN DONE ═══ -->
+<div class="screen" id="screen-done">
+  <div class="done-hero">
+    <span class="d-icon">🏔️</span>
+    <h2>Journal Complete</h2>
+    <p>You've reached the top of this part of the trail. What you did here takes honesty and courage. An adult will follow up with you soon to walk through your plan together.</p>
+    <div class="done-detail">
+      ✅ Your journal has been recorded anonymously.<br>
+      🤝 Next step: A follow-up conversation with an office team member.<br>
+      📋 Keep working on your creative product if you haven't finished it yet.<br>
+      🏕 Someone will connect with you soon to walk through your plan together.
+    </div>
+  </div>
+  <div class="ai-journal" id="ai-final-thinking">
+    <div class="ai-thinking"><div class="spin"></div>Generating staff summary and your reading list…</div>
+  </div>
+  <div id="ai-final-content" class="hidden">
+    <div class="staff-wrap" id="staff-wrap">
+      <div class="staff-hd">🔐 Staff Summary — For Adult Use Only</div>
+      <div id="staff-body"></div>
+      <div id="cps-script-block"></div>
+    </div>
+    <div class="reading-panel">
+      <div class="ai-badge-row"><div class="ai-badge">📚 Your Reading List</div></div>
+      <p>While you wait for your follow-up, here are some topics worth exploring — chosen based on what you shared today.</p>
+      <ul class="read-list" id="read-list"></ul>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────
+const SUPABASE_URL     = 'https://kduypmpqkirvjkbnmuha.supabase.co';
+const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
+const EDGE_FN          = 'https://kduypmpqkirvjkbnmuha.supabase.co/functions/v1/ai-proxy';
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+const S = {
+  initial: '',
+  sessionId: crypto.randomUUID(),
+  eduring: [], enow: [],
+  intDuring: 3, intNow: 3,
+  yn: null,
+  trait: null, creative: null,
+  ranked: [],
+};
+
+// ─── BANNED WORDS (for name field) ────────────────────────────────────────
+const BAD_NAMES = /^(undefined|null|none|na|n\/a|anonymous|student|kid|me|myself|i|unknown|idk)$/i;
+
+// ─── NAME ENTRY ───────────────────────────────────────────────────────────
+document.getElementById('name-inp').addEventListener('input', function() {
+  const raw = this.value.trim();
+  const bubble = document.getElementById('name-bubble');
+  if (raw.length > 0) {
+    const init = raw[0].toUpperCase();
+    bubble.textContent = init;
+    bubble.classList.add('show');
+    S.initial = init;
+  } else {
+    bubble.classList.remove('show');
+    S.initial = '';
+  }
+});
+
+function begin() {
+  const raw = document.getElementById('name-inp').value.trim();
+  if (!raw || raw.length < 2) { doShake(document.getElementById('name-inp')); return; }
+  if (BAD_NAMES.test(raw)) {
+    doShake(document.getElementById('name-inp'));
+    document.getElementById('name-inp').value = '';
+    document.getElementById('name-bubble').classList.remove('show');
+    return;
+  }
+  S.initial = raw[0].toUpperCase();
+  document.getElementById('name-inp').value = ''; // discard full name immediately
+  const hi = document.getElementById('hdr-initial');
+  hi.textContent = S.initial; hi.classList.add('show');
+  document.getElementById('r-init').textContent = S.initial;
+  goTo(1);
+}
+
+// ─── VALIDATION ───────────────────────────────────────────────────────────
+const THIN = /^(n\/?a|idk|i\s*don'?t\s*know|nothing|none|no|yes|ok|okay|fine|whatever|idrc|idc|dunno|not\s*sure|unsure|maybe|\.*|shrug)$/i;
+
+function thin(val) {
+  const v = val.trim();
+  if (!v) return true;
+  if (THIN.test(v)) return true;
+  if (v.split(/\s+/).filter(Boolean).length < 5) return true;
+  return false;
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('show');
+  if (msg) el.textContent = '✋ ' + msg;
+}
+function hideErr(id) { const el = document.getElementById(id); if (el) el.classList.remove('show'); }
+function doShake(el) { el.classList.remove('shaking'); void el.offsetWidth; el.classList.add('shaking'); setTimeout(() => el.classList.remove('shaking'), 400); }
+
+function validatePart1() {
+  let ok = true;
+  const checks = [
+    ['q-what','e-what','Describe what happened in detail — at least a few complete sentences.'],
+    ['q-who','e-who','Name who was involved — even a description helps.'],
+    ['q-where','e-where','Tell us where this happened.'],
+    ['q-when','e-when','Tell us when and what you were doing at the time.'],
+    ['q-think','e-think','Be honest — what were you actually thinking in that moment?'],
+    ['q-why','e-why','This matters most. Write your real reasoning, even if it is hard to say.'],
+  ];
+  checks.forEach(([fid, eid, msg]) => {
+    const el = document.getElementById(fid);
+    if (thin(el.value)) {
+      el.classList.add('field-error'); showErr(eid, msg); doShake(el); ok = false;
+    } else { el.classList.remove('field-error'); hideErr(eid); }
+  });
+  return ok;
+}
+
+function validatePart2() {
+  let ok = true;
+  const checks = [
+    ['q-makeright','e-makeright','Give a thoughtful answer about what actually needs to happen to repair this.'],
+    ['q-bestidea','e-bestidea','Explain your reasoning — why is this your best choice?'],
+    ['q-plan','e-plan','Be specific — what will you do, when, and who will help?'],
+    ['q-diff','e-diff','Write a real strategy for what you will do differently.'],
+  ];
+  checks.forEach(([fid, eid, msg]) => {
+    const el = document.getElementById(fid);
+    if (thin(el.value)) {
+      el.classList.add('field-error'); showErr(eid, msg); doShake(el); ok = false;
+    } else { el.classList.remove('field-error'); hideErr(eid); }
+  });
+  return ok;
+}
+
+function validatePart3() {
+  let ok = true;
+  if (!S.trait) { doShake(document.querySelector('.trait-grid')); ok = false; }
+  const tw = document.getElementById('q-traitwhy');
+  if (tw && thin(tw.value)) {
+    tw.classList.add('field-error'); showErr('e-traitwhy','Explain the connection between this trait and what happened.'); doShake(tw); ok = false;
+  } else if (tw) { tw.classList.remove('field-error'); hideErr('e-traitwhy'); }
+  return ok;
+}
+
+// ─── QUALITY METER ────────────────────────────────────────────────────────
+const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
+const INT_LABELS = ['','Very mild','Mild','Moderate','Strong','Overwhelming'];
+
+function updateQuality() {
+  let total = 0;
+  Q_FIELDS.forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    total += Math.min((el.value.trim().split(/\s+/).filter(Boolean).length) / 15, 1);
+  });
+  const pct = Math.round((total / Q_FIELDS.length) * 100);
+  const fill = document.getElementById('qfill');
+  fill.style.width = pct + '%';
+  fill.className = 'q-fill' + (pct >= 70 ? ' good' : pct >= 40 ? ' med' : '');
+  document.getElementById('qpct').textContent = pct + '%';
+  document.getElementById('qmsg').textContent =
+    pct < 30 ? 'Add more detail to your answers.' :
+    pct < 55 ? 'Good start — keep expanding your answers.' :
+    pct < 78 ? 'Strong reflection — almost there.' : 'Excellent depth of reflection.';
+}
+
+document.querySelectorAll('textarea, input[type="text"]').forEach(el => el.addEventListener('input', updateQuality));
+
+// ─── EMOTIONS ────────────────────────────────────────────────────────────
+document.querySelectorAll('.emo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const g = btn.dataset.g, k = g === 'during' ? 'eduring' : 'enow', v = btn.dataset.v;
+    if (btn.classList.contains('on')) {
+      btn.classList.remove('on'); S[k] = S[k].filter(x => x !== v);
+    } else {
+      if (S[k].length >= 2) return;
+      btn.classList.add('on'); S[k].push(v);
+    }
+    const wid = g === 'during' ? 'int-during-wrap' : 'int-now-wrap';
+    document.getElementById(wid).classList.toggle('show', S[k].length > 0);
+    updateQuality();
+  });
+});
+
+['during','now'].forEach(g => {
+  const sl = document.getElementById('int-' + g);
+  const vl = document.getElementById('int-' + g + '-val');
+  sl.addEventListener('input', () => {
+    if (g === 'during') S.intDuring = +sl.value; else S.intNow = +sl.value;
+    vl.textContent = sl.value + ' — ' + INT_LABELS[+sl.value];
+  });
+});
+
+function setYN(v) {
+  S.yn = v;
+  document.getElementById('yn-y').classList.toggle('on', v === 'yes');
+  document.getElementById('yn-n').classList.toggle('on', v === 'no');
+  document.getElementById('yn-extra').classList.remove('hidden');
+  document.getElementById('q-yn').placeholder = v === 'yes'
+    ? 'Why do you think there was a change in how you feel?'
+    : "Why hasn't there been a change?";
+}
+
+// ─── FLIP CARDS ──────────────────────────────────────────────────────────
+function flipCard(n) { document.getElementById('fc' + n).classList.toggle('flipped'); }
+
+// ─── RIPPLE ──────────────────────────────────────────────────────────────
+function updateRipple() {
+  const people = Array.from(document.querySelectorAll('.hurt-p')).map(i => i.value.trim()).filter(Boolean);
+  ['rr2','rr3','rr4'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('lit', people.length > i);
+  });
+  document.getElementById('r-names').textContent = people.slice(0,3).join('\n');
+}
+
+// ─── CONSEQUENCE + DRAG ───────────────────────────────────────────────────
+document.querySelectorAll('.cc').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const checked = Array.from(document.querySelectorAll('.cc:checked'));
+    const n = checked.length;
+    document.getElementById('sel-count').textContent = n + ' of 3 selected';
+    document.querySelectorAll('.cc:not(:checked)').forEach(c => c.disabled = n >= 3);
+    buildRankZone(checked.map(c => c.value));
+    document.getElementById('rank-reveal').classList.toggle('show', n > 0);
+  });
+});
+
+let dragSrc = null;
+function buildRankZone(items) {
+  const zone = document.getElementById('rank-zone');
+  zone.innerHTML = '';
+  S.ranked = [...items];
+  items.forEach((item, i) => {
+    const d = document.createElement('div');
+    d.className = 'rank-item'; d.draggable = true; d.dataset.val = item;
+    d.innerHTML = `<span class="rank-num">${i+1}</span><span class="drag-handle">⠿</span><span>${item}</span>`;
+    d.addEventListener('dragstart', e => { dragSrc = d; d.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    d.addEventListener('dragend', () => { d.classList.remove('dragging'); zone.classList.remove('drag-over'); renumber(); });
+    d.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+    d.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc !== d) {
+        const all = [...zone.querySelectorAll('.rank-item')];
+        const si = all.indexOf(dragSrc), ti = all.indexOf(d);
+        if (si < ti) zone.insertBefore(dragSrc, d.nextSibling); else zone.insertBefore(dragSrc, d);
+        S.ranked = [...zone.querySelectorAll('.rank-item')].map(el => el.dataset.val);
+      }
+    });
+    zone.appendChild(d);
+  });
+}
+function renumber() { document.querySelectorAll('#rank-zone .rank-num').forEach((el,i) => el.textContent = i+1); }
+function onDrop(e) { e.preventDefault(); document.getElementById('rank-zone').classList.remove('drag-over'); }
+
+// ─── TRAIT PICKER ────────────────────────────────────────────────────────
+const TRAIT_ITEMS = {
+  "Healthy Living, Wellness, & Self-Awareness":["Developing healthy habits through diet, exercise, sleep, and safe choices","Understanding my own strengths and areas for growth","Planning and prioritizing tasks toward a goal","Expressing my emotions appropriately for the situation","Recognizing differences in others' perspectives","Establishing and repairing healthy relationships","Thinking through options before acting","Recognizing when I need help and asking for it"],
+  "Communication & Empathy":["Active listening to acknowledge others' feelings","Asking questions to understand before reacting","Expressing ideas constructively"],
+  "Honesty, Integrity, & Responsibility":["Following through on my word","Owning my intentions and the results of my actions","Making the right choice even when no one is watching"],
+  "Critical Thinking & Problem Solving":["Gathering information before reacting","Evaluating whether information is accurate","Considering multiple possible solutions","Acting on an informed decision","Reflecting on outcomes and adjusting"],
+  "Collaborative & Teamwork":["Planning together to accomplish a shared goal","Using each person's strengths effectively","Valuing others' ideas and perspectives","Trusting teammates and taking accountability"],
+  "Adaptability & Flexibility":["Seeking out different perspectives","Adjusting when things change","Staying solution-focused when conditions shift"],
+  "Resilience & Grit":["Using determination to work toward goals despite setbacks","Bouncing back from unexpected challenges","Using feedback as fuel for improvement"],
+  "Continual Learning & Growth Mindset":["Accepting that effort and practice drive improvement","Embracing difficult challenges","Seeking and using feedback","Persisting through hard concepts"],
+  "Creativity & Innovation":["Generating original ideas","Using varied brainstorming techniques","Evaluating ideas with feedback","Understanding limits when moving from idea to action"],
+  "Civics, Leadership, & Service":["Expressing my needs constructively","Speaking up about what's bothering me","Handling transitions and new situations","Not catastrophizing or taking things too personally","Understanding others' points of view","Starting and sustaining conversations with others"],
+  "Digital Literacy & Tech Proficiency":["Keeping track of time and assignments","Using appropriate digital resources","Treating technology with care"],
+  "Content Mastery & Financial Literacy":["Staying focused during activities","Ignoring distractions","Working in order and on time","Managing study time effectively","Thinking before acting"],
+};
+
+function pickTrait(btn) {
+  document.querySelectorAll('.trait-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  S.trait = btn.dataset.t;
+  const items = TRAIT_ITEMS[S.trait] || [];
+  document.getElementById('trait-spec-label').textContent = 'Specific Areas — ' + S.trait;
+  document.getElementById('trait-spec-list').innerHTML = items.map(i =>
+    `<label><input type="checkbox" class="tspec" value="${i}"> ${i}</label>`
+  ).join('');
+  ['trait-spec-card','trait-why-card','creative-card','submit-card'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+}
+
+function pickCreative(btn) {
+  document.querySelectorAll('.creative-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  S.creative = btn.dataset.cv;
+  document.getElementById('creative-detail').classList.remove('hidden');
+}
+
+// ─── SCREEN NAV ──────────────────────────────────────────────────────────
+const PROGRESS = {0:0,1:20,2:45,3:65,4:85,done:100};
+const PIPS = ['pip-0','pip-1','pip-2','pip-3','pip-4','pip-done'];
+const PIP_SCREENS = [0,1,2,3,4,'done'];
+
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(n === 'done' ? 'screen-done' : 'screen-' + n).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('progress-fill').style.width = (PROGRESS[n] || 0) + '%';
+  const ai = PIP_SCREENS.indexOf(n);
+  PIP_SCREENS.forEach((_,i) => {
+    const el = document.getElementById(PIPS[i]); if (!el) return;
+    el.className = 'step-pip';
+    if (i < ai) el.classList.add('done');
+    if (i === ai) el.classList.add('active');
+  });
+  document.getElementById('qmeter').classList.toggle('show', n >= 1 && n !== 'done');
+}
+
+// ─── DATA COLLECTORS ─────────────────────────────────────────────────────
+function gv(id) { return (document.getElementById(id)||{}).value || ''; }
+
+function getPart1() {
+  return {
+    whatHappened: gv('q-what'), whoInvolved: gv('q-who'), witnesses: gv('q-witness'),
+    where: gv('q-where'), when: gv('q-when'), thinking: gv('q-think'), why: gv('q-why'),
+    emotionsDuring: S.eduring, intensityDuring: S.intDuring,
+    emotionsNow: S.enow, intensityNow: S.intNow,
+    emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
+    cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
+  };
+}
+function getPart2() {
+  return {
+    hurtPeople: Array.from(document.querySelectorAll('.hurt-p')).map(i=>i.value).filter(Boolean),
+    makeRight: gv('q-makeright'),
+    selectedConsequences: S.ranked.length ? S.ranked : Array.from(document.querySelectorAll('.cc:checked')).map(c=>c.value),
+    bestIdea: gv('q-bestidea'), plan: gv('q-plan'), different: gv('q-diff'),
+  };
+}
+function getPart3() {
+  return {
+    trait: S.trait,
+    traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c=>c.value),
+    traitWhy: gv('q-traitwhy'), creativeFormat: S.creative, creativePlan: gv('q-creative'),
+  };
+}
+
+// ─── AI CALLS ────────────────────────────────────────────────────────────
+async function callEdge(type, payload) {
+  try {
+    const res = await fetch(EDGE_FN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+      },
+      body: JSON.stringify({type, payload})
+    });
+    if (!res.ok) throw new Error('Edge fn ' + res.status);
+    return await res.json();
+  } catch(e) { console.error('Edge fn error:', e); return null; }
+}
+
+// ─── SAVE TO SUPABASE ────────────────────────────────────────────────────
+async function saveRow(row) {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/reflections', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(row)
+    });
+  } catch(e) { console.error('Supabase save:', e); }
+}
+
+// ─── PART 1 SUBMIT ────────────────────────────────────────────────────────
+async function doPart1() {
+  if (!validatePart1()) {
+    const firstErr = document.querySelector('.field-error');
+    if (firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  goTo(2);
+  const p1 = getPart1();
+  const result = await callEdge('article', {initial: S.initial, part1: p1});
+  const panel = document.getElementById('ai-article');
+  if (result && result.title && result.body) {
+    panel.innerHTML =
+      `<div class="ai-badge-row"><div class="ai-badge">✨ Written for ${S.initial}.</div></div>` +
+      `<div class="ai-title">${result.title}</div>` +
+      `<div class="ai-body">${result.body.split(/\n\n+/).map(p=>'<p>'+p+'</p>').join('')}</div>`;
+  } else {
+    panel.innerHTML = `<div class="ai-body"><p>There was a problem generating your reading. Continue to your conference with the adult in the room.</p></div>`;
+  }
+}
+
+// ─── FULL SUBMIT ─────────────────────────────────────────────────────────
+async function doSubmit() {
+  if (!validatePart3()) return;
+  goTo('done');
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  await saveRow({session_id: S.sessionId, initial: S.initial, part1_json: p1, part2_json: p2, part3_json: p3, status: 'submitted'});
+  const result = await callEdge('summary', {initial: S.initial, part1: p1, part2: p2, part3: p3});
+  document.getElementById('ai-final-thinking').classList.add('hidden');
+  document.getElementById('ai-final-content').classList.remove('hidden');
+
+  if (result) {
+    const ic = {Low:'flag',Medium:'warn',High:'good'}[result.insightLevel] || '';
+    const ib = {Low:'ins-low',Medium:'ins-med',High:'ins-high'}[result.insightLevel] || 'ins-med';
+    document.getElementById('staff-body').innerHTML =
+      `<div class="staff-sec"><h4>Incident Summary</h4><div class="staff-item">${result.summary||'—'}</div></div>` +
+      `<div class="staff-sec"><h4>Student Insight Level</h4><div class="staff-item ${ic}"><span class="ins-badge ${ib}">${result.insightLevel||'—'}</span><br>${result.insightReason||''}</div></div>` +
+      `<div class="staff-sec"><h4>Recommended Consequences</h4>` +
+        (result.recommendedConsequences||[]).map(c=>`<div class="staff-item"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:.78rem;color:var(--ink-light)">${c.rationale||''}</em></div>`).join('') +
+      `</div>` +
+      `<div class="staff-sec"><h4>Repair Plan</h4><div class="staff-item">${result.repairPlan||'—'}</div></div>` +
+      (result.restorativeQuestions ? `<div class="staff-sec"><h4>Restorative Questions for Conference</h4>${result.restorativeQuestions.map(q=>`<div class="staff-item">💬 ${q}</div>`).join('')}</div>` : '') +
+      ((result.followUpFlags||[]).length ? `<div class="staff-sec"><h4>⚠️ Follow-Up Flags</h4>${result.followUpFlags.map(f=>`<div class="staff-item flag">${f}</div>`).join('')}</div>` : '');
+
+    if (result.cpsScript) {
+      document.getElementById('cps-script-block').innerHTML =
+        `<div class="cps-script-block"><h4>💬 Conference Script — CPS Framework</h4>` +
+        result.cpsScript.map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}</span><span class="script-txt">"${l.text}"</span></div>`).join('') +
+        `</div>`;
+    }
+
+    document.getElementById('read-list').innerHTML =
+      (result.studentReadingList||[]).map(r =>
+        `<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`
+      ).join('');
+  } else {
+    document.getElementById('staff-body').innerHTML = '<div class="staff-item flag">AI summary could not be generated. Please proceed with manual follow-up.</div>';
+  }
+}
+</script>
+</body>
+</html>
 
