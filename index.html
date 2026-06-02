@@ -730,6 +730,136 @@ input[type="range"]::-webkit-slider-thumb {
   font-family: 'Barlow', sans-serif; font-size: 0.86rem; color: var(--trail); line-height: 1.85; margin-bottom: 26px;
 }
 
+/* ── EMOTION ZONES ── */
+.zone-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.zone-tab {
+  flex: 1; min-width: 70px; padding: 9px 10px; border: 2px solid transparent;
+  border-radius: 9px; font-family: 'Barlow', sans-serif;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; text-align: center; opacity: 0.55;
+}
+.zone-tab:hover { opacity: 0.85; transform: translateY(-1px); }
+.zone-tab.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,0,0,0.15); }
+.zone-tab.zt-red { background: #fde8e8; border-color: #e05c5c; color: #b03030; }
+.zone-tab.zt-red.active { background: #e05c5c; color: white; border-color: #c03030; }
+.zone-tab.zt-yellow { background: #fef9e0; border-color: #d4a017; color: #8a6500; }
+.zone-tab.zt-yellow.active { background: #e8b800; color: white; border-color: #c49a00; }
+.zone-tab.zt-blue { background: #e8f0fb; border-color: #5b8dd9; color: #2a5a9e; }
+.zone-tab.zt-blue.active { background: #4a7acc; color: white; border-color: #3060aa; }
+.zone-tab.zt-green { background: var(--trail-light); border-color: var(--trail-mid); color: var(--trail); }
+.zone-tab.zt-green.active { background: var(--trail-mid); color: white; border-color: var(--trail); }
+.zone-intro {
+  display: none; padding: 12px 14px; border-radius: 9px; margin-bottom: 14px;
+  font-family: 'Barlow', sans-serif; font-size: 0.82rem; line-height: 1.6;
+  font-style: italic;
+}
+.zone-intro.show { display: block; animation: trailIn 0.3s ease; }
+.zi-red { background: #fde8e8; color: #8a2020; border-left: 3px solid #e05c5c; }
+.zi-yellow { background: #fef9e0; color: #6a4a00; border-left: 3px solid #d4a017; }
+.zi-blue { background: #e8f0fb; color: #1a3a6e; border-left: 3px solid #5b8dd9; }
+.zi-green { background: var(--trail-light); color: var(--trail); border-left: 3px solid var(--trail-mid); }
+.zone-panel { display: none; }
+.zone-panel.show { display: block; animation: trailIn 0.3s ease; }
+.zone-emotions {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 7px;
+}
+.ze-btn {
+  border: 2px solid var(--border); border-radius: 9px; padding: 9px 8px 7px;
+  text-align: center; font-family: 'Barlow', sans-serif; font-size: 0.74rem;
+  font-weight: 600; cursor: pointer; background: var(--paper);
+  transition: all 0.15s; color: var(--ink); position: relative;
+  line-height: 1.3;
+}
+.ze-btn:hover { transform: translateY(-1px); }
+.ze-btn .ze-emoji { font-size: 1.25rem; display: block; margin-bottom: 3px; }
+.ze-btn .ze-name { display: block; }
+.ze-btn .ze-info {
+  position: absolute; top: 4px; right: 5px;
+  font-size: 0.6rem; color: var(--ink-light); opacity: 0.6;
+}
+.ze-btn.on { color: white; border-color: transparent; }
+.ze-btn.ze-red:hover { border-color: #e05c5c; background: #fde8e8; }
+.ze-btn.ze-red.on { background: #e05c5c; }
+.ze-btn.ze-yellow:hover { border-color: #d4a017; background: #fef9e0; }
+.ze-btn.ze-yellow.on { background: #c49a00; }
+.ze-btn.ze-blue:hover { border-color: #5b8dd9; background: #e8f0fb; }
+.ze-btn.ze-blue.on { background: #4a7acc; }
+.ze-btn.ze-green:hover { border-color: var(--trail-mid); background: var(--trail-light); color: var(--trail); }
+.ze-btn.ze-green.on { background: var(--trail-mid); }
+/* definition tooltip */
+.emo-def-popup {
+  position: fixed; z-index: 1000; max-width: 280px;
+  background: var(--ink); color: white; border-radius: 10px;
+  padding: 12px 14px; font-family: 'Barlow', sans-serif; font-size: 0.82rem;
+  line-height: 1.55; box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+  pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+.emo-def-popup.show { opacity: 1; }
+.emo-def-popup strong { color: var(--gold); display: block; margin-bottom: 4px; font-size: 0.86rem; }
+.emo-def-popup .emo-messenger {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15);
+  font-size: 0.76rem; color: rgba(255,255,255,0.65); font-style: italic;
+}
+/* selected emotions display */
+.selected-emotions-display {
+  display: none; margin-top: 14px; padding: 12px 14px;
+  background: var(--paper-dark); border-radius: 9px; border: 1px solid var(--border);
+}
+.selected-emotions-display.show { display: block; }
+.sed-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.sed-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sed-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+  font-family: 'Barlow', sans-serif;
+}
+.sed-chip.chip-red { background: #fde8e8; color: #b03030; }
+.sed-chip.chip-yellow { background: #fef9e0; color: #7a5800; }
+.sed-chip.chip-blue { background: #e8f0fb; color: #2a5a9e; }
+.sed-chip.chip-green { background: var(--trail-light); color: var(--trail); }
+.sed-chip button { background: none; border: none; cursor: pointer; font-size: 0.7rem; opacity: 0.6; padding: 0; line-height: 1; }
+
+/* ── FEATURE 1: REAL-TIME INSIGHT INDICATOR ── */
+.insight-live {
+  position: fixed; top: 120px; right: 16px; z-index: 300;
+  background: white; border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 13px; min-width: 148px;
+  box-shadow: var(--shadow-warm); opacity: 0; transform: translateY(6px);
+  transition: all 0.35s; font-family: 'Barlow', sans-serif;
+}
+.insight-live.show { opacity: 1; transform: translateY(0); }
+.il-label { font-size: 0.62rem; font-weight: 700; color: var(--ink-light); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 5px; }
+.il-bar { height: 5px; background: var(--paper-mid); border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
+.il-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease, background 0.4s; width: 0%; background: var(--red); }
+.il-fill.med { background: var(--gold); }
+.il-fill.high { background: var(--trail-mid); }
+.il-status { font-size: 0.7rem; color: var(--ink-mid); font-weight: 600; }
+
+/* ── FEATURE 2: CONSEQUENCE NUDGE ── */
+.consequence-nudge {
+  display: none; margin-top: 14px; padding: 14px 16px;
+  background: linear-gradient(135deg, #1a2e1f 0%, #0d1c10 100%);
+  border-radius: 10px; color: white; animation: trailIn 0.4s ease;
+}
+.consequence-nudge.show { display: block; }
+.cn-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cn-badge { background: var(--gold); color: var(--trail-deep); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-family: 'Barlow', sans-serif; }
+.cn-text { font-family: 'Barlow', sans-serif; font-size: 0.86rem; line-height: 1.65; color: rgba(255,255,255,0.88); }
+.cn-thinking { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.8rem; font-family: 'Barlow', sans-serif; }
+
+/* ── FEATURE 3: CPS SYNTHESIS ── */
+.cps-synthesis {
+  display: none; margin-top: 16px; padding: 18px 20px;
+  background: linear-gradient(135deg, #1e2a1a 0%, #0f1c0d 100%);
+  border-radius: 10px; color: white; animation: trailIn 0.4s ease;
+}
+.cps-synthesis.show { display: block; }
+.cps-syn-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.cps-syn-badge { background: var(--gold); color: var(--trail-deep); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-family: 'Barlow', sans-serif; }
+.cps-syn-text { font-family: 'Barlow', sans-serif; font-size: 0.88rem; line-height: 1.75; color: rgba(255,255,255,0.9); }
+.cps-syn-text p { margin-bottom: 10px; }
+.cps-syn-text strong { color: #a8d5b5; }
+
 /* ── MISC ── */
 .hidden { display: none !important; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
@@ -779,6 +909,13 @@ input[type="range"]::-webkit-slider-thumb {
   <div class="q-msg" id="qmsg">Keep going — add more detail.</div>
 </div>
 
+<!-- FEATURE 1: LIVE INSIGHT INDICATOR (staff-facing, subtle) -->
+<div class="insight-live" id="insight-live">
+  <div class="il-label">Insight Signal</div>
+  <div class="il-bar"><div class="il-fill" id="il-fill"></div></div>
+  <div class="il-status" id="il-status">Building…</div>
+</div>
+
 <main class="main">
 
 <!-- ═══ SCREEN 0: WELCOME ═══ -->
@@ -813,7 +950,7 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="jcard-label">Describe the Situation</div>
     <div class="jcard-sub">What action or actions brought you here today? Tell the full story in your own words.</div>
     <textarea id="q-what" placeholder="Write what happened from the beginning. Be specific — where were you, what did you do, how did it start?" rows="5"></textarea>
-    <div class="val-msg" id="e-what">This needs more detail. Write at least a few complete sentences — what actually happened, from the beginning.</div>
+    <div class="val-msg" id="e-what">This one needs something written in. Even a few words about what happened is a start.</div>
   </div>
 
   <div class="jcard" id="jc-details">
@@ -822,7 +959,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="ig">
         <label>Who else was involved?</label>
         <input type="text" id="q-who" placeholder="First names or descriptions of others…">
-        <div class="val-msg" id="e-who">Please name who was involved.</div>
+        <div class="val-msg" id="e-who">Let us know who else was part of this — even just a description is fine.</div>
       </div>
       <div class="ig">
         <label>Who witnessed it?</label>
@@ -833,18 +970,18 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="ig">
         <label>Where did it happen?</label>
         <input type="text" id="q-where" placeholder="Hallway, classroom, cafeteria…">
-        <div class="val-msg" id="e-where">Please tell us where this happened.</div>
+        <div class="val-msg" id="e-where">Just tell us where you were when this happened.</div>
       </div>
       <div class="ig">
         <label>When / what were you doing?</label>
         <input type="text" id="q-when" placeholder="Period, lunch, passing time…">
-        <div class="val-msg" id="e-when">Tell us when and what you were doing.</div>
+        <div class="val-msg" id="e-when">Give us a sense of when — what were you doing or what period was it?</div>
       </div>
     </div>
     <div class="ig">
       <label>What were you thinking at the time?</label>
       <input type="text" id="q-think" placeholder="Be honest — what was actually going through your mind?">
-      <div class="val-msg" id="e-think">Give a real answer here — what were you actually thinking?</div>
+      <div class="val-msg" id="e-think">Even if you weren't sure what you were thinking, write that. Honest is what matters here.</div>
     </div>
   </div>
 
@@ -852,27 +989,27 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="jcard-label">Why Did You Do It?</div>
     <div class="jcard-sub">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
     <textarea id="q-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
-    <div class="val-msg" id="e-why">This is one of the most important questions. Write your real reasoning — even if it's hard to say.</div>
+    <div class="val-msg" id="e-why">This is the most important one. Write whatever is true for you, even if it's hard to explain.</div>
   </div>
 
   <!-- CPS FLIP CARDS -->
   <div class="jcard">
-    <div class="jcard-label">🔍 Digging Deeper — Collaborative Problem Solving</div>
+    <div class="jcard-label">🛤️ Crossing Paths</div>
     <div class="cps-banner">
-      <h3>What was really going on?</h3>
-      <p>Behind most conflicts there's an unsolved problem — something you needed or were worried about. Tap each card to flip it and answer the question inside. This helps figure out the real root of what happened.</p>
+      <h3>Crossing Paths</h3>
+      <p>Every situation involves more than one person's path. Tap each card, flip it, and answer what's inside. This helps you understand what was really happening — for you and for the other person.</p>
     </div>
     <div class="flip-grid">
       <div class="flip-card" id="fc1" onclick="flipCard(1)">
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="ficon">🔍</div>
-            <div class="fq">What was the unsolved problem before this happened?</div>
+            <div class="fq">What was going on before this happened?</div>
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">The problem was…</div>
-            <textarea class="cps-ta" id="cps1" rows="4" placeholder="Write your answer here…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label">Before this happened…</div>
+            <textarea class="cps-ta" id="cps1" rows="4" placeholder="Something that was already going on was…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
@@ -880,12 +1017,12 @@ input[type="range"]::-webkit-slider-thumb {
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="ficon">💭</div>
-            <div class="fq">What were YOU worried about or needing?</div>
+            <div class="fq">What did you care about in that moment?</div>
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">My concern or need…</div>
-            <textarea class="cps-ta" id="cps2" rows="4" placeholder="I was worried about / I needed…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label">In that moment I cared about…</div>
+            <textarea class="cps-ta" id="cps2" rows="4" placeholder="What mattered to me in that moment was…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
@@ -893,70 +1030,102 @@ input[type="range"]::-webkit-slider-thumb {
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="ficon">👥</div>
-            <div class="fq">What do you think the other person was worried about or needing?</div>
+            <div class="fq">What do you think the other person cared about?</div>
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">Their concern or need…</div>
-            <textarea class="cps-ta" id="cps3" rows="4" placeholder="They were probably worried about / needed…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label">They probably cared about…</div>
+            <textarea class="cps-ta" id="cps3" rows="4" placeholder="They were probably thinking about / cared about…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
     </div>
+    <!-- FEATURE 3: CPS SYNTHESIS -->
+    <div class="cps-synthesis" id="cps-synthesis">
+      <div class="cps-syn-header"><div class="cps-syn-badge">🛤 Both Sides of the Trail</div></div>
+      <div class="cn-thinking" id="cps-syn-thinking"><div class="spin"></div>Putting the two sides together…</div>
+      <div class="cps-syn-text hidden" id="cps-syn-text"></div>
+    </div>
   </div>
 
-  <!-- EMOTIONS -->
+  <!-- EMOTIONS: ZONE-BASED PICKER -->
   <div class="jcard" id="jc-emo-during">
-    <div class="jcard-label">Emotions During</div>
-    <div class="jcard-sub">Pick up to 2 emotions you felt before or during what happened.</div>
-    <div class="emotion-grid" id="emo-during">
-      <button class="emo-btn" data-g="during" data-v="Angry"><span class="ej">😠</span>Angry</button>
-      <button class="emo-btn" data-g="during" data-v="Frustrated"><span class="ej">😤</span>Frustrated</button>
-      <button class="emo-btn" data-g="during" data-v="Embarrassed"><span class="ej">😳</span>Embarrassed</button>
-      <button class="emo-btn" data-g="during" data-v="Scared"><span class="ej">😨</span>Scared</button>
-      <button class="emo-btn" data-g="during" data-v="Sad"><span class="ej">😔</span>Sad</button>
-      <button class="emo-btn" data-g="during" data-v="Overwhelmed"><span class="ej">😵</span>Overwhelmed</button>
-      <button class="emo-btn" data-g="during" data-v="Jealous"><span class="ej">😒</span>Jealous</button>
-      <button class="emo-btn" data-g="during" data-v="Lonely"><span class="ej">🥺</span>Lonely</button>
-      <button class="emo-btn" data-g="during" data-v="Bored"><span class="ej">😑</span>Bored</button>
-      <button class="emo-btn" data-g="during" data-v="Excited"><span class="ej">😄</span>Excited</button>
-      <button class="emo-btn" data-g="during" data-v="Anxious"><span class="ej">😰</span>Anxious</button>
-      <button class="emo-btn" data-g="during" data-v="Hurt"><span class="ej">💔</span>Hurt</button>
+    <div class="jcard-label">How Were You Feeling?</div>
+    <div class="jcard-sub">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
+
+    <div class="zone-tabs">
+      <button class="zone-tab zt-red" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High energy, hard feelings</small></button>
+      <button class="zone-tab zt-yellow" onclick="showZone('during','yellow',this)">🟡 Yellow Zone<br><small>High energy, good feelings</small></button>
+      <button class="zone-tab zt-blue" onclick="showZone('during','blue',this)">🔵 Blue Zone<br><small>Low energy, hard feelings</small></button>
+      <button class="zone-tab zt-green" onclick="showZone('during','green',this)">🟢 Green Zone<br><small>Low energy, good feelings</small></button>
     </div>
+
+    <div class="zone-intro zi-red" id="zi-during-red">These emotions are high-energy and difficult. They're not bad — they're powerful signals. Anger can mean something important was crossed. Fear can mean you felt unsafe. They're telling you something.</div>
+    <div class="zone-intro zi-yellow" id="zi-during-yellow">These emotions are high-energy and feel good. Even positive emotions can play a role in what happened — excitement, overconfidence, or the thrill of the moment can all factor in.</div>
+    <div class="zone-intro zi-blue" id="zi-during-blue">These emotions are low-energy and difficult. Sadness, loneliness, and shame often sit underneath bigger reactions. Sometimes what looks like anger is actually one of these underneath.</div>
+    <div class="zone-intro zi-green" id="zi-during-green">These emotions are calm and feel good. Sometimes we act out when we're missing these feelings — when we haven't felt safe, content, or connected in a while.</div>
+
+    <div class="zone-panel" id="zp-during-red">
+      <div class="zone-emotions" id="ze-during-red"></div>
+    </div>
+    <div class="zone-panel" id="zp-during-yellow">
+      <div class="zone-emotions" id="ze-during-yellow"></div>
+    </div>
+    <div class="zone-panel" id="zp-during-blue">
+      <div class="zone-emotions" id="ze-during-blue"></div>
+    </div>
+    <div class="zone-panel" id="zp-during-green">
+      <div class="zone-emotions" id="ze-during-green"></div>
+    </div>
+
+    <div class="selected-emotions-display" id="sed-during">
+      <div class="sed-label">You selected</div>
+      <div class="sed-chips" id="sed-during-chips"></div>
+    </div>
+
     <div class="intensity-wrap" id="int-during-wrap">
-      <div class="int-label">How intense was that feeling? <span id="int-during-val">3 — Moderate</span></div>
+      <div class="int-label">How intense were those feelings? <span id="int-during-val">3 — Moderate</span></div>
       <input type="range" id="int-during" min="1" max="5" value="3">
-      <div class="int-labels"><span>Very mild</span><span>Moderate</span><span>Overwhelming</span></div>
+      <div class="int-labels"><span>Barely felt it</span><span>Moderate</span><span>Completely overwhelming</span></div>
     </div>
   </div>
 
   <div class="jcard">
     <div class="jcard-label">How Do You Feel Right Now?</div>
-    <div class="jcard-sub">Pick up to 2 emotions you feel at this moment, sitting here reflecting.</div>
-    <div class="emotion-grid" id="emo-now">
-      <button class="emo-btn" data-g="now" data-v="Regretful"><span class="ej">😞</span>Regretful</button>
-      <button class="emo-btn" data-g="now" data-v="Sorry"><span class="ej">🙏</span>Sorry</button>
-      <button class="emo-btn" data-g="now" data-v="Embarrassed"><span class="ej">😳</span>Embarrassed</button>
-      <button class="emo-btn" data-g="now" data-v="Calm"><span class="ej">😌</span>Calm</button>
-      <button class="emo-btn" data-g="now" data-v="Still Angry"><span class="ej">😠</span>Still Angry</button>
-      <button class="emo-btn" data-g="now" data-v="Hopeful"><span class="ej">🌟</span>Hopeful</button>
-      <button class="emo-btn" data-g="now" data-v="Proud"><span class="ej">💪</span>Proud</button>
-      <button class="emo-btn" data-g="now" data-v="Confused"><span class="ej">😕</span>Confused</button>
-      <button class="emo-btn" data-g="now" data-v="Numb"><span class="ej">😶</span>Numb</button>
-      <button class="emo-btn" data-g="now" data-v="Worried"><span class="ej">😟</span>Worried</button>
-      <button class="emo-btn" data-g="now" data-v="Motivated"><span class="ej">🔥</span>Motivated</button>
-      <button class="emo-btn" data-g="now" data-v="Relieved"><span class="ej">😮‍💨</span>Relieved</button>
+    <div class="jcard-sub">Sitting here reflecting — pick up to 3 emotions you feel <strong>right now</strong>. Notice if anything has shifted.</div>
+
+    <div class="zone-tabs">
+      <button class="zone-tab zt-red" onclick="showZone('now','red',this)">🔴 Red Zone</button>
+      <button class="zone-tab zt-yellow" onclick="showZone('now','yellow',this)">🟡 Yellow Zone</button>
+      <button class="zone-tab zt-blue" onclick="showZone('now','blue',this)">🔵 Blue Zone</button>
+      <button class="zone-tab zt-green" onclick="showZone('now','green',this)">🟢 Green Zone</button>
     </div>
+
+    <div class="zone-intro zi-red" id="zi-now-red">Still feeling high-energy difficult emotions is okay. It means you're still processing — and that's honest.</div>
+    <div class="zone-intro zi-yellow" id="zi-now-yellow">Feeling good right now doesn't mean you don't care — it might mean the reflection is helping or that you feel hopeful.</div>
+    <div class="zone-intro zi-blue" id="zi-now-blue">Low-energy difficult emotions often show up after something hard happens. Regret, shame, and sadness are signs you're taking this seriously.</div>
+    <div class="zone-intro zi-green" id="zi-now-green">Feeling calmer now is a good sign — it means the thinking part of your brain is back online and you're ready to work through this.</div>
+
+    <div class="zone-panel" id="zp-now-red"><div class="zone-emotions" id="ze-now-red"></div></div>
+    <div class="zone-panel" id="zp-now-yellow"><div class="zone-emotions" id="ze-now-yellow"></div></div>
+    <div class="zone-panel" id="zp-now-blue"><div class="zone-emotions" id="ze-now-blue"></div></div>
+    <div class="zone-panel" id="zp-now-green"><div class="zone-emotions" id="ze-now-green"></div></div>
+
+    <div class="selected-emotions-display" id="sed-now">
+      <div class="sed-label">You selected</div>
+      <div class="sed-chips" id="sed-now-chips"></div>
+    </div>
+
     <div class="intensity-wrap" id="int-now-wrap">
-      <div class="int-label">How strong is that feeling right now? <span id="int-now-val">3 — Moderate</span></div>
+      <div class="int-label">How intense are those feelings right now? <span id="int-now-val">3 — Moderate</span></div>
       <input type="range" id="int-now" min="1" max="5" value="3">
-      <div class="int-labels"><span>Very mild</span><span>Moderate</span><span>Very strong</span></div>
+      <div class="int-labels"><span>Barely felt it</span><span>Moderate</span><span>Completely overwhelming</span></div>
     </div>
   </div>
 
   <div class="jcard">
     <div class="jcard-label">Did Your Emotions Change?</div>
-    <div class="jcard-sub">Compare how you felt during the situation vs. how you feel right now reflecting on it.</div>
+    <div class="jcard-sub">Compare how you felt during the situation vs. how you feel right now. A shift in feelings is worth paying attention to.</div>
     <div class="yn-group">
       <button class="yn-btn" id="yn-y" onclick="setYN('yes')">YES</button>
       <button class="yn-btn" id="yn-n" onclick="setYN('no')">NO</button>
@@ -964,6 +1133,13 @@ input[type="range"]::-webkit-slider-thumb {
     <div id="yn-extra" class="hidden" style="margin-top:12px">
       <textarea id="q-yn" rows="3" placeholder="Explain the change — or why you feel the same way now as you did then…"></textarea>
     </div>
+  </div>
+
+  <!-- DEFINITION POPUP -->
+  <div class="emo-def-popup" id="emo-def-popup">
+    <strong id="edp-name"></strong>
+    <span id="edp-def"></span>
+    <div class="emo-messenger" id="edp-msg"></div>
   </div>
 
   <div class="nav-row">
@@ -1069,6 +1245,12 @@ input[type="range"]::-webkit-slider-thumb {
         ondragover="event.preventDefault();this.classList.add('drag-over')"
         ondragleave="this.classList.remove('drag-over')"
         ondrop="onDrop(event)"></div>
+    </div>
+    <!-- FEATURE 2: CONSEQUENCE NUDGE -->
+    <div class="consequence-nudge" id="consequence-nudge">
+      <div class="cn-header"><div class="cn-badge">✦ Reflection</div></div>
+      <div class="cn-thinking" id="cn-thinking"><div class="spin"></div>Thinking about your choices…</div>
+      <div class="cn-text hidden" id="cn-text"></div>
     </div>
   </div>
 
@@ -1257,14 +1439,16 @@ function begin() {
 }
 
 // ─── VALIDATION ───────────────────────────────────────────────────────────
-const THIN = /^(n\/?a|idk|i\s*don'?t\s*know|nothing|none|no|yes|ok|okay|fine|whatever|idrc|idc|dunno|not\s*sure|unsure|maybe|\.*|shrug)$/i;
+// Only block clearly dismissive non-answers — short honest answers are fine.
+const DISMISSIVE = /^(n\/?a|idk|i\s*don'?t\s*care|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|no idea|skip)$/i;
 
 function thin(val) {
   const v = val.trim();
-  if (!v) return true;
-  if (THIN.test(v)) return true;
-  if (v.split(/\s+/).filter(Boolean).length < 5) return true;
+  if (!v) return true;                // empty
+  if (DISMISSIVE.test(v)) return true; // clearly dismissive
   return false;
+  // Note: short honest answers like "I wasn't thinking" or "I was angry"
+  // are valid and pass through. We only block blank or dismissive responses.
 }
 
 function showErr(id, msg) {
@@ -1279,12 +1463,12 @@ function doShake(el) { el.classList.remove('shaking'); void el.offsetWidth; el.c
 function validatePart1() {
   let ok = true;
   const checks = [
-    ['q-what','e-what','Describe what happened in detail — at least a few complete sentences.'],
-    ['q-who','e-who','Name who was involved — even a description helps.'],
-    ['q-where','e-where','Tell us where this happened.'],
-    ['q-when','e-when','Tell us when and what you were doing at the time.'],
-    ['q-think','e-think','Be honest — what were you actually thinking in that moment?'],
-    ['q-why','e-why','This matters most. Write your real reasoning, even if it is hard to say.'],
+    ['q-what','e-what','This one needs something written in. Even a few words about what happened is a start.'],
+    ['q-who','e-who','Let us know who else was part of this — even just a description is fine.'],
+    ['q-where','e-where','Just tell us where you were when this happened.'],
+    ['q-when','e-when','Give us a sense of when — what were you doing or what period was it?'],
+    ['q-think','e-think','Even if you weren\'t sure what you were thinking, write that. Honest is what matters here.'],
+    ['q-why','e-why','This is the most important one. Write whatever is true for you, even if it\'s hard to explain.'],
   ];
   checks.forEach(([fid, eid, msg]) => {
     const el = document.getElementById(fid);
@@ -1298,10 +1482,10 @@ function validatePart1() {
 function validatePart2() {
   let ok = true;
   const checks = [
-    ['q-makeright','e-makeright','Give a thoughtful answer about what actually needs to happen to repair this.'],
-    ['q-bestidea','e-bestidea','Explain your reasoning — why is this your best choice?'],
-    ['q-plan','e-plan','Be specific — what will you do, when, and who will help?'],
-    ['q-diff','e-diff','Write a real strategy for what you will do differently.'],
+    ['q-makeright','e-makeright','Write what you think needs to happen — even a first thought counts.'],
+    ['q-bestidea','e-bestidea','Tell us why that idea makes the most sense to you.'],
+    ['q-plan','e-plan','Write out what you\'re actually going to do and when — as specific as you can.'],
+    ['q-diff','e-diff','What would you do differently? Even one thing is a good answer.'],
   ];
   checks.forEach(([fid, eid, msg]) => {
     const el = document.getElementById(fid);
@@ -1317,12 +1501,129 @@ function validatePart3() {
   if (!S.trait) { doShake(document.querySelector('.trait-grid')); ok = false; }
   const tw = document.getElementById('q-traitwhy');
   if (tw && thin(tw.value)) {
-    tw.classList.add('field-error'); showErr('e-traitwhy','Explain the connection between this trait and what happened.'); doShake(tw); ok = false;
+    tw.classList.add('field-error'); showErr('e-traitwhy','Tell us why you picked this one — how does it connect to what happened?'); doShake(tw); ok = false;
   } else if (tw) { tw.classList.remove('field-error'); hideErr('e-traitwhy'); }
   return ok;
 }
 
-// ─── QUALITY METER ────────────────────────────────────────────────────────
+// ─── FEATURE 1: LIVE INSIGHT SIGNAL ─────────────────────────────────────
+// Scores the reflection quality for the staff indicator (not shown to student)
+const INSIGHT_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
+const INSIGHT_SIGNALS = {
+  accountability: /i (did|said|took|started|made|chose|decided|caused|hurt|broke|lied|stole|hit|pushed|threw)/i,
+  empathy: /(they|she|he|them).*(feel|felt|hurt|sad|scared|upset|angry|embarrassed|worried|affected)/i,
+  specificity: /\b(because|since|so that|in order to|as a result|that's why|the reason)\b/i,
+  futureThink: /(next time|in the future|i will|i won't|i'll|i could|instead i|differently)/i,
+};
+
+function updateInsightSignal() {
+  let score = 0;
+  let totalWords = 0;
+  INSIGHT_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.value;
+    totalWords += val.trim().split(/\s+/).filter(Boolean).length;
+  });
+  // Word depth score
+  score += Math.min(totalWords / 80, 1) * 40;
+  // Signal pattern score
+  const allText = INSIGHT_FIELDS.map(id => (document.getElementById(id)||{}).value||'').join(' ');
+  Object.values(INSIGHT_SIGNALS).forEach(rx => { if (rx.test(allText)) score += 15; });
+  score = Math.min(Math.round(score), 100);
+
+  const fill = document.getElementById('il-fill');
+  const status = document.getElementById('il-status');
+  fill.style.width = score + '%';
+  fill.className = 'il-fill' + (score >= 65 ? ' high' : score >= 35 ? ' med' : '');
+  status.textContent = score >= 65 ? 'High insight' : score >= 35 ? 'Developing' : 'Low insight';
+  document.getElementById('insight-live').classList.toggle('show', score > 0);
+}
+document.querySelectorAll('textarea, input[type="text"]').forEach(el => {
+  el.addEventListener('input', () => { updateQuality(); updateInsightSignal(); });
+});
+
+// ─── FEATURE 3: CPS SYNTHESIS TRIGGER ────────────────────────────────────
+// Fires when all 3 CPS cards have been flipped and have content
+let cpsSynthesisDone = false;
+function checkCPSTrigger() {
+  if (cpsSynthesisDone) return;
+  const v1 = gv('cps1').trim(), v2 = gv('cps2').trim(), v3 = gv('cps3').trim();
+  if (v1.length > 5 && v2.length > 5 && v3.length > 5) {
+    cpsSynthesisDone = true;
+    triggerCPSSynthesis(v1, v2, v3);
+  }
+}
+// Attach listeners to CPS textareas
+['cps1','cps2','cps3'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', checkCPSTrigger);
+});
+
+async function triggerCPSSynthesis(problem, myConcern, theirConcern) {
+  const synth = document.getElementById('cps-synthesis');
+  synth.classList.add('show');
+  const result = await callEdge('cps_synthesis', {
+    problem, myConcern, theirConcern,
+    whatHappened: gv('q-what'), why: gv('q-why'),
+  });
+  document.getElementById('cps-syn-thinking').classList.add('hidden');
+  const textEl = document.getElementById('cps-syn-text');
+  textEl.classList.remove('hidden');
+  if (result && result.synthesis) {
+    textEl.innerHTML = result.synthesis.split(/\n\n+/).map(p=>`<p>${p}</p>`).join('');
+  } else {
+    textEl.innerHTML = '<p>Take a moment to read back what you wrote above — you identified something important about both sides of this situation.</p>';
+  }
+}
+
+// ─── FEATURE 7: LONGITUDINAL CHECK ───────────────────────────────────────
+async function checkPriorReflections(initial) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/reflections?initial=eq.${encodeURIComponent(initial)}&select=id,created_at,insight_level,part3_json&order=created_at.desc&limit=5`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON } }
+    );
+    const data = await res.json();
+    // Return count and last reflection summary (excluding current session which isn't saved yet)
+    return Array.isArray(data) ? data : [];
+  } catch(e) { return []; }
+}
+
+// ─── FEATURE 9: CLASH OF CLASSES BRIDGE ──────────────────────────────────
+const CLASH_DB = 'https://clash-of-classes-default-rtdb.firebaseio.com';
+const CLASH_ADMIN_PW = 'ephrata2026';
+
+async function awardClashPoints(initial, sessionId, insightLevel) {
+  if (insightLevel !== 'High') return;
+  try {
+    // Write a private growth flag — NOT public, admin-only node
+    const flagRef = `${CLASH_DB}/growth_flags/${sessionId}.json?auth=${CLASH_ADMIN_PW}`;
+    await fetch(flagRef, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        initial,
+        sessionId,
+        insightLevel,
+        timestamp: new Date().toISOString(),
+        source: 'trail_journal',
+        pointsAwarded: false,  // admin reviews before awarding
+        note: 'High insight reflection — review for squad point award'
+      })
+    });
+    // Mark in Supabase that flag was created
+    await fetch(`${SUPABASE_URL}/rest/v1/reflections?session_id=eq.${sessionId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + SUPABASE_ANON,
+      },
+      body: JSON.stringify({ clash_flagged: true })
+    });
+  } catch(e) { console.error('Clash bridge:', e); }
+}
 const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
 const INT_LABELS = ['','Very mild','Mild','Moderate','Strong','Overwhelming'];
 
@@ -1346,24 +1647,232 @@ function updateQuality() {
 document.querySelectorAll('textarea, input[type="text"]').forEach(el => el.addEventListener('input', updateQuality));
 
 // ─── EMOTIONS ────────────────────────────────────────────────────────────
-document.querySelectorAll('.emo-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const g = btn.dataset.g, k = g === 'during' ? 'eduring' : 'enow', v = btn.dataset.v;
-    if (btn.classList.contains('on')) {
-      btn.classList.remove('on'); S[k] = S[k].filter(x => x !== v);
-    } else {
-      if (S[k].length >= 2) return;
-      btn.classList.add('on'); S[k].push(v);
-    }
-    const wid = g === 'during' ? 'int-during-wrap' : 'int-now-wrap';
-    document.getElementById(wid).classList.toggle('show', S[k].length > 0);
-    updateQuality();
+// ─── EMOTION LIBRARY ─────────────────────────────────────────────────────
+// Sources: Mood Meter (Brackett), Atlas of the Heart (Brown), Book of Emotions (Watt Smith),
+// Zones of Regulation, Plutchik's Wheel, emotional granularity research
+const EMOTIONS = {
+  red: [
+    { name:'Angry', emoji:'😠', def:'A strong feeling that something is wrong or unfair. Your body heats up, your muscles tighten.', msg:'Anger is a signal that something important to you was crossed.' },
+    { name:'Furious', emoji:'🤬', def:'A very intense form of anger — like anger with the volume all the way up.', msg:'Fury is telling you that something felt deeply unjust or violating.' },
+    { name:'Livid', emoji:'😤', def:'So angry you can barely contain it. Your whole body feels it.', msg:'When you\'re livid, your brain is trying to protect something that matters to you.' },
+    { name:'Enraged', emoji:'💢', def:'The most extreme form of anger — a feeling of explosive, overwhelming rage.', msg:'Rage is a signal of deep pain underneath. Something hurt badly.' },
+    { name:'Frustrated', emoji:'😣', def:'The feeling when something keeps blocking what you\'re trying to do or say.', msg:'Frustration means you care about the outcome and feel stuck.' },
+    { name:'Irritated', emoji:'😒', def:'A mild but sharp feeling of annoyance — like a pebble in your shoe.', msg:'Irritation is a small alarm telling you something isn\'t working for you.' },
+    { name:'Annoyed', emoji:'🙄', def:'Feeling bothered or slightly angry by repeated behavior or situations.', msg:'Annoyance is telling you a boundary has been nudged one too many times.' },
+    { name:'Anxious', emoji:'😰', def:'A worried, uneasy feeling — your brain scanning for danger even when it\'s not certain there is any.', msg:'Anxiety is trying to protect you by preparing you. It means something feels uncertain.' },
+    { name:'Nervous', emoji:'😬', def:'A jittery, on-edge feeling — like your body is bracing for something.', msg:'Nervousness means you care about what\'s about to happen.' },
+    { name:'Worried', emoji:'😟', def:'Thinking over and over about something that might go wrong.', msg:'Worry means you\'re trying to solve a problem before it happens.' },
+    { name:'Panicked', emoji:'😱', def:'Sudden intense fear that makes it hard to think straight. Everything feels urgent.', msg:'Panic is your brain\'s alarm system going off — it\'s trying to keep you safe.' },
+    { name:'Frightened', emoji:'😨', def:'Scared by something that feels threatening or dangerous.', msg:'Fear is one of your oldest protectors. It\'s trying to keep you out of danger.' },
+    { name:'Terrified', emoji:'🙀', def:'Extreme fear — your whole body goes into survival mode.', msg:'Terror means your brain decided something was a serious threat.' },
+    { name:'Tense', emoji:'😤', def:'A tight, coiled feeling — like your body is waiting for something to happen.', msg:'Tension means your nervous system is on guard.' },
+    { name:'Stressed', emoji:'🤯', def:'Feeling like there\'s too much to handle and not enough resources to handle it.', msg:'Stress is telling you that demands feel bigger than your capacity right now.' },
+    { name:'Overwhelmed', emoji:'😵', def:'So much coming at you at once that you can\'t process it all — like a flood.', msg:'Overwhelm means you\'ve hit your limit. Your brain is asking for a pause.' },
+    { name:'Disgusted', emoji:'🤢', def:'A strong feeling of repulsion — something felt deeply wrong or offensive.', msg:'Disgust protects your values. It means something crossed a line for you.' },
+    { name:'Repulsed', emoji:'😖', def:'An even stronger version of disgust — you want to get away from something.', msg:'Repulsion is a signal that something violated something you hold important.' },
+    { name:'Contempt', emoji:'😏', def:'Feeling superior to someone in a way that makes you dismiss them. (Atlas of the Heart)', msg:'Contempt is worth examining — it can damage relationships and shut down empathy.' },
+    { name:'Schadenfreude', emoji:'😈', def:'Feeling a secret pleasure when something bad happens to someone else. (Tiffany Watt Smith)', msg:'Schadenfreude is a messenger worth listening to — it often reveals envy, competition, or hurt underneath.' },
+    { name:'Humiliated', emoji:'😳', def:'Deep embarrassment mixed with shame — feeling exposed and powerless.', msg:'Humiliation is a wound. It\'s telling you your dignity felt attacked.' },
+    { name:'Jealous', emoji:'😒', def:'Fear of losing something you have to someone else. Different from envy — jealousy involves a threat to what\'s yours.', msg:'Jealousy signals that something feels threatened — a relationship, a place, your sense of belonging.' },
+    { name:'Envious', emoji:'😑', def:'Wanting what someone else has. You don\'t just want to lose their thing — you want it for yourself. (Atlas of the Heart)', msg:'Envy is telling you something about what you value and wish you had.' },
+    { name:'Resentful', emoji:'😤', def:'Long-held anger that hasn\'t been expressed — like anger that\'s been sitting and hardening.', msg:'Resentment is a sign something hurt and was never fully addressed.' },
+    { name:'Bitter', emoji:'😬', def:'A cold, hardened feeling from being hurt repeatedly without resolution.', msg:'Bitterness is a signal that wounds went untended for a long time.' },
+    { name:'Shocked', emoji:'😲', def:'Completely caught off guard — your brain hasn\'t caught up yet.', msg:'Shock is your system saying: this was not what I expected.' },
+  ],
+  yellow: [
+    { name:'Excited', emoji:'🤩', def:'High energy and anticipation — something good is coming or happening.', msg:'Excitement means something matters a lot to you.' },
+    { name:'Elated', emoji:'😄', def:'Extremely happy — like joy with wings.', msg:'Elation signals that something deeply good happened.' },
+    { name:'Ecstatic', emoji:'🥳', def:'Pure intense joy that feels almost uncontainable.', msg:'Ecstasy is a peak positive emotion. Pay attention to what caused it.' },
+    { name:'Enthusiastic', emoji:'🙌', def:'Energized and eager about something — ready to go.', msg:'Enthusiasm means you\'re engaged with something meaningful.' },
+    { name:'Motivated', emoji:'🔥', def:'Feeling driven and ready to take action toward something.', msg:'Motivation is telling you that a goal matters to you.' },
+    { name:'Inspired', emoji:'✨', def:'Feeling moved and energized by something outside yourself — an idea, a person, a moment.', msg:'Inspiration is a signal to follow whatever lit that spark.' },
+    { name:'Proud', emoji:'💪', def:'Feeling good about something you or someone you care about did.', msg:'Pride signals that something aligned with your values.' },
+    { name:'Confident', emoji:'😎', def:'Feeling sure of yourself and your abilities.', msg:'Confidence is telling you that you feel prepared or capable.' },
+    { name:'Hopeful', emoji:'🌟', def:'Believing something good is possible even when you\'re not sure.', msg:'Hope is a powerful messenger — it means you haven\'t given up.' },
+    { name:'Playful', emoji:'😜', def:'Feeling light, silly, and in the mood to have fun.', msg:'Playfulness is a green light — your brain is in a low-threat state.' },
+    { name:'Amused', emoji:'😂', def:'Finding something funny or entertaining.', msg:'Amusement is a connector — it brings people together.' },
+    { name:'Cheerful', emoji:'😊', def:'A light, upbeat feeling — things feel good.', msg:'Cheerfulness is a signal that you feel safe and at ease.' },
+    { name:'Thrilled', emoji:'🎉', def:'Intensely happy or excited about something happening.', msg:'Thrills signal high positive energy — something really lit you up.' },
+    { name:'Overconfident', emoji:'😏', def:'Feeling more sure of yourself than the situation warrants — like you can\'t fail.', msg:'Overconfidence can lead to risky decisions. This feeling is worth examining.' },
+    { name:'Surprised', emoji:'😲', def:'Caught off guard — but by something neutral or positive.', msg:'Surprise means your brain got information it wasn\'t expecting.' },
+    { name:'Curious', emoji:'🤔', def:'Drawn toward something unknown — wanting to explore or understand.', msg:'Curiosity is one of the most powerful messengers — follow it.' },
+    { name:'Energized', emoji:'⚡', def:'Feeling full of power and ready to move.', msg:'Energy is telling you your body and mind are charged up.' },
+    { name:'Grateful', emoji:'🙏', def:'Feeling thankful for something or someone.', msg:'Gratitude is a sign you recognize something good — hold onto it.' },
+    { name:'Freudenfreude', emoji:'🫶', def:'Feeling genuine joy in someone else\'s happiness or success. (Tiffany Watt Smith — opposite of schadenfreude)', msg:'Freudenfreude deepens connection and is one of the most prosocial feelings we have.' },
+  ],
+  blue: [
+    { name:'Sad', emoji:'😢', def:'A quiet, heavy feeling of loss, disappointment, or grief.', msg:'Sadness is telling you that something mattered to you deeply.' },
+    { name:'Lonely', emoji:'🥺', def:'Feeling disconnected from others — like no one really sees you.', msg:'Loneliness is a signal that you need connection. It\'s one of the most human feelings.' },
+    { name:'Disappointed', emoji:'😞', def:'What you hoped for didn\'t happen. A let-down feeling.', msg:'Disappointment means you had hope. That\'s not weakness — it\'s caring.' },
+    { name:'Discouraged', emoji:'😔', def:'Feeling like your efforts aren\'t working and you don\'t know if they will.', msg:'Discouragement is a call for support, not proof that you should stop.' },
+    { name:'Hopeless', emoji:'😶', def:'Unable to imagine things getting better. A very heavy feeling.', msg:'Hopelessness is a signal to reach out — you don\'t have to carry this alone.' },
+    { name:'Bored', emoji:'😑', def:'Lacking stimulation or purpose — nothing feels engaging or meaningful.', msg:'Boredom is a signal that you need challenge, meaning, or connection.' },
+    { name:'Apathetic', emoji:'😐', def:'Not caring about much — emotionally flat, disconnected from outcomes.', msg:'Apathy can be a form of protection after repeated hurt. It\'s worth paying attention to.' },
+    { name:'Tired', emoji:'😴', def:'Physically or emotionally exhausted — running low.', msg:'Tiredness is your body asking for rest. Emotional exhaustion is real.' },
+    { name:'Drained', emoji:'😮‍💨', def:'Empty — like everything has been used up.', msg:'Feeling drained means you\'ve been carrying a lot. You need to refuel.' },
+    { name:'Numb', emoji:'😶', def:'Feeling nothing — like emotions have gone quiet or shut off.', msg:'Numbness can be a protective response. It means something may have been too much.' },
+    { name:'Ashamed', emoji:'😳', def:'Feeling like you ARE bad, not just that you DID something bad. (Atlas of the Heart)', msg:'Shame whispers "I am the problem." Guilt says "I did something wrong." They\'re different — and shame is heavier.' },
+    { name:'Guilty', emoji:'😓', def:'Feeling bad about something specific you did — a healthy, repairable feeling.', msg:'Guilt is a sign your values are intact. It means you know something was wrong and you care.' },
+    { name:'Embarrassed', emoji:'😳', def:'Feeling exposed or foolish in front of others — a sudden flush of self-consciousness.', msg:'Embarrassment means you care what others think. That\'s part of being human.' },
+    { name:'Regretful', emoji:'😞', def:'Wishing you had made a different choice. Looking back with sadness.', msg:'Regret is a powerful teacher. It\'s telling you what you actually value.' },
+    { name:'Grief', emoji:'💔', def:'Deep sadness from a loss — of a person, relationship, or something important.', msg:'Grief is love with nowhere to go. It honors what mattered to you.' },
+    { name:'Melancholy', emoji:'🌧️', def:'A gentle, lingering sadness with no clear source — a quiet ache.', msg:'Melancholy often carries beauty with it. It signals reflection and depth.' },
+    { name:'Despondent', emoji:'😿', def:'So discouraged and sad that it\'s hard to find any hope or motivation.', msg:'Despondency is a signal to seek connection and support immediately.' },
+    { name:'Vulnerable', emoji:'🫂', def:'Feeling open and exposed — uncertain whether you\'re safe to be real. (Atlas of the Heart)', msg:'Vulnerability is not weakness. Brown says it\'s the birthplace of courage and connection.' },
+    { name:'Forlorn', emoji:'😩', def:'Feeling abandoned or completely alone — like no one is coming.', msg:'Forlorn is one of the loneliest feelings. It\'s a call for belonging.' },
+    { name:'Powerless', emoji:'😮', def:'Feeling like nothing you do will make a difference or change anything.', msg:'Powerlessness is telling you that you need agency — to find one thing you can actually control.' },
+  ],
+  green: [
+    { name:'Calm', emoji:'😌', def:'Peaceful and steady — your nervous system is at rest.', msg:'Calmness is your brain\'s home base. It\'s where good thinking happens.' },
+    { name:'Content', emoji:'🙂', def:'Quietly satisfied — not jumping with joy, but genuinely okay with things.', msg:'Contentment is a signal that right now, things are enough.' },
+    { name:'Peaceful', emoji:'☮️', def:'A deep sense of ease — no inner conflict, no urgency.', msg:'Peace is what it feels like when your nervous system trusts the moment.' },
+    { name:'Relaxed', emoji:'😎', def:'Tension released — your body and mind have let go.', msg:'Relaxation is your system recovering and recharging.' },
+    { name:'Safe', emoji:'🛡️', def:'Feeling protected — no threat, no alarm, just security.', msg:'Feeling safe is the foundation for everything else good.' },
+    { name:'Secure', emoji:'🏡', def:'Confident in your place — feeling stable and grounded.', msg:'Security means your need for belonging is being met.' },
+    { name:'Grateful', emoji:'🙏', def:'Recognizing something or someone as a gift — feeling thankful.', msg:'Gratitude expands what feels good and builds resilience.' },
+    { name:'Loved', emoji:'❤️', def:'Feeling cared for, seen, and valued by someone.', msg:'Love is a signal of deep connection — one of the most essential human needs.' },
+    { name:'Accepted', emoji:'🫂', def:'Feeling like you belong and are welcome as you are.', msg:'Acceptance meets the human need to be seen without judgment.' },
+    { name:'Hopeful', emoji:'🌤️', def:'A quiet confidence that something good is possible.', msg:'Hope is the fuel for moving forward.' },
+    { name:'Compassionate', emoji:'💚', def:'Feeling moved by someone else\'s pain and wanting to help.', msg:'Compassion is a signal of empathy at its deepest.' },
+    { name:'Connected', emoji:'🤝', def:'Feeling in sync with others — part of something bigger than yourself.', msg:'Connection is a core human need. When it\'s present, everything feels more manageable.' },
+    { name:'Relieved', emoji:'😮‍💨', def:'The release of tension after something difficult passes.', msg:'Relief is your body saying: the threat is over. It\'s safe to let go.' },
+    { name:'Satisfied', emoji:'😊', def:'Something was completed or worked out — a sense of rightness.', msg:'Satisfaction means a need was met or a goal was reached.' },
+    { name:'At Ease', emoji:'🧘', def:'Comfortable with the moment — no urge to flee or fight.', msg:'Ease means your nervous system trusts the environment.' },
+    { name:'Curious', emoji:'🔍', def:'Drawn toward something — wanting to understand or explore.', msg:'Curiosity in a calm state is one of the most powerful drivers of growth.' },
+    { name:'Thoughtful', emoji:'🤍', def:'Reflective and inward — taking time to consider things carefully.', msg:'Thoughtfulness is a signal that you\'re processing in a healthy way.' },
+    { name:'Proud', emoji:'⭐', def:'Feeling good about yourself or someone close to you.', msg:'Healthy pride acknowledges growth and effort.' },
+    { name:'Inspired', emoji:'💡', def:'Feeling moved and energized by something meaningful.', msg:'Inspiration in a calm state is sustainable motivation.' },
+    { name:'Awe', emoji:'🌄', def:'Feeling small but connected — moved by something vast or beautiful. (Atlas of the Heart)', msg:'Awe expands perspective and shrinks the ego in the best way.' },
+  ]
+};
+
+// Zone color map
+const ZONE_COLORS = { red:'red', yellow:'yellow', blue:'blue', green:'green' };
+
+// Build zone emotion grids on load
+function buildZoneGrids() {
+  ['during','now'].forEach(group => {
+    Object.keys(EMOTIONS).forEach(zone => {
+      const container = document.getElementById(`ze-${group}-${zone}`);
+      if (!container) return;
+      EMOTIONS[zone].forEach(emo => {
+        const btn = document.createElement('button');
+        btn.className = `ze-btn ze-${zone}`;
+        btn.dataset.group = group;
+        btn.dataset.zone = zone;
+        btn.dataset.val = emo.name;
+        btn.innerHTML = `<span class="ze-info">ⓘ</span><span class="ze-emoji">${emo.emoji}</span><span class="ze-name">${emo.name}</span>`;
+        btn.addEventListener('click', (e) => {
+          // Check if clicking the info button
+          if (e.target.classList.contains('ze-info')) {
+            showDefinition(emo, e);
+            return;
+          }
+          toggleEmotion(group, zone, emo.name, btn);
+        });
+        btn.querySelector('.ze-info').addEventListener('click', (e) => {
+          e.stopPropagation();
+          showDefinition(emo, e);
+        });
+        container.appendChild(btn);
+      });
+    });
   });
+}
+
+// Show / hide zone panels
+function showZone(group, zone, tabEl) {
+  // Update tabs
+  tabEl.closest('.jcard').querySelectorAll('.zone-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  // Hide all panels and intros for this group
+  ['red','yellow','blue','green'].forEach(z => {
+    const panel = document.getElementById(`zp-${group}-${z}`);
+    const intro = document.getElementById(`zi-${group}-${z}`);
+    if (panel) panel.classList.remove('show');
+    if (intro) intro.classList.remove('show');
+  });
+  // Show selected
+  const panel = document.getElementById(`zp-${group}-${zone}`);
+  const intro = document.getElementById(`zi-${group}-${zone}`);
+  if (panel) panel.classList.add('show');
+  if (intro) intro.classList.add('show');
+}
+
+// Toggle emotion selection
+function toggleEmotion(group, zone, name, btn) {
+  const key = group === 'during' ? 'eduring' : 'enow';
+  const existing = S[key].find(e => e.name === name);
+  if (existing) {
+    // deselect
+    S[key] = S[key].filter(e => e.name !== name);
+    btn.classList.remove('on');
+  } else {
+    if (S[key].length >= 3) return; // max 3
+    S[key].push({ name, zone });
+    btn.classList.add('on');
+  }
+  updateSelectedDisplay(group);
+  // Show intensity slider if any selected
+  const wrapId = group === 'during' ? 'int-during-wrap' : 'int-now-wrap';
+  document.getElementById(wrapId).classList.toggle('show', S[key].length > 0);
+  updateQuality();
+}
+
+// Update selected chips display
+function updateSelectedDisplay(group) {
+  const key = group === 'during' ? 'eduring' : 'enow';
+  const display = document.getElementById(`sed-${group}`);
+  const chips = document.getElementById(`sed-${group}-chips`);
+  if (!S[key].length) { display.classList.remove('show'); return; }
+  display.classList.add('show');
+  chips.innerHTML = S[key].map(e =>
+    `<span class="sed-chip chip-${e.zone}">
+      ${EMOTIONS[e.zone]?.find(x=>x.name===e.name)?.emoji || ''} ${e.name}
+      <button onclick="removeEmotion('${group}','${e.name}')" title="Remove">✕</button>
+    </span>`
+  ).join('');
+}
+
+function removeEmotion(group, name) {
+  const key = group === 'during' ? 'eduring' : 'enow';
+  S[key] = S[key].filter(e => e.name !== name);
+  // deselect button
+  document.querySelectorAll(`.ze-btn[data-group="${group}"][data-val="${name}"]`).forEach(b => b.classList.remove('on'));
+  updateSelectedDisplay(group);
+  const wrapId = group === 'during' ? 'int-during-wrap' : 'int-now-wrap';
+  document.getElementById(wrapId).classList.toggle('show', S[key].length > 0);
+}
+
+// Definition popup
+let popupTimeout;
+function showDefinition(emo, e) {
+  const popup = document.getElementById('emo-def-popup');
+  document.getElementById('edp-name').textContent = `${emo.emoji} ${emo.name}`;
+  document.getElementById('edp-def').textContent = emo.def;
+  document.getElementById('edp-msg').textContent = `📬 As a messenger: ${emo.msg}`;
+  // Position near click
+  const x = Math.min(e.clientX + 10, window.innerWidth - 300);
+  const y = Math.min(e.clientY + 10, window.innerHeight - 160);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  popup.classList.add('show');
+  clearTimeout(popupTimeout);
+  popupTimeout = setTimeout(() => popup.classList.remove('show'), 4500);
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('ze-info')) {
+    document.getElementById('emo-def-popup').classList.remove('show');
+  }
 });
+
+// Build grids when DOM loads
+buildZoneGrids();
 
 ['during','now'].forEach(g => {
   const sl = document.getElementById('int-' + g);
   const vl = document.getElementById('int-' + g + '-val');
+  if (!sl) return;
   sl.addEventListener('input', () => {
     if (g === 'during') S.intDuring = +sl.value; else S.intNow = +sl.value;
     vl.textContent = sl.value + ' — ' + INT_LABELS[+sl.value];
@@ -1493,8 +2002,12 @@ function getPart1() {
   return {
     whatHappened: gv('q-what'), whoInvolved: gv('q-who'), witnesses: gv('q-witness'),
     where: gv('q-where'), when: gv('q-when'), thinking: gv('q-think'), why: gv('q-why'),
-    emotionsDuring: S.eduring, intensityDuring: S.intDuring,
-    emotionsNow: S.enow, intensityNow: S.intNow,
+    emotionsDuring: S.eduring.map(e => e.name),
+    emotionsDuringZones: S.eduring,
+    intensityDuring: S.intDuring,
+    emotionsNow: S.enow.map(e => e.name),
+    emotionsNowZones: S.enow,
+    intensityNow: S.intNow,
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
   };
@@ -1556,7 +2069,19 @@ async function doPart1() {
   }
   goTo(2);
   const p1 = getPart1();
-  const result = await callEdge('article', {initial: S.initial, part1: p1});
+
+  // Feature 7: check for prior reflections
+  const priorReflections = await checkPriorReflections(S.initial);
+  S.priorCount = priorReflections.length;
+  S.priorReflections = priorReflections;
+
+  const result = await callEdge('article', {
+    initial: S.initial, part1: p1,
+    priorCount: S.priorCount,
+    priorSummary: S.priorCount > 0
+      ? `This student has completed ${S.priorCount} prior reflection(s). Last insight level: ${priorReflections[0]?.insight_level || 'unknown'}. Last trait: ${priorReflections[0]?.part3_json?.trait || 'unknown'}.`
+      : null
+  });
   const panel = document.getElementById('ai-article');
   if (result && result.title && result.body) {
     panel.innerHTML =
@@ -1609,4 +2134,97 @@ async function doSubmit() {
 </script>
 </body>
 </html>
+<script>
+// PATCH: Replace doSubmit with full version including features 5, 7, 9
+(function() {
+const _orig = window.doSubmit;
+window.doSubmit = async function() {
+  if (!validatePart3()) return;
+  goTo('done');
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  await saveRow({
+    session_id: S.sessionId, initial: S.initial,
+    part1_json: p1, part2_json: p2, part3_json: p3,
+    prior_count: S.priorCount || 0, status: 'submitted'
+  });
+  const result = await callEdge('summary', {
+    initial: S.initial, part1: p1, part2: p2, part3: p3,
+    sessionId: S.sessionId,
+    priorCount: S.priorCount || 0,
+    priorReflections: (S.priorReflections || []).map(r => ({
+      insight_level: r.insight_level,
+      trait: r.part3_json?.trait,
+      created_at: r.created_at
+    })),
+  });
+  document.getElementById('ai-final-thinking').classList.add('hidden');
+  document.getElementById('ai-final-content').classList.remove('hidden');
+  if (result) {
+    // Feature 5: save goal + insight level
+    if (result.studentGoal || result.insightLevel) {
+      fetch(SUPABASE_URL + '/rest/v1/reflections?session_id=eq.' + S.sessionId, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json', apikey:SUPABASE_ANON, Authorization:'Bearer '+SUPABASE_ANON},
+        body: JSON.stringify({ goal: result.studentGoal||null, insight_level: result.insightLevel||null })
+      });
+    }
+    // Feature 9: Clash bridge
+    if (result.insightLevel === 'High') awardClashPoints(S.initial, S.sessionId, 'High');
 
+    const ic = {Low:'flag',Medium:'warn',High:'good'}[result.insightLevel]||'';
+    const ib = {Low:'ins-low',Medium:'ins-med',High:'ins-high'}[result.insightLevel]||'ins-med';
+    document.getElementById('staff-body').innerHTML =
+      `<div class="staff-sec"><h4>Incident Summary</h4><div class="staff-item">${result.summary||'—'}</div></div>` +
+      ((S.priorCount||0) > 0 ? `<div class="staff-sec"><h4>⚠️ Returning Student</h4><div class="staff-item warn">This student has completed ${S.priorCount} prior reflection(s). Last insight: ${(S.priorReflections||[])[0]?.insight_level||'unknown'}. Last trait: ${(S.priorReflections||[])[0]?.part3_json?.trait||'unknown'}.</div></div>` : '') +
+      `<div class="staff-sec"><h4>Student Insight Level</h4><div class="staff-item ${ic}"><span class="ins-badge ${ib}">${result.insightLevel||'—'}</span><br>${result.insightReason||''}</div></div>` +
+      `<div class="staff-sec"><h4>Recommended Consequences</h4>${(result.recommendedConsequences||[]).map(c=>`<div class="staff-item"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:.78rem;color:var(--ink-light)">${c.rationale||''}</em></div>`).join('')}</div>` +
+      `<div class="staff-sec"><h4>Repair Plan</h4><div class="staff-item">${result.repairPlan||'—'}</div></div>` +
+      (result.studentGoal ? `<div class="staff-sec"><h4>🎯 Student Goal</h4><div class="staff-item good">${result.studentGoal}</div></div>` : '') +
+      (result.restorativeQuestions ? `<div class="staff-sec"><h4>Restorative Questions</h4>${result.restorativeQuestions.map(q=>`<div class="staff-item">💬 ${q}</div>`).join('')}</div>` : '') +
+      (result.insightLevel==='High' ? `<div class="staff-sec"><h4>🏆 Clash of Classes</h4><div class="staff-item good">High insight flagged — review in Clash admin to award squad point.</div></div>` : '') +
+      ((result.followUpFlags||[]).length ? `<div class="staff-sec"><h4>⚠️ Follow-Up Flags</h4>${result.followUpFlags.map(f=>`<div class="staff-item flag">${f}</div>`).join('')}</div>` : '');
+
+    if (result.cpsScript) {
+      document.getElementById('cps-script-block').innerHTML =
+        `<div class="cps-script-block"><h4>💬 Conference Script</h4>` +
+        result.cpsScript.map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}</span><span class="script-txt">"${l.text}"</span></div>`).join('') + `</div>`;
+    }
+    if (result.studentGoal) {
+      document.getElementById('read-list').insertAdjacentHTML('beforebegin',
+        `<div style="background:rgba(201,168,76,.12);border-radius:9px;padding:14px 16px;margin-bottom:16px;border-left:3px solid var(--gold)">
+          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-family:'Barlow',sans-serif">🎯 Your Goal Before Your Next Check-In</div>
+          <div style="font-family:'Barlow',sans-serif;font-size:.88rem;color:rgba(255,255,255,.9);line-height:1.6">${result.studentGoal}</div>
+        </div>`);
+    }
+    document.getElementById('read-list').innerHTML =
+      (result.studentReadingList||[]).map(r=>`<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`).join('');
+  } else {
+    document.getElementById('staff-body').innerHTML = '<div class="staff-item flag">AI summary could not be generated. Please proceed with manual follow-up.</div>';
+  }
+};
+})();
+
+// Feature 2: Consequence nudge — fires after rank zone settles
+let nudgeTimer;
+const origBuildRank = window.buildRankZone;
+window.buildRankZone = function(items) {
+  origBuildRank(items);
+  if (items.length < 1) return;
+  clearTimeout(nudgeTimer);
+  nudgeTimer = setTimeout(async () => {
+    const nudge = document.getElementById('consequence-nudge');
+    nudge.classList.add('show');
+    const p1 = getPart1(), p2 = getPart2();
+    const result = await callEdge('consequence_nudge', {
+      ranked: S.ranked,
+      whatHappened: p1.whatHappened,
+      hurtPeople: p2.hurtPeople,
+      makeRight: p2.makeRight,
+    });
+    document.getElementById('cn-thinking').classList.add('hidden');
+    const textEl = document.getElementById('cn-text');
+    textEl.classList.remove('hidden');
+    textEl.textContent = result?.nudge || 'Think about which of these choices is most directly connected to the people you named as being affected.';
+  }, 1800);
+};
+</script>
