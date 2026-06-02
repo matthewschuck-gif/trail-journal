@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Side of the Trail — Camp Mountaineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky:#4a7fa8;--sky-light:#e8f2fa;--sky-deep:#1a3a5e;
+  --gold:#c9a84c;--gold-light:#fdf5df;
+  --paper:#faf6ef;--paper-mid:#e8ddc8;
+  --trail:#2c4a35;--trail-light:#e8f2ec;
+  --ink:#1c1a14;--ink-mid:#4a4438;--ink-light:#8a8070;
+  --red:#b03030;--red-light:#fdf0ee;
+  --border:#d8ceb8;--radius:14px;
+  --shadow:0 4px 24px rgba(74,127,168,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(74,127,168,0.06) 0%,transparent 60%);}
+.privacy-bar{background:var(--sky-deep);color:rgba(255,255,255,.75);font-size:.7rem;text-align:center;padding:6px 16px;letter-spacing:.05em;}
+.privacy-bar strong{color:#a8d5e8;}
+.site-header{background:var(--sky-deep);padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.2);border-bottom:3px solid var(--sky);}
+.header-inner{display:flex;align-items:center;gap:14px;max-width:760px;margin:0 auto;padding:14px 0;}
+.header-emblem{width:42px;height:42px;background:var(--sky);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.header-text h1{font-family:'Walter Turncoat',cursive;font-size:1.2rem;color:white;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.3);}
+.header-text span{font-family:'Barlow',sans-serif;font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:.1em;text-transform:uppercase;}
+.main{max-width:760px;margin:0 auto;padding:36px 24px 80px;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.section-head{margin-bottom:28px;}
+.trail-marker{display:inline-flex;align-items:center;gap:8px;font-family:'Barlow',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:14px;}
+.marker-sky{background:var(--sky-deep);color:white;}
+.section-head h2{font-family:'Walter Turncoat',cursive;font-size:2rem;line-height:1.2;margin-bottom:10px;}
+.section-head h2 em{color:var(--sky);font-style:normal;}
+.section-head p{font-size:.92rem;color:var(--ink-mid);line-height:1.7;max-width:520px;}
+/* WELCOME */
+.welcome-hero{background:var(--sky-deep);border-radius:20px;padding:48px 40px;color:white;text-align:center;margin-bottom:22px;position:relative;overflow:hidden;}
+.welcome-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 30%,rgba(74,127,168,.3) 0%,transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(255,255,255,.04) 0%,transparent 50%);}
+.welcome-hero>*{position:relative;z-index:1;}
+.welcome-hero .wi{font-size:3.5rem;margin-bottom:14px;}
+.welcome-hero h2{font-family:'Walter Turncoat',cursive;font-size:2.2rem;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,.25);}
+.welcome-hero .tagline{font-size:.8rem;opacity:.65;letter-spacing:.12em;text-transform:uppercase;margin-bottom:22px;}
+.welcome-hero p{font-size:.92rem;opacity:.82;line-height:1.75;max-width:400px;margin:0 auto 28px;}
+.name-bubble{width:60px;height:60px;border-radius:50%;background:var(--sky);color:white;font-family:'Walter Turncoat',cursive;font-size:1.9rem;display:none;align-items:center;justify-content:center;margin:0 auto 8px;}
+.name-bubble.show{display:flex;animation:popIn .3s ease;}
+@keyframes popIn{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+.name-inp{background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.28);border-radius:10px;padding:13px 20px;font-family:'Walter Turncoat',cursive;font-size:1.4rem;color:white;text-align:center;width:210px;letter-spacing:.1em;}
+.name-inp:focus{outline:none;border-color:var(--sky);}
+.name-hint{font-size:.72rem;opacity:.5;margin-top:6px;}
+/* CARDS */
+.jcard{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:var(--shadow);}
+.jcard-label{font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--sky-deep);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;}
+.jcard-sub{font-size:.87rem;color:var(--ink-light);margin-bottom:14px;line-height:1.6;}
+textarea,input[type="text"]{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:13px 15px;font-family:'Barlow',sans-serif;font-size:.92rem;color:var(--ink);background:var(--paper);resize:vertical;line-height:1.65;transition:border-color .2s;}
+textarea:focus,input[type="text"]:focus{outline:none;border-color:var(--sky);background:white;}
+textarea{min-height:88px;}
+/* EMOTION ZONE TABS (simplified) */
+.zone-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.zone-tab{flex:1;min-width:65px;padding:8px 8px;border:2px solid transparent;border-radius:9px;font-family:'Barlow',sans-serif;font-size:.74rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;opacity:.55;}
+.zone-tab.active{opacity:1;box-shadow:0 3px 12px rgba(0,0,0,.12);}
+.zt-red{background:#fde8e8;border-color:#e05c5c;color:#b03030;}
+.zt-red.active{background:#e05c5c;color:white;}
+.zt-yellow{background:#fef9e0;border-color:#d4a017;color:#8a6500;}
+.zt-yellow.active{background:#e8b800;color:white;}
+.zt-blue{background:#e8f0fb;border-color:#5b8dd9;color:#2a5a9e;}
+.zt-blue.active{background:#4a7acc;color:white;}
+.zt-green{background:var(--trail-light);border-color:#3d6b4f;color:#2c4a35;}
+.zt-green.active{background:#3d6b4f;color:white;}
+.zone-panel{display:none;}
+.zone-panel.show{display:block;animation:fadeUp .3s ease;}
+.zone-emotions{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px;}
+.ze-btn{border:2px solid var(--border);border-radius:9px;padding:9px 6px 7px;text-align:center;font-family:'Barlow',sans-serif;font-size:.73rem;font-weight:600;cursor:pointer;background:var(--paper);transition:all .15s;color:var(--ink);}
+.ze-btn .ze-emoji{font-size:1.2rem;display:block;margin-bottom:3px;}
+.ze-btn.on{color:white;border-color:transparent;}
+.ze-btn.ze-red.on{background:#e05c5c;}
+.ze-btn.ze-yellow.on{background:#c49a00;}
+.ze-btn.ze-blue.on{background:#4a7acc;}
+.ze-btn.ze-green.on{background:#3d6b4f;}
+.sel-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.sel-chip{padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700;font-family:'Barlow',sans-serif;}
+.chip-red{background:#fde8e8;color:#b03030;}
+.chip-yellow{background:#fef9e0;color:#7a5800;}
+.chip-blue{background:#e8f0fb;color:#2a5a9e;}
+.chip-green{background:var(--trail-light);color:#2c4a35;}
+/* INTENSITY */
+.int-wrap{margin-top:14px;display:none;}
+.int-wrap.show{display:block;}
+.int-label{font-size:.78rem;font-weight:600;color:var(--ink-mid);margin-bottom:8px;display:flex;justify-content:space-between;}
+.int-label span{color:var(--sky-deep);font-family:'Walter Turncoat',cursive;font-size:.9rem;}
+input[type="range"]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,#4a7acc,#c9a84c,#e05c5c);}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:white;border:3px solid var(--sky-deep);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.int-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--ink-light);margin-top:4px;}
+/* YES/NO */
+.yn-group{display:flex;gap:10px;margin-top:10px;}
+.yn-btn{padding:10px 24px;border:2px solid var(--border);border-radius:9px;font-family:'Barlow',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;background:var(--paper);color:var(--ink-light);transition:all .15s;}
+.yn-btn.on{border-color:var(--sky-deep);background:var(--sky-deep);color:white;}
+/* AI PANEL */
+.ai-panel{background:linear-gradient(135deg,#1a2e3e 0%,#0d1c28 100%);border-radius:var(--radius);padding:26px;margin:20px 0;color:white;position:relative;overflow:hidden;}
+.ai-panel::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(74,127,168,.18) 0%,transparent 70%);pointer-events:none;}
+.ai-panel>*{position:relative;z-index:1;}
+.ai-badge-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.ai-badge{background:var(--sky);color:white;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:20px;font-family:'Barlow',sans-serif;}
+.ai-title{font-family:'Walter Turncoat',cursive;font-size:1.2rem;color:white;margin-bottom:14px;line-height:1.35;}
+.ai-body{font-family:'Barlow',sans-serif;font-size:.88rem;line-height:1.85;color:rgba(255,255,255,.88);}
+.ai-body p{margin-bottom:12px;}
+.ai-thinking{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.5);font-size:.82rem;font-family:'Barlow',sans-serif;}
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* VALIDATION */
+.val-msg{display:none;margin-top:8px;padding:10px 14px;background:var(--red-light);border:1.5px solid var(--red);border-radius:8px;font-size:.8rem;color:var(--red);line-height:1.5;font-weight:500;}
+.val-msg.show{display:flex;align-items:flex-start;gap:8px;}
+.val-msg::before{content:'✋';flex-shrink:0;}
+.field-error{border-color:var(--red)!important;background:#fff8f8!important;}
+/* NAV */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:32px;gap:12px;}
+.btn-next{padding:13px 32px;border:none;border-radius:9px;background:var(--sky-deep);color:white;font-family:'Barlow',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(74,127,168,.3);}
+.btn-next:hover{background:var(--sky);transform:translateY(-1px);}
+.btn-submit{width:100%;padding:16px;border:none;border-radius:9px;background:var(--sky-deep);color:white;font-family:'Barlow',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-submit:hover{background:var(--sky);}
+/* DONE */
+.done-hero{text-align:center;padding:48px 0 28px;}
+.done-hero .d-icon{font-size:4rem;margin-bottom:16px;display:block;}
+.done-hero h2{font-family:'Walter Turncoat',cursive;font-size:2.2rem;margin-bottom:12px;}
+.done-hero p{color:var(--ink-mid);font-size:.92rem;line-height:1.75;max-width:480px;margin:0 auto 24px;}
+.done-detail{background:var(--sky-light);border:1px solid var(--sky);border-radius:var(--radius);padding:18px 22px;font-size:.86rem;color:var(--sky-deep);line-height:1.8;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="privacy-bar">🔒 <strong>Privacy protected</strong> — Only your first initial is stored. No full names. All responses are anonymized.</div>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-emblem">🏔️</div>
+    <div class="header-text">
+      <h1>Your Side of the Trail</h1>
+      <span>Camp Mountaineer · Ephrata Middle School</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- SCREEN 0: WELCOME -->
+<div class="screen active" id="screen-0">
+  <div class="welcome-hero">
+    <div class="wi">🏔️</div>
+    <h2>Your Side of the Trail</h2>
+    <div class="tagline">Your experience matters here</div>
+    <p>Something happened that affected you. This space is for your voice — what you experienced, how you felt, and what you think needs to happen to make things right.</p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div class="name-bubble" id="name-bubble-r"></div>
+      <input type="text" class="name-inp" id="name-inp-r" placeholder="Your first name" maxlength="30" autocomplete="off">
+      <div class="name-hint">Only your first initial is kept — your full name is never stored.</div>
+    </div>
+  </div>
+  <div class="jcard">
+    <div class="jcard-label">How this works</div>
+    <p style="font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--ink-mid);line-height:1.75">This journal has a few short questions about what happened from your perspective. There are no right or wrong answers — just your honest experience. An adult will use what you share to help prepare for a conversation that takes both sides seriously.</p>
+  </div>
+  <div class="nav-row"><div></div><button class="btn-next" onclick="beginR()">Begin →</button></div>
+</div>
+
+<!-- SCREEN 1: WHAT HAPPENED FROM YOUR SIDE -->
+<div class="screen" id="screen-1">
+  <div class="section-head">
+    <div class="trail-marker marker-sky">🏔️ Your Experience</div>
+    <h2>What <em>Happened to You?</em></h2>
+    <p>Describe what happened from your side. Your perspective is important here.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Describe What Happened</div>
+    <div class="jcard-sub">In your own words — what occurred and how were you involved?</div>
+    <textarea id="r-what" rows="5" placeholder="From my perspective, what happened was…"></textarea>
+    <div class="val-msg" id="re-what">Please describe what happened — even a few sentences is fine.</div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">How Were You Affected?</div>
+    <div class="jcard-sub">Physically, emotionally, socially — in any way that matters to you.</div>
+    <textarea id="r-affected" rows="4" placeholder="This affected me by… I felt… It impacted…"></textarea>
+    <div class="val-msg" id="re-affected">Tell us how this affected you — this is important for the follow-up conversation.</div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">What Was the Hardest Part?</div>
+    <textarea id="r-hardest" rows="3" placeholder="The hardest part for me was…"></textarea>
+    <div class="val-msg" id="re-hardest">Share what was hardest — there's no wrong answer here.</div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">How Were You Feeling?</div>
+    <div class="jcard-sub">Browse the zones and pick up to 3 emotions you felt.</div>
+    <div class="zone-tabs">
+      <button class="zone-tab zt-red" onclick="showZoneR('red',this)">🔴 Red</button>
+      <button class="zone-tab zt-yellow" onclick="showZoneR('yellow',this)">🟡 Yellow</button>
+      <button class="zone-tab zt-blue" onclick="showZoneR('blue',this)">🔵 Blue</button>
+      <button class="zone-tab zt-green" onclick="showZoneR('green',this)">🟢 Green</button>
+    </div>
+    <div class="zone-panel" id="zpR-red"><div class="zone-emotions" id="zeR-red"></div></div>
+    <div class="zone-panel" id="zpR-yellow"><div class="zone-emotions" id="zeR-yellow"></div></div>
+    <div class="zone-panel" id="zpR-blue"><div class="zone-emotions" id="zeR-blue"></div></div>
+    <div class="zone-panel" id="zpR-green"><div class="zone-emotions" id="zeR-green"></div></div>
+    <div class="sel-chips" id="sel-chips-r"></div>
+    <div class="int-wrap" id="int-r-wrap">
+      <div class="int-label">How intense were those feelings? <span id="int-r-val">3 — Moderate</span></div>
+      <input type="range" id="int-r" min="1" max="5" value="3">
+      <div class="int-labels"><span>Barely felt it</span><span>Moderate</span><span>Overwhelming</span></div>
+    </div>
+  </div>
+
+  <div class="nav-row"><div></div><button class="btn-next" onclick="goToR(2)">Continue →</button></div>
+</div>
+
+<!-- SCREEN 2: WHAT NEEDS TO HAPPEN -->
+<div class="screen" id="screen-2">
+  <div class="section-head">
+    <div class="trail-marker marker-sky">🏔️ Moving Forward</div>
+    <h2>What Would <em>Make This Right?</em></h2>
+    <p>Your voice matters in figuring out what needs to happen next.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">What Do You Think Needs to Happen?</div>
+    <div class="jcard-sub">Think about what would actually repair this for you — not just what you think they should be punished with, but what would genuinely help.</div>
+    <textarea id="r-needs" rows="4" placeholder="To make this right, I think…"></textarea>
+    <div class="val-msg" id="re-needs">Share what you think needs to happen — your perspective will be part of the conversation.</div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Are You Ready to Be Part of a Conversation?</div>
+    <div class="jcard-sub">You don't have to be — this is just to help the adult know where you are.</div>
+    <div class="yn-group">
+      <button class="yn-btn" id="ryn-y" onclick="setRYN('yes')">YES</button>
+      <button class="yn-btn" id="ryn-n" onclick="setRYN('no')">NOT YET</button>
+      <button class="yn-btn" id="ryn-m" onclick="setRYN('maybe')">MAYBE</button>
+    </div>
+    <div id="ryn-extra" class="hidden" style="margin-top:12px">
+      <textarea id="r-ready-detail" rows="2" placeholder="Anything you want them to know about that…"></textarea>
+    </div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Anything Else You Want the Adult to Know?</div>
+    <textarea id="r-extra" rows="3" placeholder="Optional — anything else that matters from your side…"></textarea>
+  </div>
+
+  <div style="background:var(--gold-light);border-radius:9px;padding:14px 16px;font-size:.82rem;color:#7a6000;line-height:1.65;margin-bottom:18px;font-family:'Barlow',sans-serif">
+    By submitting, you confirm this reflects your honest experience. An adult will review your responses before any follow-up conversation.
+  </div>
+  <button class="btn-submit" onclick="submitR()">Submit My Side of the Trail ✓</button>
+</div>
+
+<!-- SCREEN DONE -->
+<div class="screen" id="screen-done">
+  <div class="done-hero">
+    <span class="d-icon">🏔️</span>
+    <h2>Thank You</h2>
+    <p>Your perspective has been recorded. An adult will read what you shared before any follow-up conversation happens. Your voice matters in how this gets resolved.</p>
+    <div class="done-detail">
+      ✅ Your responses have been recorded anonymously.<br>
+      🤝 An adult will review your side before any meeting.<br>
+      💬 You will be asked before any conversation is set up.
+    </div>
+  </div>
+  <div class="ai-panel" id="r-ai-panel" style="display:none">
+    <div class="ai-badge-row"><div class="ai-badge">✨ A Note for You</div></div>
+    <div id="r-ai-content"><div class="ai-thinking"><div class="spin"></div>Writing something for you…</div></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const SB_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
+const EDGE_FN = SB_URL + '/functions/v1/ai-proxy';
+const BAD_NAMES = /^(undefined|null|none|na|n\/a|anonymous|student|kid|me|myself|i|unknown|idk)$/i;
+const DISMISSIVE = /^(n\/?a|idk|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|skip)$/i;
+
+const RS = { initial:'', sessionId: crypto.randomUUID(), emotions:[], intensity:3, ynReady:null };
+
+// SIMPLE EMOTION DATA (subset)
+const R_EMOTIONS = {
+  red:[{name:'Angry',emoji:'😠'},{name:'Hurt',emoji:'💔'},{name:'Betrayed',emoji:'😤'},{name:'Scared',emoji:'😨'},{name:'Humiliated',emoji:'😳'},{name:'Furious',emoji:'🤬'},{name:'Anxious',emoji:'😰'},{name:'Frustrated',emoji:'😣'},{name:'Overwhelmed',emoji:'😵'},{name:'Shocked',emoji:'😲'}],
+  yellow:[{name:'Hopeful',emoji:'🌟'},{name:'Relieved',emoji:'😮‍💨'},{name:'Surprised',emoji:'😲'},{name:'Grateful',emoji:'🙏'},{name:'Proud',emoji:'💪'},{name:'Motivated',emoji:'🔥'}],
+  blue:[{name:'Sad',emoji:'😢'},{name:'Lonely',emoji:'🥺'},{name:'Disappointed',emoji:'😞'},{name:'Ashamed',emoji:'😳'},{name:'Numb',emoji:'😶'},{name:'Vulnerable',emoji:'🫂'},{name:'Regretful',emoji:'😓'},{name:'Powerless',emoji:'😮'},{name:'Withdrawn',emoji:'😶‍🌫️'}],
+  green:[{name:'Calm',emoji:'😌'},{name:'Safe',emoji:'🛡️'},{name:'Okay',emoji:'🙂'},{name:'At Ease',emoji:'🧘'},{name:'Secure',emoji:'🏡'},{name:'Accepted',emoji:'🫂'}]
+};
+
+// Build emotion grids
+Object.keys(R_EMOTIONS).forEach(zone => {
+  const container = document.getElementById('zeR-' + zone);
+  R_EMOTIONS[zone].forEach(emo => {
+    const btn = document.createElement('button');
+    btn.className = 'ze-btn ze-' + zone;
+    btn.dataset.zone = zone; btn.dataset.val = emo.name;
+    btn.innerHTML = `<span class="ze-emoji">${emo.emoji}</span>${emo.name}`;
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('on')) {
+        btn.classList.remove('on'); RS.emotions = RS.emotions.filter(e => e.name !== emo.name);
+      } else {
+        if (RS.emotions.length >= 3) return;
+        btn.classList.add('on'); RS.emotions.push({name:emo.name, zone});
+      }
+      updateRChips();
+      document.getElementById('int-r-wrap').classList.toggle('show', RS.emotions.length > 0);
+    });
+    container.appendChild(btn);
+  });
+});
+
+function showZoneR(zone, tabEl) {
+  tabEl.closest('.jcard').querySelectorAll('.zone-tab').forEach(t=>t.classList.remove('active'));
+  tabEl.classList.add('active');
+  ['red','yellow','blue','green'].forEach(z => {
+    document.getElementById('zpR-'+z).classList.remove('show');
+  });
+  document.getElementById('zpR-'+zone).classList.add('show');
+}
+
+function updateRChips() {
+  const chips = document.getElementById('sel-chips-r');
+  chips.innerHTML = RS.emotions.map(e=>
+    `<span class="sel-chip chip-${e.zone}">${R_EMOTIONS[e.zone]?.find(x=>x.name===e.name)?.emoji||''} ${e.name}</span>`
+  ).join('');
+}
+
+document.getElementById('int-r').addEventListener('input', function() {
+  RS.intensity = +this.value;
+  const labels = ['','Barely felt it','Mild','Moderate','Strong','Overwhelming'];
+  document.getElementById('int-r-val').textContent = this.value + ' — ' + labels[+this.value];
+});
+
+document.getElementById('name-inp-r').addEventListener('input', function() {
+  const raw = this.value.trim();
+  const bubble = document.getElementById('name-bubble-r');
+  if (raw.length > 0) { bubble.textContent = raw[0].toUpperCase(); bubble.classList.add('show'); RS.initial = raw[0].toUpperCase(); }
+  else { bubble.classList.remove('show'); RS.initial = ''; }
+});
+
+function beginR() {
+  const raw = document.getElementById('name-inp-r').value.trim();
+  if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { document.getElementById('name-inp-r').style.borderColor='var(--red)'; return; }
+  RS.initial = raw[0].toUpperCase();
+  document.getElementById('name-inp-r').value = '';
+  goToR(1);
+}
+
+function setRYN(v) {
+  RS.ynReady = v;
+  ['ryn-y','ryn-n','ryn-m'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('ryn-'+v[0]).classList.add('on');
+  document.getElementById('ryn-extra').classList.remove('hidden');
+}
+
+function gvR(id) { return (document.getElementById(id)||{}).value||''; }
+
+function validateR1() {
+  let ok = true;
+  [['r-what','re-what','Tell us what happened — even a few sentences is enough.'],
+   ['r-affected','re-affected','Share how this affected you.'],
+   ['r-hardest','re-hardest','What was the hardest part?']].forEach(([fid,eid,msg]) => {
+    const el = document.getElementById(fid);
+    if (!el.value.trim() || DISMISSIVE.test(el.value.trim())) {
+      el.classList.add('field-error');
+      const em = document.getElementById(eid); em.classList.add('show'); em.textContent = '✋ ' + msg;
+      ok = false;
+    } else { el.classList.remove('field-error'); document.getElementById(eid).classList.remove('show'); }
+  });
+  return ok;
+}
+
+function goToR(n) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(n==='done'?'screen-done':'screen-'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function submitR() {
+  const needs = document.getElementById('r-needs').value.trim();
+  if (!needs || DISMISSIVE.test(needs)) {
+    const el = document.getElementById('r-needs'); el.classList.add('field-error');
+    const em = document.getElementById('re-needs'); em.classList.add('show'); em.textContent = '✋ Share what you think needs to happen — your perspective matters here.';
+    return;
+  }
+
+  // Get linked session from URL param if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const linkedSession = urlParams.get('link') || null;
+
+  const row = {
+    session_id: RS.sessionId,
+    linked_session_id: linkedSession,
+    initial: RS.initial,
+    what_happened: gvR('r-what'),
+    how_affected: gvR('r-affected'),
+    what_hardest: gvR('r-hardest'),
+    emotions_json: RS.emotions,
+    intensity: RS.intensity,
+    what_needs_to_happen: needs,
+    ready_to_talk: RS.ynReady || 'not answered',
+    status: 'submitted'
+  };
+
+  try {
+    await fetch(SB_URL + '/rest/v1/responder_reflections', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+SB_ANON,'Prefer':'return=minimal'},
+      body: JSON.stringify(row)
+    });
+  } catch(e) { console.error('save error:', e); }
+
+  goToR('done');
+
+  // Generate a brief validating note for the student
+  const panel = document.getElementById('r-ai-panel');
+  panel.style.display = 'block';
+  try {
+    const res = await fetch(EDGE_FN, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_ANON},
+      body: JSON.stringify({ type:'responder_note', payload:{
+        initial: RS.initial,
+        whatHappened: row.what_happened,
+        howAffected: row.how_affected,
+        emotions: RS.emotions.map(e=>e.name),
+        intensity: RS.intensity,
+        whatNeeds: needs,
+        readyToTalk: RS.ynReady,
+      }})
+    });
+    const data = await res.json();
+    const content = document.getElementById('r-ai-content');
+    if (data?.title && data?.body) {
+      content.innerHTML =
+        `<div class="ai-title">${data.title}</div>` +
+        `<div class="ai-body">${data.body.split(/\n\n+/).map(p=>'<p>'+p+'</p>').join('')}</div>`;
+    } else {
+      content.innerHTML = '<div class="ai-body"><p>Thank you for sharing your side. What you wrote matters and will be taken seriously.</p></div>';
+    }
+  } catch(e) {
+    document.getElementById('r-ai-content').innerHTML = '<div class="ai-body"><p>Thank you for sharing your side. What you wrote matters and will be taken seriously.</p></div>';
+  }
+}
+</script>
+</body>
+</html>
