@@ -447,9 +447,10 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ── RIPPLE VISUAL ── */
 .ripple-wrap {
-  position: relative; height: 270px;
+  position: relative;
+  height: 300px;
   display: flex; align-items: center; justify-content: center;
-  margin: 20px 0 6px;
+  margin: 20px 0 0;
 }
 .r-ring {
   position: absolute; border-radius: 50%;
@@ -459,29 +460,54 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .r-ring:nth-child(1) { width: 80px; height: 80px; background: var(--trail); border-color: var(--trail); z-index: 4; }
 .r-ring:nth-child(2) { width: 145px; height: 145px; z-index: 3; }
-.r-ring:nth-child(3) { width: 208px; height: 208px; z-index: 2; }
-.r-ring:nth-child(4) { width: 268px; height: 268px; z-index: 1; }
+.r-ring:nth-child(3) { width: 210px; height: 210px; z-index: 2; }
+.r-ring:nth-child(4) { width: 290px; height: 290px; z-index: 1; }
 .r-ring.lit { border-color: var(--gold); background: rgba(201,168,76,0.08); }
 .r-center {
   color: white; font-family: 'Walter Turncoat', cursive;
   font-size: 1.7rem; line-height: 1;
 }
+/* Labels sit outside the rings at fixed offsets from center */
 .r-tag {
-  position: absolute; bottom: -20px;
+  position: absolute;
   font-family: 'Barlow', sans-serif;
-  font-size: 0.66rem; color: var(--ink-light);
-  font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
-  white-space: nowrap; text-align: center; width: 100%;
+  font-size: 0.63rem; color: var(--ink-light);
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  white-space: nowrap; text-align: center;
+  background: white; padding: 0 4px;
+  pointer-events: none;
 }
+/* Each ring's label sits just below its own bottom edge */
+.r-ring:nth-child(1) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
+.r-ring:nth-child(2) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
+.r-ring:nth-child(3) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
+.r-ring:nth-child(4) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
 .r-names {
-  position: absolute; top: 10px;
+  position: absolute; top: 8px;
   font-family: 'Barlow', sans-serif;
-  font-size: 0.72rem; color: var(--ink-mid);
-  font-weight: 600; text-align: center; line-height: 1.5;
+  font-size: 0.7rem; color: white;
+  font-weight: 600; text-align: center; line-height: 1.6;
+  pointer-events: none;
+}
+/* Legend row below the visual */
+.ripple-legend {
+  display: flex; justify-content: center; gap: 0;
+  margin-top: 16px; flex-wrap: wrap;
+}
+.ripple-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Barlow', sans-serif; font-size: 0.68rem;
+  font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--ink-light); padding: 4px 10px;
+  border-right: 1px solid var(--border);
+}
+.ripple-legend-item:last-child { border-right: none; }
+.ripple-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
 .ripple-note {
   font-family: 'Barlow', sans-serif; font-style: italic;
-  font-size: 0.82rem; color: var(--ink-light); text-align: center; margin-top: 4px;
+  font-size: 0.82rem; color: var(--ink-light); text-align: center; margin-top: 8px;
 }
 
 /* ── HURT PEOPLE INPUTS ── */
@@ -1201,10 +1227,16 @@ input[type="range"]::-webkit-slider-thumb {
       <input type="text" class="hurt-p" placeholder="Person 8" oninput="updateRipple()">
     </div>
     <div class="ripple-wrap" id="ripple-wrap">
-      <div class="r-ring" id="rr1"><div class="r-center" id="r-init">?</div><div class="r-tag">You</div></div>
-      <div class="r-ring" id="rr2"><div class="r-names" id="r-names" style="top:12px"></div><div class="r-tag">Direct Impact</div></div>
-      <div class="r-ring" id="rr3"><div class="r-tag">Classroom / Group</div></div>
-      <div class="r-ring" id="rr4"><div class="r-tag">School Community</div></div>
+      <div class="r-ring" id="rr1"><div class="r-center" id="r-init">?</div></div>
+      <div class="r-ring" id="rr2"><div class="r-names" id="r-names"></div></div>
+      <div class="r-ring" id="rr3"></div>
+      <div class="r-ring" id="rr4"></div>
+    </div>
+    <div class="ripple-legend">
+      <div class="ripple-legend-item"><div class="ripple-dot" style="background:var(--trail)"></div>You</div>
+      <div class="ripple-legend-item" id="rl-2"><div class="ripple-dot" style="background:var(--border)"></div>Direct Impact</div>
+      <div class="ripple-legend-item" id="rl-3"><div class="ripple-dot" style="background:var(--border)"></div>Classroom / Group</div>
+      <div class="ripple-legend-item" id="rl-4"><div class="ripple-dot" style="background:var(--border)"></div>School Community</div>
     </div>
     <p class="ripple-note">Add names above to see the ripple of impact expand.</p>
   </div>
@@ -1930,10 +1962,23 @@ function flipCard(n) { document.getElementById('fc' + n).classList.toggle('flipp
 // ─── RIPPLE ──────────────────────────────────────────────────────────────
 function updateRipple() {
   const people = Array.from(document.querySelectorAll('.hurt-p')).map(i => i.value.trim()).filter(Boolean);
-  ['rr2','rr3','rr4'].forEach((id, i) => {
-    document.getElementById(id).classList.toggle('lit', people.length > i);
+  const ringIds = ['rr2','rr3','rr4'];
+  const legendIds = ['rl-2','rl-3','rl-4'];
+  const dotColors = ['var(--gold)','var(--trail-mid)','var(--trail)'];
+
+  ringIds.forEach((id, i) => {
+    const ring = document.getElementById(id);
+    const legend = document.getElementById(legendIds[i]);
+    const dot = legend?.querySelector('.ripple-dot');
+    const active = people.length > i;
+    ring.classList.toggle('lit', active);
+    if (dot) dot.style.background = active ? dotColors[i] : 'var(--border)';
+    if (legend) legend.style.color = active ? 'var(--ink)' : '';
   });
-  document.getElementById('r-names').textContent = people.slice(0,3).join('\n');
+
+  // Show names in ring 2
+  const namesEl = document.getElementById('r-names');
+  if (namesEl) namesEl.textContent = people.slice(0, 3).join('\n');
 }
 
 // ─── CONSEQUENCE + DRAG ───────────────────────────────────────────────────
