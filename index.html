@@ -819,6 +819,22 @@ input[type="range"]::-webkit-slider-thumb {
 .sed-chip.chip-green { background: var(--trail-light); color: var(--trail); }
 .sed-chip button { background: none; border: none; cursor: pointer; font-size: 0.7rem; opacity: 0.6; padding: 0; line-height: 1; }
 
+/* Per-emotion intensity */
+.emo-int-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  padding: 10px 12px; border-radius: 9px; background: var(--paper-dark);
+  border: 1px solid var(--border);
+}
+.emo-int-label {
+  font-family: 'Barlow', sans-serif; font-size: 0.78rem; font-weight: 700;
+  min-width: 100px; flex-shrink: 0;
+}
+.emo-int-row input[type="range"] { flex: 1; }
+.emo-int-val {
+  font-family: 'Walter Turncoat', cursive; font-size: 0.85rem;
+  min-width: 30px; text-align: right; flex-shrink: 0; color: var(--trail);
+}
+
 /* ── FEATURE 1: REAL-TIME INSIGHT INDICATOR ── */
 .insight-live {
   position: fixed; top: 120px; right: 16px; z-index: 300;
@@ -1083,10 +1099,8 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="sed-chips" id="sed-during-chips"></div>
     </div>
 
-    <div class="intensity-wrap" id="int-during-wrap">
-      <div class="int-label">How intense were those feelings? <span id="int-during-val">3 — Moderate</span></div>
-      <input type="range" id="int-during" min="1" max="5" value="3">
-      <div class="int-labels"><span>Barely felt it</span><span>Moderate</span><span>Completely overwhelming</span></div>
+    <div id="int-during-rows" style="margin-top:14px;display:none">
+      <div style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">How intense was each feeling? (1 = barely, 5 = overwhelming)</div>
     </div>
   </div>
 
@@ -1116,10 +1130,8 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="sed-chips" id="sed-now-chips"></div>
     </div>
 
-    <div class="intensity-wrap" id="int-now-wrap">
-      <div class="int-label">How intense are those feelings right now? <span id="int-now-val">3 — Moderate</span></div>
-      <input type="range" id="int-now" min="1" max="5" value="3">
-      <div class="int-labels"><span>Barely felt it</span><span>Moderate</span><span>Completely overwhelming</span></div>
+    <div id="int-now-rows" style="margin-top:14px;display:none">
+      <div style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">How intense is each feeling right now? (1 = barely, 5 = overwhelming)</div>
     </div>
   </div>
 
@@ -1422,45 +1434,27 @@ document.getElementById('name-inp').addEventListener('input', function() {
 });
 
 function begin() {
-  const raw = document.getElementById('name-inp').value.trim();
-  if (!raw || raw.length < 2) { doShake(document.getElementById('name-inp')); return; }
-  if (BAD_NAMES.test(raw)) {
-    doShake(document.getElementById('name-inp'));
-    document.getElementById('name-inp').value = '';
-    document.getElementById('name-bubble').classList.remove('show');
+  // Admin preview bypass — skip name requirement
+  if (IS_PREVIEW) {
+    S.initial = 'A';
+    document.getElementById('hdr-initial').textContent = 'A';
+    document.getElementById('hdr-initial').classList.add('show');
+    document.getElementById('r-init').textContent = 'A';
+    goTo(1);
     return;
   }
+  const raw = document.getElementById('name-inp').value.trim();
+  if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { doShake(document.getElementById('name-inp')); return; }
   S.initial = raw[0].toUpperCase();
-  document.getElementById('name-inp').value = ''; // discard full name immediately
+  document.getElementById('name-inp').value = '';
   const hi = document.getElementById('hdr-initial');
   hi.textContent = S.initial; hi.classList.add('show');
   document.getElementById('r-init').textContent = S.initial;
   goTo(1);
 }
 
-// ─── VALIDATION ───────────────────────────────────────────────────────────
-// Only block clearly dismissive non-answers — short honest answers are fine.
-const DISMISSIVE = /^(n\/?a|idk|i\s*don'?t\s*care|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|no idea|skip)$/i;
-
-function thin(val) {
-  const v = val.trim();
-  if (!v) return true;                // empty
-  if (DISMISSIVE.test(v)) return true; // clearly dismissive
-  return false;
-  // Note: short honest answers like "I wasn't thinking" or "I was angry"
-  // are valid and pass through. We only block blank or dismissive responses.
-}
-
-function showErr(id, msg) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.add('show');
-  if (msg) el.textContent = '✋ ' + msg;
-}
-function hideErr(id) { const el = document.getElementById(id); if (el) el.classList.remove('show'); }
-function doShake(el) { el.classList.remove('shaking'); void el.offsetWidth; el.classList.add('shaking'); setTimeout(() => el.classList.remove('shaking'), 400); }
-
 function validatePart1() {
+  if (IS_PREVIEW) return true;
   let ok = true;
   const checks = [
     ['q-what','e-what','This one needs something written in. Even a few words about what happened is a start.'],
@@ -1480,6 +1474,7 @@ function validatePart1() {
 }
 
 function validatePart2() {
+  if (IS_PREVIEW) return true;
   let ok = true;
   const checks = [
     ['q-makeright','e-makeright','Write what you think needs to happen — even a first thought counts.'],
@@ -1497,6 +1492,7 @@ function validatePart2() {
 }
 
 function validatePart3() {
+  if (IS_PREVIEW) return true;
   let ok = true;
   if (!S.trait) { doShake(document.querySelector('.trait-grid')); ok = false; }
   const tw = document.getElementById('q-traitwhy');
@@ -1746,10 +1742,26 @@ const EMOTIONS = {
   ]
 };
 
-// Zone color map
-const ZONE_COLORS = { red:'red', yellow:'yellow', blue:'blue', green:'green' };
+// ─── ADMIN PREVIEW BYPASS ────────────────────────────────────────────────
+const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
+if (IS_PREVIEW) {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#4a2d7f;color:white;text-align:center;padding:10px;font-family:Barlow,sans-serif;font-size:.82rem;z-index:9999;';
+  banner.innerHTML = '🔐 <strong>Admin Preview Mode</strong> — Validation is disabled. <a href="?" style="color:#c9a84c;margin-left:12px">Exit Preview</a>';
+  document.body.appendChild(banner);
+}
 
-// Build zone emotion grids on load
+// ─── VALIDATION HELPERS ───────────────────────────────────────────────────
+const DISMISSIVE = /^(n\/?a|idk|i\s*don'?t\s*care|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|no idea|skip)$/i;
+function thin(val) {
+  const v = val.trim();
+  return !v || DISMISSIVE.test(v);
+}
+function showErr(id, msg) { const el = document.getElementById(id); if (!el) return; el.classList.add('show'); if (msg) el.textContent = '✋ ' + msg; }
+function hideErr(id) { const el = document.getElementById(id); if (el) el.classList.remove('show'); }
+function doShake(el) { el.classList.remove('shaking'); void el.offsetWidth; el.classList.add('shaking'); setTimeout(() => el.classList.remove('shaking'), 400); }
+
+// ─── ZONE GRID BUILDER ───────────────────────────────────────────────────
 function buildZoneGrids() {
   ['during','now'].forEach(group => {
     Object.keys(EMOTIONS).forEach(zone => {
@@ -1761,123 +1773,146 @@ function buildZoneGrids() {
         btn.dataset.group = group;
         btn.dataset.zone = zone;
         btn.dataset.val = emo.name;
-        btn.innerHTML = `<span class="ze-info">ⓘ</span><span class="ze-emoji">${emo.emoji}</span><span class="ze-name">${emo.name}</span>`;
-        btn.addEventListener('click', (e) => {
-          // Check if clicking the info button
-          if (e.target.classList.contains('ze-info')) {
-            showDefinition(emo, e);
-            return;
-          }
-          toggleEmotion(group, zone, emo.name, btn);
-        });
-        btn.querySelector('.ze-info').addEventListener('click', (e) => {
-          e.stopPropagation();
+        btn.innerHTML = `<span class="ze-info" title="What does this mean?">ⓘ</span><span class="ze-emoji">${emo.emoji}</span><span class="ze-name">${emo.name}</span>`;
+
+        // ⓘ gets its own listener — stopPropagation prevents the button click from firing
+        const infoSpan = btn.querySelector('.ze-info');
+        infoSpan.addEventListener('click', (e) => {
+          e.stopImmediatePropagation();
+          e.preventDefault();
           showDefinition(emo, e);
         });
+
+        // Main button click — only fires if ⓘ was NOT clicked
+        btn.addEventListener('click', (e) => {
+          if (e.target === infoSpan) return;
+          toggleEmotion(group, zone, emo, btn);
+        });
+
         container.appendChild(btn);
       });
     });
   });
 }
 
-// Show / hide zone panels
+// ─── SHOW / HIDE ZONE PANELS ─────────────────────────────────────────────
 function showZone(group, zone, tabEl) {
-  // Update tabs
   tabEl.closest('.jcard').querySelectorAll('.zone-tab').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
-  // Hide all panels and intros for this group
   ['red','yellow','blue','green'].forEach(z => {
-    const panel = document.getElementById(`zp-${group}-${z}`);
-    const intro = document.getElementById(`zi-${group}-${z}`);
-    if (panel) panel.classList.remove('show');
-    if (intro) intro.classList.remove('show');
+    document.getElementById(`zp-${group}-${z}`)?.classList.remove('show');
+    document.getElementById(`zi-${group}-${z}`)?.classList.remove('show');
   });
-  // Show selected
-  const panel = document.getElementById(`zp-${group}-${zone}`);
-  const intro = document.getElementById(`zi-${group}-${zone}`);
-  if (panel) panel.classList.add('show');
-  if (intro) intro.classList.add('show');
+  document.getElementById(`zp-${group}-${zone}`)?.classList.add('show');
+  document.getElementById(`zi-${group}-${zone}`)?.classList.add('show');
 }
 
-// Toggle emotion selection
-function toggleEmotion(group, zone, name, btn) {
+// ─── TOGGLE EMOTION ──────────────────────────────────────────────────────
+function toggleEmotion(group, zone, emo, btn) {
   const key = group === 'during' ? 'eduring' : 'enow';
-  const existing = S[key].find(e => e.name === name);
+  const existing = S[key].find(e => e.name === emo.name);
   if (existing) {
-    // deselect
-    S[key] = S[key].filter(e => e.name !== name);
+    S[key] = S[key].filter(e => e.name !== emo.name);
     btn.classList.remove('on');
   } else {
-    if (S[key].length >= 3) return; // max 3
-    S[key].push({ name, zone });
+    if (S[key].length >= 3) return;
+    S[key].push({ name: emo.name, zone, intensity: 3 });
     btn.classList.add('on');
   }
   updateSelectedDisplay(group);
-  // Show intensity slider if any selected
-  const wrapId = group === 'during' ? 'int-during-wrap' : 'int-now-wrap';
-  document.getElementById(wrapId).classList.toggle('show', S[key].length > 0);
   updateQuality();
 }
 
-// Update selected chips display
+// ─── SELECTED EMOTIONS DISPLAY WITH PER-EMOTION SLIDERS ─────────────────
+const INT_LABELS_EMO = ['','Barely felt it','Mild','Moderate','Strong','Overwhelming'];
+
 function updateSelectedDisplay(group) {
   const key = group === 'during' ? 'eduring' : 'enow';
   const display = document.getElementById(`sed-${group}`);
   const chips = document.getElementById(`sed-${group}-chips`);
-  if (!S[key].length) { display.classList.remove('show'); return; }
+  const rows = document.getElementById(`int-${group}-rows`);
+
+  if (!S[key].length) {
+    display.classList.remove('show');
+    if (rows) rows.style.display = 'none';
+    return;
+  }
   display.classList.add('show');
+
+  // Chips
   chips.innerHTML = S[key].map(e =>
     `<span class="sed-chip chip-${e.zone}">
-      ${EMOTIONS[e.zone]?.find(x=>x.name===e.name)?.emoji || ''} ${e.name}
+      ${EMOTIONS[e.zone]?.find(x => x.name === e.name)?.emoji || ''} ${e.name}
       <button onclick="removeEmotion('${group}','${e.name}')" title="Remove">✕</button>
     </span>`
   ).join('');
+
+  // Per-emotion intensity sliders
+  if (rows) {
+    rows.style.display = 'block';
+    // preserve existing slider values before rebuilding
+    const existing = {};
+    S[key].forEach(e => { existing[e.name] = e.intensity || 3; });
+
+    // only rebuild the slider rows, keep the header
+    const header = rows.firstElementChild;
+    rows.innerHTML = '';
+    rows.appendChild(header);
+
+    S[key].forEach(e => {
+      const emoObj = EMOTIONS[e.zone]?.find(x => x.name === e.name);
+      const row = document.createElement('div');
+      row.className = 'emo-int-row';
+      const intVal = e.intensity || 3;
+      row.innerHTML = `
+        <span class="emo-int-label">${emoObj?.emoji || ''} ${e.name}</span>
+        <input type="range" min="1" max="5" value="${intVal}"
+          oninput="setEmoIntensity('${group}','${e.name}',+this.value,this.nextElementSibling)">
+        <span class="emo-int-val">${intVal}</span>
+      `;
+      rows.appendChild(row);
+    });
+  }
+}
+
+function setEmoIntensity(group, name, val, label) {
+  const key = group === 'during' ? 'eduring' : 'enow';
+  const emo = S[key].find(e => e.name === name);
+  if (emo) emo.intensity = val;
+  if (label) label.textContent = val;
 }
 
 function removeEmotion(group, name) {
   const key = group === 'during' ? 'eduring' : 'enow';
   S[key] = S[key].filter(e => e.name !== name);
-  // deselect button
-  document.querySelectorAll(`.ze-btn[data-group="${group}"][data-val="${name}"]`).forEach(b => b.classList.remove('on'));
+  document.querySelectorAll(`.ze-btn[data-group="${group}"][data-val="${name}"]`)
+    .forEach(b => b.classList.remove('on'));
   updateSelectedDisplay(group);
-  const wrapId = group === 'during' ? 'int-during-wrap' : 'int-now-wrap';
-  document.getElementById(wrapId).classList.toggle('show', S[key].length > 0);
 }
 
-// Definition popup
+// ─── DEFINITION POPUP ────────────────────────────────────────────────────
 let popupTimeout;
 function showDefinition(emo, e) {
   const popup = document.getElementById('emo-def-popup');
   document.getElementById('edp-name').textContent = `${emo.emoji} ${emo.name}`;
   document.getElementById('edp-def').textContent = emo.def;
   document.getElementById('edp-msg').textContent = `📬 As a messenger: ${emo.msg}`;
-  // Position near click
-  const x = Math.min(e.clientX + 10, window.innerWidth - 300);
-  const y = Math.min(e.clientY + 10, window.innerHeight - 160);
+  const x = Math.min(e.clientX + 12, window.innerWidth - 310);
+  const y = Math.min(e.clientY + 12, window.innerHeight - 170);
   popup.style.left = x + 'px';
   popup.style.top = y + 'px';
   popup.classList.add('show');
   clearTimeout(popupTimeout);
-  popupTimeout = setTimeout(() => popup.classList.remove('show'), 4500);
+  popupTimeout = setTimeout(() => popup.classList.remove('show'), 5000);
 }
+// Close popup on outside click
 document.addEventListener('click', (e) => {
   if (!e.target.classList.contains('ze-info')) {
-    document.getElementById('emo-def-popup').classList.remove('show');
+    document.getElementById('emo-def-popup')?.classList.remove('show');
   }
 });
 
-// Build grids when DOM loads
 buildZoneGrids();
-
-['during','now'].forEach(g => {
-  const sl = document.getElementById('int-' + g);
-  const vl = document.getElementById('int-' + g + '-val');
-  if (!sl) return;
-  sl.addEventListener('input', () => {
-    if (g === 'during') S.intDuring = +sl.value; else S.intNow = +sl.value;
-    vl.textContent = sl.value + ' — ' + INT_LABELS[+sl.value];
-  });
-});
 
 function setYN(v) {
   S.yn = v;
@@ -2003,11 +2038,11 @@ function getPart1() {
     whatHappened: gv('q-what'), whoInvolved: gv('q-who'), witnesses: gv('q-witness'),
     where: gv('q-where'), when: gv('q-when'), thinking: gv('q-think'), why: gv('q-why'),
     emotionsDuring: S.eduring.map(e => e.name),
-    emotionsDuringZones: S.eduring,
-    intensityDuring: S.intDuring,
+    emotionsDuringDetail: S.eduring, // includes {name, zone, intensity} per emotion
+    intensityDuring: S.eduring.length ? Math.round(S.eduring.reduce((a,e)=>a+(e.intensity||3),0)/S.eduring.length) : 3,
     emotionsNow: S.enow.map(e => e.name),
-    emotionsNowZones: S.enow,
-    intensityNow: S.intNow,
+    emotionsNowDetail: S.enow,
+    intensityNow: S.enow.length ? Math.round(S.enow.reduce((a,e)=>a+(e.intensity||3),0)/S.enow.length) : 3,
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
   };
