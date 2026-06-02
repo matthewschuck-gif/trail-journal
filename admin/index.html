@@ -1,1 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trail Journal — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0d1117;--navy2:#161b22;--navy3:#21262d;
+  --border:#30363d;--text:#e6edf3;--muted:#8b949e;--subtle:#484f58;
+  --gold:#c9a84c;--gold-dim:#4a3a18;
+  --green:#3fb950;--green-dim:#1a4a2e;--green-soft:#1c3322;
+  --red:#f85149;--red-dim:#3d1a1a;
+  --blue:#58a6ff;--blue-dim:#1a2a4a;
+  --trail:#3d6b4f;--trail-light:#1a2e1f;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+
+/* ── LOGIN ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);}
+.login-card{background:var(--navy2);border:1px solid var(--border);border-radius:18px;padding:52px 44px;width:380px;text-align:center;}
+.login-logo{font-size:2.8rem;margin-bottom:14px;}
+.login-card h1{font-family:'Walter Turncoat',cursive;font-size:1.7rem;margin-bottom:6px;color:var(--text);}
+.login-card p{font-size:.85rem;color:var(--muted);margin-bottom:30px;}
+.login-inp{width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:9px;padding:13px 16px;font-family:'Barlow',sans-serif;font-size:.93rem;color:var(--text);margin-bottom:13px;}
+.login-inp:focus{outline:none;border-color:var(--gold);}
+.login-btn{width:100%;padding:13px;background:var(--gold);color:#0d1117;border:none;border-radius:9px;font-family:'Barlow',sans-serif;font-weight:800;font-size:.93rem;cursor:pointer;transition:opacity .2s;}
+.login-btn:hover{opacity:.88;}
+.login-err{color:var(--red);font-size:.8rem;margin-top:9px;display:none;}
+
+/* ── SHELL ── */
+.app-shell{display:none;}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:228px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+.sb-logo{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sb-mark{width:34px;height:34px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.sb-text{font-family:'Walter Turncoat',cursive;font-size:1rem;color:var(--text);line-height:1.2;}
+.sb-text small{display:block;font-family:'Barlow',sans-serif;font-size:.62rem;color:var(--muted);letter-spacing:.05em;}
+.sb-section{padding:14px 14px 4px;font-family:'Barlow',sans-serif;font-size:.6rem;font-weight:700;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:2px 8px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:.85rem;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:transparent;width:calc(100% - 16px);text-align:left;}
+.sb-item:hover{background:var(--navy3);color:var(--text);}
+.sb-item.active{background:rgba(201,168,76,.12);color:var(--gold);font-weight:600;}
+.sb-item .si{font-size:1rem;width:20px;text-align:center;}
+.sb-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
+.sb-out{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:.8rem;cursor:pointer;transition:all .15s;}
+.sb-out:hover{border-color:var(--red);color:var(--red);}
+
+/* ── CONTENT ── */
+.content{margin-left:228px;padding:32px;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page-hd{margin-bottom:28px;}
+.page-hd h2{font-family:'Walter Turncoat',cursive;font-size:1.9rem;margin-bottom:6px;color:var(--text);}
+.page-hd p{font-size:.87rem;color:var(--muted);}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:22px;}
+.stat-lbl{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:9px;}
+.stat-val{font-family:'Walter Turncoat',cursive;font-size:2.2rem;color:var(--text);}
+.stat-sub{font-size:.74rem;color:var(--muted);margin-top:5px;}
+.stat-card.s-gold .stat-val{color:var(--gold);}
+.stat-card.s-green .stat-val{color:var(--green);}
+.stat-card.s-blue .stat-val{color:var(--blue);}
+.stat-card.s-red .stat-val{color:var(--red);}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.chart-card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:22px;}
+.chart-card h3{font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:16px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.bar-lbl{font-size:.74rem;color:var(--muted);width:150px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{flex:1;height:7px;background:var(--navy3);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--gold);transition:width .6s ease;}
+.bar-n{font-size:.7rem;color:var(--muted);width:22px;text-align:right;flex-shrink:0;}
+.ins-dist{display:flex;gap:8px;margin-top:6px;}
+.ins-pill{flex:1;padding:12px 8px;border-radius:9px;text-align:center;font-family:'Barlow',sans-serif;font-size:.8rem;font-weight:700;}
+.ins-pill.ip-low{background:var(--red-dim);color:var(--red);}
+.ins-pill.ip-med{background:var(--gold-dim);color:var(--gold);}
+.ins-pill.ip-high{background:var(--green-soft);color:var(--green);}
+.ins-pill .ip-big{font-family:'Walter Turncoat',cursive;font-size:1.8rem;display:block;}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.tbl-controls{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.tbl-search{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:8px 13px;font-family:'Barlow',sans-serif;font-size:.85rem;color:var(--text);flex:1;min-width:180px;}
+.tbl-search:focus{outline:none;border-color:var(--gold);}
+.flt-btn{padding:7px 14px;background:var(--navy3);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;}
+.flt-btn:hover,.flt-btn.on{border-color:var(--gold);color:var(--gold);}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 16px;font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);text-align:left;letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+td{padding:12px 16px;font-family:'Barlow',sans-serif;font-size:.83rem;border-bottom:1px solid rgba(48,54,61,.5);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:700;letter-spacing:.04em;font-family:'Barlow',sans-serif;}
+.b-low{background:var(--red-dim);color:var(--red);}
+.b-med{background:var(--gold-dim);color:var(--gold);}
+.b-high{background:var(--green-soft);color:var(--green);}
+.view-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:.74rem;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s;}
+.view-btn:hover{border-color:var(--blue);color:var(--blue);}
+.empty{text-align:center;padding:52px 20px;color:var(--muted);}
+.empty .ei{font-size:2.5rem;margin-bottom:12px;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:740px;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-hd{padding:22px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hd h3{font-family:'Walter Turncoat',cursive;font-size:1.15rem;color:var(--text);}
+.modal-close{background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);padding:6px 12px;cursor:pointer;font-size:.8rem;font-family:'Barlow',sans-serif;transition:all .15s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:26px;}
+.ds{margin-bottom:22px;}
+.ds h4{font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
+.di{background:var(--navy3);border-radius:8px;padding:12px 14px;margin-bottom:7px;font-family:'Barlow',sans-serif;font-size:.84rem;line-height:1.65;border-left:3px solid var(--border);}
+.di.dflag{border-left-color:var(--red);background:var(--red-dim);}
+.di.dgold{border-left-color:var(--gold);background:var(--gold-dim);}
+.di.dgreen{border-left-color:var(--green);background:var(--green-soft);}
+.di-lbl{font-size:.67rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;font-family:'Barlow',sans-serif;}
+.di-val{color:var(--text);}
+.scr-line{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.scr-spk{font-size:.63rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:3px 8px;white-space:nowrap;color:var(--blue);flex-shrink:0;font-family:'Barlow',sans-serif;}
+.scr-txt{font-size:.83rem;color:var(--muted);font-style:italic;line-height:1.65;font-family:'Barlow',sans-serif;}
+.rl-item{padding:11px 14px;margin-bottom:8px;background:var(--navy3);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.82rem;line-height:1.55;border-left:3px solid var(--green);}
+.rl-item strong{display:block;color:var(--green);margin-bottom:3px;}
+
+/* ── EDITOR ── */
+.editor-layout{display:grid;grid-template-columns:220px 1fr;gap:20px;}
+.ed-nav{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:8px;}
+.ed-nav-item{padding:9px 12px;border-radius:7px;font-family:'Barlow',sans-serif;font-size:.83rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:2px;}
+.ed-nav-item:hover{background:var(--navy3);color:var(--text);}
+.ed-nav-item.active{background:rgba(201,168,76,.12);color:var(--gold);font-weight:600;}
+.ed-panel{background:var(--navy2);border:1px solid var(--border);border-radius:var(--r);padding:26px;}
+.ed-sec{margin-bottom:22px;}
+.ed-sec h4{font-family:'Barlow',sans-serif;font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;}
+.ed-field{margin-bottom:14px;}
+.ed-lbl{font-family:'Barlow',sans-serif;font-size:.74rem;color:var(--muted);margin-bottom:5px;display:block;}
+.ed-inp,.ed-ta{width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-family:'Barlow',sans-serif;font-size:.87rem;color:var(--text);}
+.ed-inp:focus,.ed-ta:focus{outline:none;border-color:var(--gold);}
+.ed-ta{resize:vertical;min-height:82px;line-height:1.6;}
+.ed-actions{display:flex;gap:10px;margin-top:22px;align-items:center;}
+.save-btn{padding:10px 26px;background:var(--gold);color:#0d1117;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:800;font-size:.87rem;cursor:pointer;transition:opacity .2s;}
+.save-btn:hover{opacity:.88;}
+.save-ok{font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--green);display:none;}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.tog-row:last-child{border-bottom:none;}
+.tog-lbl{font-family:'Barlow',sans-serif;font-size:.85rem;color:var(--text);}
+.tog-sub{font-family:'Barlow',sans-serif;font-size:.74rem;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:42px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tslider{position:absolute;inset:0;background:var(--subtle);border-radius:11px;cursor:pointer;transition:background .2s;}
+.tslider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s;}
+.toggle input:checked + .tslider{background:var(--gold);}
+.toggle input:checked + .tslider::before{transform:translateX(20px);}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">⛺</div>
+    <h1>Trail Journal</h1>
+    <p>Admin Dashboard — Staff Only</p>
+    <input type="password" class="login-inp" id="lpw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="lerr">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark">⛺</div>
+      <div class="sb-text">Trail Journal<small>Admin</small></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:8px">
+      <div class="sb-section">Overview</div>
+      <button class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="si">📊</span>Dashboard</button>
+      <button class="sb-item" onclick="showPage('submissions')" id="nav-submissions"><span class="si">📋</span>Submissions</button>
+      <div class="sb-section">Configuration</div>
+      <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si">✏️</span>Content Editor</button>
+      <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si">🤖</span>AI Prompts</button>
+      <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si">🧩</span>Widgets</button>
+    </div>
+    <div class="sb-footer">
+      <button class="sb-out" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hd">
+        <h2>Dashboard</h2>
+        <p>Anonymous overview of all Trail Journal reflections</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card s-gold"><div class="stat-lbl">Total Reflections</div><div class="stat-val" id="st-total">—</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card s-green"><div class="stat-lbl">High Insight</div><div class="stat-val" id="st-high">—</div><div class="stat-sub">Showing growth</div></div>
+        <div class="stat-card s-blue"><div class="stat-lbl">This Week</div><div class="stat-val" id="st-week">—</div><div class="stat-sub">New submissions</div></div>
+        <div class="stat-card s-red"><div class="stat-lbl">Needs Follow-Up</div><div class="stat-val" id="st-flags">—</div><div class="stat-sub">Flagged responses</div></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Insight Level Distribution</h3>
+          <div class="ins-dist">
+            <div class="ins-pill ip-low"><span class="ip-big" id="ip-low">—</span>Low</div>
+            <div class="ins-pill ip-med"><span class="ip-big" id="ip-med">—</span>Medium</div>
+            <div class="ins-pill ip-high"><span class="ip-big" id="ip-high">—</span>High</div>
+          </div>
+        </div>
+        <div class="chart-card"><h3>Top LRG Traits Selected</h3><div id="ch-traits"></div></div>
+        <div class="chart-card"><h3>Most Common Consequence Choices</h3><div id="ch-cons"></div></div>
+        <div class="chart-card"><h3>Most Common Emotions During Incidents</h3><div id="ch-emo"></div></div>
+      </div>
+    </div>
+
+    <!-- SUBMISSIONS -->
+    <div class="page" id="page-submissions">
+      <div class="page-hd">
+        <h2>Submissions</h2>
+        <p>All anonymous journal entries — no student names stored</p>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-controls">
+          <input type="text" class="tbl-search" id="tbl-search" placeholder="Search by initial, trait, or keywords…" oninput="filterTbl()">
+          <button class="flt-btn on" onclick="setFilter('all')" id="f-all">All</button>
+          <button class="flt-btn" onclick="setFilter('Low')" id="f-Low">Low</button>
+          <button class="flt-btn" onclick="setFilter('Medium')" id="f-Medium">Medium</button>
+          <button class="flt-btn" onclick="setFilter('High')" id="f-High">High</button>
+        </div>
+        <div id="tbl-body"><div class="empty"><div class="ei">📋</div><p>Loading…</p></div></div>
+      </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div class="page" id="page-editor">
+      <div class="page-hd">
+        <h2>Content Editor</h2>
+        <p>Edit question text, labels, and section content. Changes save to Supabase and take effect immediately.</p>
+      </div>
+      <div class="editor-layout">
+        <div class="ed-nav">
+          <div class="ed-nav-item active" onclick="showEdSec('welcome',this)">Welcome Screen</div>
+          <div class="ed-nav-item" onclick="showEdSec('part1',this)">Part 1 — What Happened</div>
+          <div class="ed-nav-item" onclick="showEdSec('part2',this)">Part 2 — Making it Right</div>
+          <div class="ed-nav-item" onclick="showEdSec('part3',this)">Part 3 — Growth Plan</div>
+          <div class="ed-nav-item" onclick="showEdSec('pause',this)">Pause Blocks</div>
+          <div class="ed-nav-item" onclick="showEdSec('done',this)">Completion Screen</div>
+        </div>
+        <div class="ed-panel">
+          <div id="eds-welcome">
+            <div class="ed-sec">
+              <h4>Welcome Screen</h4>
+              <div class="ed-field"><label class="ed-lbl">Main Heading</label><input class="ed-inp" id="ew-heading" value="Your Trail Journal"></div>
+              <div class="ed-field"><label class="ed-lbl">Tagline</label><input class="ed-inp" id="ew-tagline" value="Camp Mountaineer · The Path Back"></div>
+              <div class="ed-field"><label class="ed-lbl">Intro Paragraph</label><textarea class="ed-ta" id="ew-intro" rows="3">Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Before You Begin Text</label><textarea class="ed-ta" id="ew-before" rows="4">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. Take your time — honest answers matter.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('welcome')">Save</button><div class="save-ok" id="sok-welcome">✓ Saved</div></div>
+          </div>
+          <div id="eds-part1" class="hidden">
+            <div class="ed-sec">
+              <h4>Part 1 — What Happened</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep1-title" value="What Happened?"></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep1-intro" rows="3">Think back carefully. Answer every question with as much honest detail as you can.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Situation Question Label</label><input class="ed-inp" id="ep1-q1" value="Describe the Situation"></div>
+              <div class="ed-field"><label class="ed-lbl">Situation Placeholder</label><textarea class="ed-ta" id="ep1-q1ph" rows="2">Write what happened from the beginning. Be specific.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Why Question Label</label><input class="ed-inp" id="ep1-q2" value="Why Did You Do It?"></div>
+              <div class="ed-field"><label class="ed-lbl">CPS Cards Intro Text</label><textarea class="ed-ta" id="ep1-cps" rows="3">Behind most conflicts there's an unsolved problem — something you needed or were worried about. Tap each card to flip it and answer inside.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part1')">Save</button><div class="save-ok" id="sok-part1">✓ Saved</div></div>
+          </div>
+          <div id="eds-part2" class="hidden">
+            <div class="ed-sec">
+              <h4>Part 2 — Making it Right</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep2-title" value="Making Things Right"></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep2-intro" rows="3">Restorative thinking isn't just about accepting a consequence — it's about truly repairing what was broken.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Ripple Effect Sub-Label</label><textarea class="ed-ta" id="ep2-ripple" rows="2">Every action touches more people than we realize. Name who was hurt below and watch the ripple grow.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Make Things Right Placeholder</label><textarea class="ed-ta" id="ep2-mr" rows="2">For each person I hurt, making it right would mean…</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part2')">Save</button><div class="save-ok" id="sok-part2">✓ Saved</div></div>
+          </div>
+          <div id="eds-part3" class="hidden">
+            <div class="ed-sec">
+              <h4>Part 3 — Growth Plan</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep3-title" value="Your Growth Plan"></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep3-intro" rows="3">The last leg of the trail. Choose the Life Ready Graduate trait you most need to develop.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Submit Warning Text</label><textarea class="ed-ta" id="ep3-warn" rows="3">If you did not complete this journal honestly or do not follow through, an additional detention may be issued.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part3')">Save</button><div class="save-ok" id="sok-part3">✓ Saved</div></div>
+          </div>
+          <div id="eds-pause" class="hidden">
+            <div class="ed-sec">
+              <h4>Pause Blocks</h4>
+              <div class="ed-field"><label class="ed-lbl">After Part 1 Reading</label><textarea class="ed-ta" id="ep-pause1" rows="3">Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conference.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">After Part 2</label><textarea class="ed-ta" id="ep-pause2" rows="3">Raise your hand and let the adult in the room know you're ready to review your repair plan together before Part 3.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('pause')">Save</button><div class="save-ok" id="sok-pause">✓ Saved</div></div>
+          </div>
+          <div id="eds-done" class="hidden">
+            <div class="ed-sec">
+              <h4>Completion Screen</h4>
+              <div class="ed-field"><label class="ed-lbl">Heading</label><input class="ed-inp" id="ed-heading" value="Journal Complete"></div>
+              <div class="ed-field"><label class="ed-lbl">Completion Message</label><textarea class="ed-ta" id="ed-msg" rows="3">You've reached the top of this part of the trail. What you did here takes honesty and courage.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Box Text (line 1–4)</label><textarea class="ed-ta" id="ed-detail" rows="4">Your journal has been recorded anonymously.
+Next step: A follow-up conversation with an office team member.
+Keep working on your creative product if you haven't finished it yet.
+Someone will connect with you soon to walk through your plan together.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('done')">Save</button><div class="save-ok" id="sok-done">✓ Saved</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI PROMPTS -->
+    <div class="page" id="page-prompts">
+      <div class="page-hd">
+        <h2>AI Prompts</h2>
+        <p>Edit the system prompts sent to Claude for each AI call. Changes save to Supabase and are used by the Edge Function.</p>
+      </div>
+      <div class="ed-panel" style="margin-bottom:18px">
+        <div class="ed-sec">
+          <h4>Article Prompt — After Part 1</h4>
+          <div class="ed-field">
+            <label class="ed-lbl">Sent to Claude when generating the personalized student reading. Available variables: {initial}, {situation}, {emotions}, {cps}</label>
+            <textarea class="ed-ta" id="prompt-article" rows="12">You are a compassionate school counselor writing a short personalized reading for a middle school student at Camp Mountaineer.
+
+Student initial: {initial}. What they shared: {situation}. Emotions: {emotions}. CPS insights: {cps}.
+
+Write 3-4 warm paragraphs: (1) validate emotions without excusing the behavior, (2) explain brain science of impulse in accessible language — downstairs brain, fight/flight/freeze, (3) connect directly to their specific situation and CPS insights, (4) forward-looking message connecting to collaborative problem solving — both concerns can be addressed together.
+
+Format: title on first line, then paragraphs separated by blank lines. No markdown.</textarea>
+          </div>
+        </div>
+        <div class="ed-sec">
+          <h4>Summary Prompt — After Final Submit</h4>
+          <div class="ed-field">
+            <label class="ed-lbl">Sent to Claude when generating the staff JSON summary</label>
+            <textarea class="ed-ta" id="prompt-summary" rows="12">You are an experienced middle school assistant principal reviewing a Camp Mountaineer Trail Journal. The school uses Collaborative Problem Solving (CPS), restorative practices, and logical consequences. Return ONLY valid JSON.
+
+Required structure:
+{"summary":"...","insightLevel":"Low|Medium|High","insightReason":"...","recommendedConsequences":[{"type":"Primary — Logical Consequence","description":"...","rationale":"..."},{"type":"Supporting — Skill Building","description":"...","rationale":"..."}],"repairPlan":"...","restorativeQuestions":["...","...","..."],"cpsScript":[{"speaker":"Adult","text":"..."}],"followUpFlags":["..."],"studentReadingList":[{"title":"...","topic":"...","whyRelevant":"..."},{"title":"...","topic":"...","whyRelevant":"..."},{"title":"...","topic":"...","whyRelevant":"..."}]}</textarea>
+          </div>
+        </div>
+        <div class="ed-actions">
+          <button class="save-btn" onclick="savePrompts()">Save Prompts</button>
+          <div class="save-ok" id="sok-prompts">✓ Saved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIDGETS -->
+    <div class="page" id="page-widgets">
+      <div class="page-hd">
+        <h2>Widgets</h2>
+        <p>Toggle interactive components on or off for the student journal form.</p>
+      </div>
+      <div class="ed-panel">
+        <div class="ed-sec">
+          <h4>Part 1 Widgets</h4>
+          <div class="tog-row"><div><div class="tog-lbl">CPS Flip Cards</div><div class="tog-sub">Collaborative problem solving cards — unsolved problem, my concern, their concern</div></div><label class="toggle"><input type="checkbox" id="w-cps" checked><span class="tslider"></span></label></div>
+          <div class="tog-row"><div><div class="tog-lbl">Emotion Intensity Sliders</div><div class="tog-sub">1–5 slider to rate how intense each emotion felt</div></div><label class="toggle"><input type="checkbox" id="w-intensity" checked><span class="tslider"></span></label></div>
+          <div class="tog-row"><div><div class="tog-lbl">Personalized AI Reading Article</div><div class="tog-sub">AI-generated reading after Part 1 — brain science + CPS framing</div></div><label class="toggle"><input type="checkbox" id="w-article" checked><span class="tslider"></span></label></div>
+        </div>
+        <div class="ed-sec">
+          <h4>Part 2 Widgets</h4>
+          <div class="tog-row"><div><div class="tog-lbl">Ripple Effect Visual</div><div class="tog-sub">Animated circles showing impact as student names people hurt</div></div><label class="toggle"><input type="checkbox" id="w-ripple" checked><span class="tslider"></span></label></div>
+          <div class="tog-row"><div><div class="tog-lbl">Drag-to-Rank Consequences</div><div class="tog-sub">Drag and drop to rank chosen consequence options by priority</div></div><label class="toggle"><input type="checkbox" id="w-rank" checked><span class="tslider"></span></label></div>
+        </div>
+        <div class="ed-sec">
+          <h4>General</h4>
+          <div class="tog-row"><div><div class="tog-lbl">Reflection Quality Meter</div><div class="tog-sub">Floating indicator showing depth of reflection based on content</div></div><label class="toggle"><input type="checkbox" id="w-quality" checked><span class="tslider"></span></label></div>
+          <div class="tog-row"><div><div class="tog-lbl">AI Staff Summary + CPS Script</div><div class="tog-sub">Full AI analysis including consequences, restorative questions, and reading list</div></div><label class="toggle"><input type="checkbox" id="w-summary" checked><span class="tslider"></span></label></div>
+        </div>
+        <div class="ed-actions"><button class="save-btn" onclick="saveWidgets()">Save Settings</button><div class="save-ok" id="sok-widgets">✓ Saved</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 id="modal-title">Submission Detail</h3>
+      <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const SB_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
+const ADMIN_PW = 'togetherweclimb';
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+function doLogin() {
+  if (document.getElementById('lpw').value === ADMIN_PW) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-shell').style.display = 'block';
+    loadDash();
+  } else {
+    document.getElementById('lerr').style.display = 'block';
+    document.getElementById('lpw').value = '';
+  }
+}
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('lpw').value = '';
+}
+document.getElementById('lpw').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+// ── PAGE NAV ──────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'dashboard') loadDash();
+  if (name === 'submissions') loadSubs();
+}
+
+// ── SUPABASE ─────────────────────────────────────────────────────────────
+async function sb(path, opts={}) {
+  const r = await fetch(SB_URL + '/rest/v1/' + path, {
+    headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, 'Content-Type': 'application/json', ...opts.headers },
+    ...opts
+  });
+  if (!r.ok) return null;
+  return r.json().catch(() => null);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+let ALL = [];
+async function loadDash() {
+  const data = await sb('reflections?select=*&order=created_at.desc&limit=500');
+  if (!data) return;
+  ALL = data;
+  document.getElementById('st-total').textContent = data.length;
+  const high = data.filter(r => r.insight_level === 'High').length;
+  const week = data.filter(r => new Date(r.created_at) > new Date(Date.now() - 7*864e5)).length;
+  const flags = data.filter(r => r.has_flags).length;
+  document.getElementById('st-high').textContent = high;
+  document.getElementById('st-week').textContent = week;
+  document.getElementById('st-flags').textContent = flags;
+  let low=0,med=0,hi=0;
+  data.forEach(r => { if(r.insight_level==='Low')low++; else if(r.insight_level==='Medium')med++; else if(r.insight_level==='High')hi++; });
+  document.getElementById('ip-low').textContent = low||'—';
+  document.getElementById('ip-med').textContent = med||'—';
+  document.getElementById('ip-high').textContent = hi||'—';
+  const traits={}, cons={}, emos={};
+  data.forEach(r => {
+    const t=(r.part3_json||{}).trait; if(t) traits[t]=(traits[t]||0)+1;
+    ((r.part2_json||{}).selectedConsequences||[]).forEach(c=>{cons[c]=(cons[c]||0)+1;});
+    ((r.part1_json||{}).emotionsDuring||[]).forEach(e=>{emos[e]=(emos[e]||0)+1;});
+  });
+  renderBars('ch-traits', traits, 5);
+  renderBars('ch-cons', cons, 5);
+  renderBars('ch-emo', emos, 5);
+}
+
+function renderBars(id, counts, limit) {
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+  const max = sorted[0]?.[1] || 1;
+  const el = document.getElementById(id);
+  if (!sorted.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">No data yet.</div>'; return; }
+  el.innerHTML = sorted.map(([lbl, n]) =>
+    `<div class="bar-row"><div class="bar-lbl" title="${lbl}">${lbl}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%"></div></div><div class="bar-n">${n}</div></div>`
+  ).join('');
+}
+
+// ── SUBMISSIONS ───────────────────────────────────────────────────────────
+let curFilter = 'all';
+async function loadSubs() {
+  const data = await sb('reflections?select=*&order=created_at.desc&limit=200');
+  if (!data) return;
+  ALL = data;
+  renderTbl(data);
+}
+
+function renderTbl(data) {
+  if (!data.length) {
+    document.getElementById('tbl-body').innerHTML = '<div class="empty"><div class="ei">📋</div><p>No submissions yet.</p></div>';
+    return;
+  }
+  const rows = data.map(r => {
+    const d = new Date(r.created_at);
+    const ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const ins = r.insight_level || '—';
+    const bc = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins] || '';
+    const trait = ((r.part3_json||{}).trait||'—').split('&')[0].trim();
+    const rd = JSON.stringify(r).replace(/"/g,'&quot;');
+    return `<tr><td><strong>${r.initial||'?'}</strong></td><td>${ds}</td><td>${trait}</td><td><span class="badge ${bc}">${ins}</span></td><td><button class="view-btn" onclick='openModal(${rd})'>View</button></td></tr>`;
+  }).join('');
+  document.getElementById('tbl-body').innerHTML =
+    `<table><thead><tr><th>Initial</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function filterTbl() {
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  let f = ALL;
+  if (curFilter !== 'all') f = f.filter(r => r.insight_level === curFilter);
+  if (q) f = f.filter(r => (r.initial||'').toLowerCase().includes(q) || JSON.stringify(r).toLowerCase().includes(q));
+  renderTbl(f);
+}
+
+function setFilter(lv) {
+  curFilter = lv === 'all' ? 'all' : lv;
+  document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('f-' + lv).classList.add('on');
+  filterTbl();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(r) {
+  const p1=r.part1_json||{}, p2=r.part2_json||{}, p3=r.part3_json||{};
+  const ai=r.ai_staff_summary||{};
+  const d = new Date(r.created_at).toLocaleString();
+  const ins = r.insight_level||'—';
+  const ibcls = {Low:'dflag',Medium:'dgold',High:'dgreen'}[ins]||'';
+  const ibadge = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins]||'';
+  document.getElementById('modal-title').textContent = `Initial: ${r.initial||'?'}  ·  ${d}`;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="ds"><h4>Part 1 — What Happened</h4>
+      <div class="di"><div class="di-lbl">Situation</div><div class="di-val">${p1.whatHappened||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Why</div><div class="di-val">${p1.why||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Thinking at the time</div><div class="di-val">${p1.thinking||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Emotions during (intensity ${p1.intensityDuring||'—'}/5)</div><div class="di-val">${(p1.emotionsDuring||[]).join(', ')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Emotions now (intensity ${p1.intensityNow||'—'}/5)</div><div class="di-val">${(p1.emotionsNow||[]).join(', ')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">CPS — Unsolved problem</div><div class="di-val">${p1.cpsUnsolvedProblem||'—'}</div></div>
+      <div class="di"><div class="di-lbl">CPS — My concern</div><div class="di-val">${p1.cpsMyConcern||'—'}</div></div>
+      <div class="di"><div class="di-lbl">CPS — Their concern</div><div class="di-val">${p1.cpsTheirConcern||'—'}</div></div>
+    </div>
+    <div class="ds"><h4>Part 2 — Making Things Right</h4>
+      <div class="di"><div class="di-lbl">People hurt</div><div class="di-val">${(p2.hurtPeople||[]).join(', ')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">What needs to happen</div><div class="di-val">${p2.makeRight||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Ranked choices</div><div class="di-val">${(p2.selectedConsequences||[]).map((c,i)=>`${i+1}. ${c}`).join('<br>')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Best idea</div><div class="di-val">${p2.bestIdea||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Plan</div><div class="di-val">${p2.plan||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Do differently</div><div class="di-val">${p2.different||'—'}</div></div>
+    </div>
+    <div class="ds"><h4>Part 3 — Growth Plan</h4>
+      <div class="di"><div class="di-lbl">LRG Trait</div><div class="di-val">${p3.trait||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Specific areas</div><div class="di-val">${(p3.traitSpecifics||[]).join('<br>')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Why this trait</div><div class="di-val">${p3.traitWhy||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Creative format</div><div class="di-val">${p3.creativeFormat||'—'}${p3.creativePlan?' — '+p3.creativePlan:''}</div></div>
+    </div>
+    ${Object.keys(ai).length ? `<div class="ds"><h4>AI Staff Summary</h4>
+      <div class="di ${ibcls}"><div class="di-lbl">Insight Level</div><div class="di-val"><span class="badge ${ibadge}">${ins}</span>  ${ai.insightReason||''}</div></div>
+      ${(ai.recommendedConsequences||[]).map(c=>`<div class="di dgold"><div class="di-lbl">${c.type}</div><div class="di-val"><strong>${c.description}</strong><br><span style="font-size:.78rem;color:var(--muted)">${c.rationale||''}</span></div></div>`).join('')}
+      <div class="di"><div class="di-lbl">Repair Plan</div><div class="di-val">${ai.repairPlan||'—'}</div></div>
+      ${(ai.restorativeQuestions||[]).map(q=>`<div class="di dgreen"><div class="di-lbl">Restorative Question</div><div class="di-val">💬 ${q}</div></div>`).join('')}
+      ${(ai.followUpFlags||[]).map(f=>`<div class="di dflag">⚠️ ${f}</div>`).join('')}
+    </div>` : ''}
+    ${(ai.cpsScript||[]).length ? `<div class="ds"><h4>CPS Conference Script</h4>${ai.cpsScript.map(l=>`<div class="scr-line"><span class="scr-spk">${l.speaker}</span><span class="scr-txt">"${l.text}"</span></div>`).join('')}</div>` : ''}
+    ${(ai.studentReadingList||[]).length ? `<div class="ds"><h4>Student Reading List</h4>${ai.studentReadingList.map(i=>`<div class="rl-item"><strong>${i.title}</strong>${i.topic?' — '+i.topic:''}<br>${i.whyRelevant||''}</div>`).join('')}</div>` : ''}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ── EDITOR ────────────────────────────────────────────────────────────────
+function showEdSec(name, el) {
+  document.querySelectorAll('[id^="eds-"]').forEach(e => e.classList.add('hidden'));
+  document.getElementById('eds-' + name).classList.remove('hidden');
+  document.querySelectorAll('.ed-nav-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function saveEd(section) {
+  const fields = {};
+  document.querySelectorAll(`#eds-${section} .ed-inp, #eds-${section} .ed-ta`).forEach(el => { fields[el.id] = el.value; });
+  await sb('site_config?key=eq.content_' + section, {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify({key:'content_'+section, value:JSON.stringify(fields), updated_at:new Date().toISOString()})
+  });
+  showOk('sok-' + section);
+}
+
+async function savePrompts() {
+  const prompts = { article: document.getElementById('prompt-article').value, summary: document.getElementById('prompt-summary').value };
+  await sb('site_config?key=eq.ai_prompts', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify({key:'ai_prompts', value:JSON.stringify(prompts), updated_at:new Date().toISOString()})
+  });
+  showOk('sok-prompts');
+}
+
+async function saveWidgets() {
+  const widgets = {};
+  document.querySelectorAll('[id^="w-"]').forEach(el => { widgets[el.id] = el.checked; });
+  await sb('site_config?key=eq.widgets', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify({key:'widgets', value:JSON.stringify(widgets), updated_at:new Date().toISOString()})
+  });
+  showOk('sok-widgets');
+}
+
+function showOk(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2500);
+}
+</script>
+</body>
+</html>
 
