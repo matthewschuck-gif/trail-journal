@@ -195,6 +195,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
     </div>
     <div class="sb-footer">
+      <div style="margin-bottom:10px">
+        <div style="font-size:.62rem;font-weight:700;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Preview Forms</div>
+        <a href="../?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);border-radius:7px;color:var(--gold);font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none;margin-bottom:5px">🏔 Trail Journal Preview</a>
+        <a href="../respond/?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(74,127,168,.1);border:1px solid #2a4a6a;border-radius:7px;color:#5b8dd9;font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none">🏔 Your Side Preview</a>
+      </div>
       <button class="sb-out" onclick="doLogout()">Sign Out</button>
     </div>
   </aside>
@@ -250,79 +255,342 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="page" id="page-editor">
       <div class="page-hd">
         <h2>Content Editor</h2>
-        <p>Edit question text, labels, and section content. Changes save to Supabase and take effect immediately.</p>
+        <p>Edit every piece of text in the student form. Changes save to Supabase instantly. Reload the student form to see updates.</p>
       </div>
       <div class="editor-layout">
-        <div class="ed-nav">
+        <div class="ed-nav" style="min-width:200px">
           <div class="ed-nav-item active" onclick="showEdSec('welcome',this)">Welcome Screen</div>
-          <div class="ed-nav-item" onclick="showEdSec('part1',this)">Part 1 — What Happened</div>
-          <div class="ed-nav-item" onclick="showEdSec('part2',this)">Part 2 — Making it Right</div>
-          <div class="ed-nav-item" onclick="showEdSec('part3',this)">Part 3 — Growth Plan</div>
-          <div class="ed-nav-item" onclick="showEdSec('pause',this)">Pause Blocks</div>
+          <div class="ed-nav-item" onclick="showEdSec('privacy',this)">Privacy Bar</div>
+          <div class="ed-nav-item" onclick="showEdSec('p1-situation',this)">Part 1 — Situation</div>
+          <div class="ed-nav-item" onclick="showEdSec('p1-cps',this)">Part 1 — Crossing Paths</div>
+          <div class="ed-nav-item" onclick="showEdSec('p1-emotions',this)">Part 1 — Emotions</div>
+          <div class="ed-nav-item" onclick="showEdSec('reading',this)">Reading Break</div>
+          <div class="ed-nav-item" onclick="showEdSec('pause1',this)">Pause Block 1</div>
+          <div class="ed-nav-item" onclick="showEdSec('p2-ripple',this)">Part 2 — Ripple</div>
+          <div class="ed-nav-item" onclick="showEdSec('p2-consequences',this)">Part 2 — Consequences</div>
+          <div class="ed-nav-item" onclick="showEdSec('p2-questions',this)">Part 2 — Questions</div>
+          <div class="ed-nav-item" onclick="showEdSec('pause2',this)">Pause Block 2</div>
+          <div class="ed-nav-item" onclick="showEdSec('p3-trait',this)">Part 3 — LRG Traits</div>
+          <div class="ed-nav-item" onclick="showEdSec('p3-creative',this)">Part 3 — Creative Formats</div>
+          <div class="ed-nav-item" onclick="showEdSec('p3-submit',this)">Part 3 — Submit Block</div>
           <div class="ed-nav-item" onclick="showEdSec('done',this)">Completion Screen</div>
+          <div class="ed-nav-item" onclick="showEdSec('respond',this)">Your Side of the Trail</div>
         </div>
         <div class="ed-panel">
+
+          <!-- WELCOME -->
           <div id="eds-welcome">
-            <div class="ed-sec">
-              <h4>Welcome Screen</h4>
-              <div class="ed-field"><label class="ed-lbl">Main Heading</label><input class="ed-inp" id="ew-heading" value="Your Trail Journal"></div>
-              <div class="ed-field"><label class="ed-lbl">Tagline</label><input class="ed-inp" id="ew-tagline" value="Camp Mountaineer · The Path Back"></div>
-              <div class="ed-field"><label class="ed-lbl">Intro Paragraph</label><textarea class="ed-ta" id="ew-intro" rows="3">Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Before You Begin Text</label><textarea class="ed-ta" id="ew-before" rows="4">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. Take your time — honest answers matter.</textarea></div>
+            <div class="ed-sec"><h4>Welcome Screen</h4>
+              <div class="ed-field"><label class="ed-lbl">Site Title (header)</label><input class="ed-inp" id="ew-site-title" value="Trail Journal"></div>
+              <div class="ed-field"><label class="ed-lbl">Header Subtitle</label><input class="ed-inp" id="ew-site-sub" value="Camp Mountaineer"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Heading</label><input class="ed-inp" id="ew-heading" value="Your Trail Journal"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Tagline</label><input class="ed-inp" id="ew-tagline" value="Camp Mountaineer · The Path Back"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Intro Paragraph</label><textarea class="ed-ta" id="ew-intro" rows="3">Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward. Take your time — honest answers matter.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Name Field Hint</label><input class="ed-inp" id="ew-name-hint" value="Only your first initial will be kept — your full name is never stored."></div>
+              <div class="ed-field"><label class="ed-lbl">Before You Begin — Card Label</label><input class="ed-inp" id="ew-before-label" value="Before You Begin"></div>
+              <div class="ed-field"><label class="ed-lbl">Before You Begin — Body Text</label><textarea class="ed-ta" id="ew-before" rows="4">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. The AI will write a short reading just for you after Part 1, and help build a plan at the end. Take this seriously — your honest effort here is the first step back on the trail.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Start Button Text</label><input class="ed-inp" id="ew-start-btn" value="Start My Journal →"></div>
             </div>
             <div class="ed-actions"><button class="save-btn" onclick="saveEd('welcome')">Save</button><div class="save-ok" id="sok-welcome">✓ Saved</div></div>
           </div>
-          <div id="eds-part1" class="hidden">
-            <div class="ed-sec">
-              <h4>Part 1 — What Happened</h4>
+
+          <!-- PRIVACY BAR -->
+          <div id="eds-privacy" class="hidden">
+            <div class="ed-sec"><h4>Privacy Bar</h4>
+              <div class="ed-field"><label class="ed-lbl">Privacy Bar Text</label><textarea class="ed-ta" id="epv-text" rows="2">Privacy protected — Only your first initial is stored. No full names. All responses are anonymized.</textarea></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('privacy')">Save</button><div class="save-ok" id="sok-privacy">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 1 SITUATION -->
+          <div id="eds-p1-situation" class="hidden">
+            <div class="ed-sec"><h4>Part 1 — Situation Questions</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Badge</label><input class="ed-inp" id="ep1-badge" value="Part 1 of 3 — The Incident"></div>
               <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep1-title" value="What Happened?"></div>
-              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep1-intro" rows="3">Think back carefully. Answer every question with as much honest detail as you can.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Situation Question Label</label><input class="ed-inp" id="ep1-q1" value="Describe the Situation"></div>
-              <div class="ed-field"><label class="ed-lbl">Situation Placeholder</label><textarea class="ed-ta" id="ep1-q1ph" rows="2">Write what happened from the beginning. Be specific.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Why Question Label</label><input class="ed-inp" id="ep1-q2" value="Why Did You Do It?"></div>
-              <div class="ed-field"><label class="ed-lbl">CPS Cards Intro Text</label><textarea class="ed-ta" id="ep1-cps" rows="3">Behind most conflicts there's an unsolved problem — something you needed or were worried about. Tap each card to flip it and answer inside.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep1-intro" rows="2">Think back carefully. Answer every question with as much honest detail as you can. The more detail you give, the better this reflection will be.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Situation — Card Label</label><input class="ed-inp" id="ep1-sit-label" value="Describe the Situation"></div>
+              <div class="ed-field"><label class="ed-lbl">Situation — Sub-label</label><input class="ed-inp" id="ep1-sit-sub" value="What action or actions brought you here today? Tell the full story in your own words."></div>
+              <div class="ed-field"><label class="ed-lbl">Situation — Placeholder</label><textarea class="ed-ta" id="ep1-sit-ph" rows="2">Write what happened from the beginning. Be specific — where were you, what did you do, how did it start?</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Details — Who Involved Label</label><input class="ed-inp" id="ep1-who-label" value="Who else was involved?"></div>
+              <div class="ed-field"><label class="ed-lbl">Details — Who Witnessed Label</label><input class="ed-inp" id="ep1-wit-label" value="Who witnessed it?"></div>
+              <div class="ed-field"><label class="ed-lbl">Details — Where Label</label><input class="ed-inp" id="ep1-where-label" value="Where did it happen?"></div>
+              <div class="ed-field"><label class="ed-lbl">Details — When Label</label><input class="ed-inp" id="ep1-when-label" value="When / what were you doing?"></div>
+              <div class="ed-field"><label class="ed-lbl">Details — Thinking Label</label><input class="ed-inp" id="ep1-think-label" value="What were you thinking at the time?"></div>
+              <div class="ed-field"><label class="ed-lbl">Details — Thinking Placeholder</label><input class="ed-inp" id="ep1-think-ph" value="Be honest — what was actually going through your mind?"></div>
+              <div class="ed-field"><label class="ed-lbl">Why — Card Label</label><input class="ed-inp" id="ep1-why-label" value="Why Did You Do It?"></div>
+              <div class="ed-field"><label class="ed-lbl">Why — Sub-label</label><input class="ed-inp" id="ep1-why-sub" value="What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself."></div>
+              <div class="ed-field"><label class="ed-lbl">Why — Placeholder</label><input class="ed-inp" id="ep1-why-ph" value="I did it because… I was trying to… I thought that…"></div>
+              <div class="ed-field"><label class="ed-lbl">Emotions During — Card Label</label><input class="ed-inp" id="ep1-emo-label" value="How Were You Feeling?"></div>
+              <div class="ed-field"><label class="ed-lbl">Emotions During — Sub-label</label><textarea class="ed-ta" id="ep1-emo-sub" rows="2">Emotions are messengers — they're telling you something. Browse the zones and pick up to 3 you felt before or during what happened.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Emotions Now — Card Label</label><input class="ed-inp" id="ep1-emon-label" value="How Do You Feel Right Now?"></div>
+              <div class="ed-field"><label class="ed-lbl">Emotions Now — Sub-label</label><input class="ed-inp" id="ep1-emon-sub" value="Sitting here reflecting — pick up to 3 emotions you feel right now."></div>
+              <div class="ed-field"><label class="ed-lbl">Emotion Change — Card Label</label><input class="ed-inp" id="ep1-yn-label" value="Did Your Emotions Change?"></div>
+              <div class="ed-field"><label class="ed-lbl">Emotion Change — Sub-label</label><input class="ed-inp" id="ep1-yn-sub" value="Compare how you felt during the situation vs. how you feel right now."></div>
             </div>
-            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part1')">Save</button><div class="save-ok" id="sok-part1">✓ Saved</div></div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p1-situation')">Save</button><div class="save-ok" id="sok-p1-situation">✓ Saved</div></div>
           </div>
-          <div id="eds-part2" class="hidden">
-            <div class="ed-sec">
-              <h4>Part 2 — Making it Right</h4>
+
+          <!-- PART 1 CPS -->
+          <div id="eds-p1-cps" class="hidden">
+            <div class="ed-sec"><h4>Part 1 — Crossing Paths Cards</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Card Label</label><input class="ed-inp" id="ec-card-label" value="🛤️ Crossing Paths"></div>
+              <div class="ed-field"><label class="ed-lbl">Banner Heading</label><input class="ed-inp" id="ec-banner-h" value="Crossing Paths"></div>
+              <div class="ed-field"><label class="ed-lbl">Banner Body Text</label><textarea class="ed-ta" id="ec-banner-body" rows="3">Every situation involves more than one person's path. Tap each card, flip it, and answer what's inside. This helps you understand what was really happening — for you and for the other person.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Card 1 — Front Question</label><input class="ed-inp" id="ec-q1" value="What was going on before this happened?"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 1 — Back Label</label><input class="ed-inp" id="ec-l1" value="Before this happened…"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 1 — Placeholder</label><input class="ed-inp" id="ec-p1" value="Something that was already going on was…"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 2 — Front Question</label><input class="ed-inp" id="ec-q2" value="What did you care about in that moment?"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 2 — Back Label</label><input class="ed-inp" id="ec-l2" value="In that moment I cared about…"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 2 — Placeholder</label><input class="ed-inp" id="ec-p2" value="What mattered to me in that moment was…"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 3 — Front Question</label><input class="ed-inp" id="ec-q3" value="What do you think the other person cared about?"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 3 — Back Label</label><input class="ed-inp" id="ec-l3" value="They probably cared about…"></div>
+              <div class="ed-field"><label class="ed-lbl">Card 3 — Placeholder</label><input class="ed-inp" id="ec-p3" value="They were probably thinking about / cared about…"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p1-cps')">Save</button><div class="save-ok" id="sok-p1-cps">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 1 EMOTIONS -->
+          <div id="eds-p1-emotions" class="hidden">
+            <div class="ed-sec"><h4>Emotion Zone Intro Texts</h4>
+              <div class="ed-field"><label class="ed-lbl">Red Zone — During</label><textarea class="ed-ta" id="eez-red-during" rows="2">These emotions are high-energy and difficult. They're not bad — they're powerful signals. They're telling you something.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Yellow Zone — During</label><textarea class="ed-ta" id="eez-yellow-during" rows="2">These emotions are high-energy and feel good. Even positive emotions can play a role in what happened.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Blue Zone — During</label><textarea class="ed-ta" id="eez-blue-during" rows="2">These emotions are low-energy and difficult. Sadness and shame often sit underneath bigger reactions.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Green Zone — During</label><textarea class="ed-ta" id="eez-green-during" rows="2">These emotions are calm and feel good. Sometimes we act out when we're missing these feelings.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Red Zone — Now</label><textarea class="ed-ta" id="eez-red-now" rows="2">Still feeling high-energy difficult emotions is okay. It means you're still processing — and that's honest.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Yellow Zone — Now</label><textarea class="ed-ta" id="eez-yellow-now" rows="2">Feeling good right now doesn't mean you don't care — it might mean the reflection is helping.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Blue Zone — Now</label><textarea class="ed-ta" id="eez-blue-now" rows="2">Low-energy difficult emotions often show up after something hard happens. They're signs you're taking this seriously.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Green Zone — Now</label><textarea class="ed-ta" id="eez-green-now" rows="2">Feeling calmer now is a good sign — it means the thinking part of your brain is back online.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Intensity Slider — During Label</label><input class="ed-inp" id="eez-int-during" value="How intense were those feelings?"></div>
+              <div class="ed-field"><label class="ed-lbl">Intensity Slider — Now Label</label><input class="ed-inp" id="eez-int-now" value="How intense are those feelings right now?"></div>
+            </div>
+            <div class="ed-sec"><h4>Emotion Definitions</h4>
+              <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Each emotion has a definition and a "messenger" message. Edit any of them below. Format shown as: <strong>Name</strong> → Definition | As a messenger: message</p>
+              <div id="emo-defs-red" style="margin-bottom:16px"></div>
+              <div id="emo-defs-yellow" style="margin-bottom:16px"></div>
+              <div id="emo-defs-blue" style="margin-bottom:16px"></div>
+              <div id="emo-defs-green"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p1-emotions')">Save</button><div class="save-ok" id="sok-p1-emotions">✓ Saved</div></div>
+          </div>
+
+          <!-- READING BREAK -->
+          <div id="eds-reading" class="hidden">
+            <div class="ed-sec"><h4>Reading Break Screen</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Badge</label><input class="ed-inp" id="er-badge" value="📖 Reading Break"></div>
+              <div class="ed-field"><label class="ed-lbl">Section Heading</label><input class="ed-inp" id="er-heading" value="A Note Just for You"></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="er-intro" rows="2">Before your conference, read what's below. It was written based on what you just shared — take your time with it.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">AI Loading Message</label><input class="ed-inp" id="er-loading" value="Writing your personalized entry…"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('reading')">Save</button><div class="save-ok" id="sok-reading">✓ Saved</div></div>
+          </div>
+
+          <!-- PAUSE 1 -->
+          <div id="eds-pause1" class="hidden">
+            <div class="ed-sec"><h4>Pause Block — After Reading</h4>
+              <div class="ed-field"><label class="ed-lbl">Pause Icon (emoji)</label><input class="ed-inp" id="ep1pause-icon" value="✋"></div>
+              <div class="ed-field"><label class="ed-lbl">Pause Heading</label><input class="ed-inp" id="ep1pause-heading" value="Time to Check In"></div>
+              <div class="ed-field"><label class="ed-lbl">Pause Body Text</label><textarea class="ed-ta" id="ep1pause-body" rows="3">Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Continue Button Text</label><input class="ed-inp" id="ep1pause-btn" value="Check-in done — continue to Part 2 →"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('pause1')">Save</button><div class="save-ok" id="sok-pause1">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 2 RIPPLE -->
+          <div id="eds-p2-ripple" class="hidden">
+            <div class="ed-sec"><h4>Part 2 — Opening &amp; Ripple Effect</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Badge</label><input class="ed-inp" id="ep2-badge" value="🏕 Part 2 of 3 — The Repair"></div>
               <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep2-title" value="Making Things Right"></div>
-              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep2-intro" rows="3">Restorative thinking isn't just about accepting a consequence — it's about truly repairing what was broken.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Ripple Effect Sub-Label</label><textarea class="ed-ta" id="ep2-ripple" rows="2">Every action touches more people than we realize. Name who was hurt below and watch the ripple grow.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Make Things Right Placeholder</label><textarea class="ed-ta" id="ep2-mr" rows="2">For each person I hurt, making it right would mean…</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep2-intro" rows="3">Restorative thinking isn't just about accepting a consequence — it's about truly repairing what was broken. Think carefully about each person affected and what it would actually take to make this right.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Ripple Card Label</label><input class="ed-inp" id="ep2-ripple-label" value="🌊 The Ripple Effect"></div>
+              <div class="ed-field"><label class="ed-lbl">Ripple Sub-label</label><textarea class="ed-ta" id="ep2-ripple-sub" rows="2">Every action touches more people than we realize. Name who was hurt below and watch the ripple grow.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Ripple Note (below visual)</label><input class="ed-inp" id="ep2-ripple-note" value="Add names above to see the ripple of impact expand."></div>
+              <div class="ed-field"><label class="ed-lbl">Ring 1 Label</label><input class="ed-inp" id="ep2-ring1" value="You"></div>
+              <div class="ed-field"><label class="ed-lbl">Ring 2 Label</label><input class="ed-inp" id="ep2-ring2" value="Direct Impact"></div>
+              <div class="ed-field"><label class="ed-lbl">Ring 3 Label</label><input class="ed-inp" id="ep2-ring3" value="Classroom / Group"></div>
+              <div class="ed-field"><label class="ed-lbl">Ring 4 Label</label><input class="ed-inp" id="ep2-ring4" value="School Community"></div>
+              <div class="ed-field"><label class="ed-lbl">Make Right — Card Label</label><input class="ed-inp" id="ep2-mr-label" value="What Needs to Happen to Make Things Right?"></div>
+              <div class="ed-field"><label class="ed-lbl">Make Right — Sub-label</label><textarea class="ed-ta" id="ep2-mr-sub" rows="2">Think about each person affected. What would truly repair this — not just apologize, but genuinely make it right?</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Make Right — Placeholder</label><input class="ed-inp" id="ep2-mr-ph" value="For each person I hurt, making it right would mean…"></div>
             </div>
-            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part2')">Save</button><div class="save-ok" id="sok-part2">✓ Saved</div></div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p2-ripple')">Save</button><div class="save-ok" id="sok-p2-ripple">✓ Saved</div></div>
           </div>
-          <div id="eds-part3" class="hidden">
-            <div class="ed-sec">
-              <h4>Part 3 — Growth Plan</h4>
+
+          <!-- PART 2 CONSEQUENCES -->
+          <div id="eds-p2-consequences" class="hidden">
+            <div class="ed-sec"><h4>Consequence Picker — Labels &amp; Options</h4>
+              <div class="ed-field"><label class="ed-lbl">Card Label</label><input class="ed-inp" id="ep2-con-label" value="Choose Up to 3 Ideas"></div>
+              <div class="ed-field"><label class="ed-lbl">Card Sub-label</label><textarea class="ed-ta" id="ep2-con-sub" rows="2">Think about what's realistic, who you need help from, and when you can do it. Then you'll rank them by priority.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Rank Zone Title</label><input class="ed-inp" id="ep2-rank-title" value="Now drag to rank them — most impactful at the top ↑"></div>
+            </div>
+            <div class="ed-sec"><h4>🙌 Service</h4>
+              <div class="ed-field"><label class="ed-lbl">Category Heading</label><input class="ed-inp" id="econ-s-head" value="🙌 Service"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 1</label><input class="ed-inp" id="econ-s1" value="Clean a space (cafeteria, classroom, hallways)"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 2</label><input class="ed-inp" id="econ-s2" value="An act of kindness for someone else"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 3</label><input class="ed-inp" id="econ-s3" value="Write appreciation cards to adults or peers"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 4</label><input class="ed-inp" id="econ-s4" value="Take on a daily building responsibility"></div>
+            </div>
+            <div class="ed-sec"><h4>🤝 Repair</h4>
+              <div class="ed-field"><label class="ed-lbl">Category Heading</label><input class="ed-inp" id="econ-r-head" value="🤝 Repair"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 1</label><input class="ed-inp" id="econ-r1" value="Write an apology letter"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 2</label><input class="ed-inp" id="econ-r2" value="Apologize in person"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 3</label><input class="ed-inp" id="econ-r3" value="Fix or replace something broken"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 4</label><input class="ed-inp" id="econ-r4" value="Make something to give to the person I hurt"></div>
+            </div>
+            <div class="ed-sec"><h4>📚 Skill Building</h4>
+              <div class="ed-field"><label class="ed-lbl">Category Heading</label><input class="ed-inp" id="econ-k-head" value="📚 Skill Building"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 1</label><input class="ed-inp" id="econ-k1" value="Read or research the skill I need"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 2</label><input class="ed-inp" id="econ-k2" value="Meet with a counselor or trusted adult for check-ins"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 3</label><input class="ed-inp" id="econ-k3" value="Create a lesson to help others avoid the same mistake"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 4</label><input class="ed-inp" id="econ-k4" value="Join an extracurricular"></div>
+            </div>
+            <div class="ed-sec"><h4>📄 Creative Product</h4>
+              <div class="ed-field"><label class="ed-lbl">Category Heading</label><input class="ed-inp" id="econ-c-head" value="📄 Creative Product"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 1</label><input class="ed-inp" id="econ-c1" value="Create a story or picture book about a related skill"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 2</label><input class="ed-inp" id="econ-c2" value="Create a slideshow or poster"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 3</label><input class="ed-inp" id="econ-c3" value="Write a narrative or poem"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 4</label><input class="ed-inp" id="econ-c4" value="Create a song or visual display"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p2-consequences')">Save</button><div class="save-ok" id="sok-p2-consequences">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 2 QUESTIONS -->
+          <div id="eds-p2-questions" class="hidden">
+            <div class="ed-sec"><h4>Part 2 — Follow-Up Questions</h4>
+              <div class="ed-field"><label class="ed-lbl">Best Idea — Label</label><input class="ed-inp" id="ep2-bi-label" value="Why Is That Your Best Idea?"></div>
+              <div class="ed-field"><label class="ed-lbl">Best Idea — Placeholder</label><input class="ed-inp" id="ep2-bi-ph" value="Explain why your top-ranked choice makes the most sense for this specific situation…"></div>
+              <div class="ed-field"><label class="ed-lbl">Plan — Label</label><input class="ed-inp" id="ep2-plan-label" value="What Is Your Plan to Follow Through?"></div>
+              <div class="ed-field"><label class="ed-lbl">Plan — Sub-label</label><input class="ed-inp" id="ep2-plan-sub" value="Be specific — who do you need to talk to, when will you do it, and what help do you need?"></div>
+              <div class="ed-field"><label class="ed-lbl">Plan — Placeholder</label><input class="ed-inp" id="ep2-plan-ph" value="My plan is to… I will need help from… I will do this by…"></div>
+              <div class="ed-field"><label class="ed-lbl">Different — Label</label><input class="ed-inp" id="ep2-diff-label" value="What Will You Do Differently Next Time?"></div>
+              <div class="ed-field"><label class="ed-lbl">Different — Sub-label</label><textarea class="ed-ta" id="ep2-diff-sub" rows="2">Think about a specific skill or strategy you could use the next time you're in a similar situation.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Different — Placeholder</label><input class="ed-inp" id="ep2-diff-ph" value="Next time I'm in a similar situation, instead of… I will…"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p2-questions')">Save</button><div class="save-ok" id="sok-p2-questions">✓ Saved</div></div>
+          </div>
+
+          <!-- PAUSE 2 -->
+          <div id="eds-pause2" class="hidden">
+            <div class="ed-sec"><h4>Pause Block — After Part 2</h4>
+              <div class="ed-field"><label class="ed-lbl">Pause Heading</label><input class="ed-inp" id="ep2pause-heading" value="Time to Check In"></div>
+              <div class="ed-field"><label class="ed-lbl">Pause Body Text</label><textarea class="ed-ta" id="ep2pause-body" rows="3">Raise your hand and let the adult in the room know you're ready to review your repair plan together before moving to Part 3.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Continue Button Text</label><input class="ed-inp" id="ep2pause-btn" value="Check-in done — continue to Part 3 →"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('pause2')">Save</button><div class="save-ok" id="sok-pause2">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 3 TRAITS -->
+          <div id="eds-p3-trait" class="hidden">
+            <div class="ed-sec"><h4>Part 3 — Opening &amp; Trait Picker</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Badge</label><input class="ed-inp" id="ep3-badge" value="🗺 Part 3 of 3 — The Path Forward"></div>
               <div class="ed-field"><label class="ed-lbl">Section Title</label><input class="ed-inp" id="ep3-title" value="Your Growth Plan"></div>
-              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep3-intro" rows="3">The last leg of the trail. Choose the Life Ready Graduate trait you most need to develop.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Submit Warning Text</label><textarea class="ed-ta" id="ep3-warn" rows="3">If you did not complete this journal honestly or do not follow through, an additional detention may be issued.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Section Intro</label><textarea class="ed-ta" id="ep3-intro" rows="3">The last leg of the trail. Choose the Life Ready Graduate trait you most need to develop, and commit to how you'll demonstrate it before you leave today.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Trait Card Label</label><input class="ed-inp" id="ep3-trait-label" value="Which LRG Trait Do You Most Need to Grow In?"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait Card Sub-label</label><input class="ed-inp" id="ep3-trait-sub" value="Choose the one that directly connects to what happened — not the easiest one, the most honest one."></div>
+              <div class="ed-field"><label class="ed-lbl">Why Trait — Label</label><input class="ed-inp" id="ep3-why-label" value="Why Did You Choose This Trait?"></div>
+              <div class="ed-field"><label class="ed-lbl">Why Trait — Placeholder</label><input class="ed-inp" id="ep3-why-ph" value="Explain the direct connection between this trait and what happened…"></div>
             </div>
-            <div class="ed-actions"><button class="save-btn" onclick="saveEd('part3')">Save</button><div class="save-ok" id="sok-part3">✓ Saved</div></div>
-          </div>
-          <div id="eds-pause" class="hidden">
-            <div class="ed-sec">
-              <h4>Pause Blocks</h4>
-              <div class="ed-field"><label class="ed-lbl">After Part 1 Reading</label><textarea class="ed-ta" id="ep-pause1" rows="3">Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conference.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">After Part 2</label><textarea class="ed-ta" id="ep-pause2" rows="3">Raise your hand and let the adult in the room know you're ready to review your repair plan together before Part 3.</textarea></div>
+            <div class="ed-sec"><h4>LRG Trait Button Labels</h4>
+              <div class="ed-field"><label class="ed-lbl">Trait 1</label><input class="ed-inp" id="et1" value="Healthy Living, Wellness, &amp; Self-Awareness"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 2</label><input class="ed-inp" id="et2" value="Communication &amp; Empathy"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 3</label><input class="ed-inp" id="et3" value="Honesty, Integrity, &amp; Responsibility"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 4</label><input class="ed-inp" id="et4" value="Critical Thinking &amp; Problem Solving"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 5</label><input class="ed-inp" id="et5" value="Collaborative &amp; Teamwork"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 6</label><input class="ed-inp" id="et6" value="Adaptability &amp; Flexibility"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 7</label><input class="ed-inp" id="et7" value="Resilience &amp; Grit"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 8</label><input class="ed-inp" id="et8" value="Continual Learning &amp; Growth Mindset"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 9</label><input class="ed-inp" id="et9" value="Creativity &amp; Innovation"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 10</label><input class="ed-inp" id="et10" value="Civics, Leadership, &amp; Service"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 11</label><input class="ed-inp" id="et11" value="Digital Literacy &amp; Tech Proficiency"></div>
+              <div class="ed-field"><label class="ed-lbl">Trait 12</label><input class="ed-inp" id="et12" value="Content Mastery &amp; Financial Literacy"></div>
             </div>
-            <div class="ed-actions"><button class="save-btn" onclick="saveEd('pause')">Save</button><div class="save-ok" id="sok-pause">✓ Saved</div></div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p3-trait')">Save</button><div class="save-ok" id="sok-p3-trait">✓ Saved</div></div>
           </div>
+
+          <!-- PART 3 CREATIVE -->
+          <div id="eds-p3-creative" class="hidden">
+            <div class="ed-sec"><h4>Part 3 — Creative Format Picker</h4>
+              <div class="ed-field"><label class="ed-lbl">Card Label</label><input class="ed-inp" id="ep3-cr-label" value="How Will You Demonstrate This Trait?"></div>
+              <div class="ed-field"><label class="ed-lbl">Card Sub-label</label><input class="ed-inp" id="ep3-cr-sub" value="Choose one creative format. You must complete your creation before leaving today."></div>
+              <div class="ed-field"><label class="ed-lbl">Creative Plan Label</label><input class="ed-inp" id="ep3-crplan-label" value="Describe What You'll Create"></div>
+              <div class="ed-field"><label class="ed-lbl">Creative Plan Placeholder</label><input class="ed-inp" id="ep3-crplan-ph" value="Briefly describe what you'll make and what you'll need…"></div>
+            </div>
+            <div class="ed-sec"><h4>Creative Format Options</h4>
+              <div class="ed-field"><label class="ed-lbl">Option 1</label><input class="ed-inp" id="ecr1" value="Act It Out / Script"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 2</label><input class="ed-inp" id="ecr2" value="Public Service Announcement"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 3</label><input class="ed-inp" id="ecr3" value="Visual Poster or Slides"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 4</label><input class="ed-inp" id="ecr4" value="Creative Writing or Story"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 5</label><input class="ed-inp" id="ecr5" value="Poetry"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 6</label><input class="ed-inp" id="ecr6" value="Video"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 7</label><input class="ed-inp" id="ecr7" value="Comic Strip"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 8</label><input class="ed-inp" id="ecr8" value="Rap or Song"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 9</label><input class="ed-inp" id="ecr9" value="Dance or Movement"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 10</label><input class="ed-inp" id="ecr10" value="Sculpture or 3D Display"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 11</label><input class="ed-inp" id="ecr11" value="Coding (Scratch)"></div>
+              <div class="ed-field"><label class="ed-lbl">Option 12</label><input class="ed-inp" id="ecr12" value="My Own Idea"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p3-creative')">Save</button><div class="save-ok" id="sok-p3-creative">✓ Saved</div></div>
+          </div>
+
+          <!-- PART 3 SUBMIT -->
+          <div id="eds-p3-submit" class="hidden">
+            <div class="ed-sec"><h4>Part 3 — Submit Block</h4>
+              <div class="ed-field"><label class="ed-lbl">Card Label</label><input class="ed-inp" id="ep3s-label" value="Before You Submit"></div>
+              <div class="ed-field"><label class="ed-lbl">Body Text</label><textarea class="ed-ta" id="ep3s-body" rows="3">By submitting, you confirm that you completed this journal honestly and understand that a member of the office team will follow up with you to finalize your plan.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Warning Box Text</label><textarea class="ed-ta" id="ep3s-warn" rows="3">If you did not complete this journal honestly, or if you do not follow through on your plan, an additional detention may be issued.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Submit Button Text</label><input class="ed-inp" id="ep3s-btn" value="Submit My Trail Journal ✓"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('p3-submit')">Save</button><div class="save-ok" id="sok-p3-submit">✓ Saved</div></div>
+          </div>
+
+          <!-- DONE SCREEN -->
           <div id="eds-done" class="hidden">
-            <div class="ed-sec">
-              <h4>Completion Screen</h4>
+            <div class="ed-sec"><h4>Completion Screen</h4>
               <div class="ed-field"><label class="ed-lbl">Heading</label><input class="ed-inp" id="ed-heading" value="Journal Complete"></div>
-              <div class="ed-field"><label class="ed-lbl">Completion Message</label><textarea class="ed-ta" id="ed-msg" rows="3">You've reached the top of this part of the trail. What you did here takes honesty and courage.</textarea></div>
-              <div class="ed-field"><label class="ed-lbl">Detail Box Text (line 1–4)</label><textarea class="ed-ta" id="ed-detail" rows="4">Your journal has been recorded anonymously.
-Next step: A follow-up conversation with an office team member.
-Keep working on your creative product if you haven't finished it yet.
-Someone will connect with you soon to walk through your plan together.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Body Paragraph</label><textarea class="ed-ta" id="ed-msg" rows="3">You've reached the top of this part of the trail. What you did here takes honesty and courage. An adult will follow up with you soon to review your plan together.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Box — Line 1</label><input class="ed-inp" id="ed-d1" value="✅ Your journal has been recorded anonymously."></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Box — Line 2</label><input class="ed-inp" id="ed-d2" value="🤝 Next step: A follow-up conversation with an office team member."></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Box — Line 3</label><input class="ed-inp" id="ed-d3" value="📋 Keep working on your creative product if you haven't finished it yet."></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Box — Line 4</label><input class="ed-inp" id="ed-d4" value="🏕 Someone will connect with you soon to walk through your plan together."></div>
+              <div class="ed-field"><label class="ed-lbl">Reading List Intro</label><textarea class="ed-ta" id="ed-rl-intro" rows="2">While you wait for your follow-up, here are some topics worth exploring — chosen based on what you shared today.</textarea></div>
             </div>
             <div class="ed-actions"><button class="save-btn" onclick="saveEd('done')">Save</button><div class="save-ok" id="sok-done">✓ Saved</div></div>
           </div>
+
+          <!-- YOUR SIDE OF THE TRAIL -->
+          <div id="eds-respond" class="hidden">
+            <div class="ed-sec"><h4>Your Side of the Trail — Welcome</h4>
+              <div class="ed-field"><label class="ed-lbl">Site Title</label><input class="ed-inp" id="ers-title" value="Your Side of the Trail"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Heading</label><input class="ed-inp" id="ers-heading" value="Your Side of the Trail"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Tagline</label><input class="ed-inp" id="ers-tagline" value="Your experience matters here"></div>
+              <div class="ed-field"><label class="ed-lbl">Hero Intro</label><textarea class="ed-ta" id="ers-intro" rows="3">Something happened that affected you. This space is for your voice — what you experienced, how you felt, and what you think needs to happen to make things right.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">How It Works Text</label><textarea class="ed-ta" id="ers-how" rows="3">This journal has a few short questions about what happened from your perspective. There are no right or wrong answers — just your honest experience.</textarea></div>
+            </div>
+            <div class="ed-sec"><h4>Your Side — Questions</h4>
+              <div class="ed-field"><label class="ed-lbl">Q1 Label</label><input class="ed-inp" id="ers-q1" value="Describe What Happened"></div>
+              <div class="ed-field"><label class="ed-lbl">Q1 Sub-label</label><input class="ed-inp" id="ers-q1s" value="In your own words — what occurred and how were you involved?"></div>
+              <div class="ed-field"><label class="ed-lbl">Q1 Placeholder</label><input class="ed-inp" id="ers-q1p" value="From my perspective, what happened was…"></div>
+              <div class="ed-field"><label class="ed-lbl">Q2 Label</label><input class="ed-inp" id="ers-q2" value="How Were You Affected?"></div>
+              <div class="ed-field"><label class="ed-lbl">Q2 Sub-label</label><input class="ed-inp" id="ers-q2s" value="Physically, emotionally, socially — in any way that matters to you."></div>
+              <div class="ed-field"><label class="ed-lbl">Q2 Placeholder</label><input class="ed-inp" id="ers-q2p" value="This affected me by… I felt… It impacted…"></div>
+              <div class="ed-field"><label class="ed-lbl">Q3 Label</label><input class="ed-inp" id="ers-q3" value="What Was the Hardest Part?"></div>
+              <div class="ed-field"><label class="ed-lbl">Q3 Placeholder</label><input class="ed-inp" id="ers-q3p" value="The hardest part for me was…"></div>
+              <div class="ed-field"><label class="ed-lbl">Q4 Label</label><input class="ed-inp" id="ers-q4" value="What Do You Think Needs to Happen?"></div>
+              <div class="ed-field"><label class="ed-lbl">Q4 Sub-label</label><textarea class="ed-ta" id="ers-q4s" rows="2">Think about what would actually repair this — not just punishment, but what would genuinely help.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Q4 Placeholder</label><input class="ed-inp" id="ers-q4p" value="To make this right, I think…"></div>
+              <div class="ed-field"><label class="ed-lbl">Ready to Talk Label</label><input class="ed-inp" id="ers-rtt" value="Are You Ready to Be Part of a Conversation?"></div>
+              <div class="ed-field"><label class="ed-lbl">Ready to Talk Sub-label</label><input class="ed-inp" id="ers-rtts" value="You don't have to be — this is just to help the adult know where you are."></div>
+              <div class="ed-field"><label class="ed-lbl">Submit Button Text</label><input class="ed-inp" id="ers-btn" value="Submit My Side of the Trail ✓"></div>
+            </div>
+            <div class="ed-sec"><h4>Your Side — Completion Screen</h4>
+              <div class="ed-field"><label class="ed-lbl">Heading</label><input class="ed-inp" id="ersd-heading" value="Thank You"></div>
+              <div class="ed-field"><label class="ed-lbl">Body Text</label><textarea class="ed-ta" id="ersd-body" rows="3">Your perspective has been recorded. An adult will read what you shared before any follow-up conversation happens. Your voice matters in how this gets resolved.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Line 1</label><input class="ed-inp" id="ersd-d1" value="✅ Your responses have been recorded anonymously."></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Line 2</label><input class="ed-inp" id="ersd-d2" value="🤝 An adult will review your side before any meeting."></div>
+              <div class="ed-field"><label class="ed-lbl">Detail Line 3</label><input class="ed-inp" id="ersd-d3" value="💬 You will be asked before any conversation is set up."></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('respond')">Save</button><div class="save-ok" id="sok-respond">✓ Saved</div></div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -705,6 +973,33 @@ function showEdSec(name, el) {
   document.getElementById('eds-' + name).classList.remove('hidden');
   document.querySelectorAll('.ed-nav-item').forEach(e => e.classList.remove('active'));
   el.classList.add('active');
+  if (name === 'p1-emotions') buildEmoDefs();
+}
+
+// Build emotion definition editors dynamically
+function buildEmoDefs() {
+  // Only build once
+  if (document.querySelector('#emo-defs-red input')) return;
+  const ZONES = {
+    red: ['Angry','Furious','Livid','Enraged','Frustrated','Irritated','Annoyed','Anxious','Nervous','Worried','Panicked','Frightened','Terrified','Tense','Stressed','Overwhelmed','Disgusted','Repulsed','Contempt','Schadenfreude','Humiliated','Jealous','Envious','Resentful','Bitter','Shocked'],
+    yellow: ['Excited','Elated','Ecstatic','Enthusiastic','Motivated','Inspired','Proud','Confident','Hopeful','Playful','Amused','Cheerful','Thrilled','Overconfident','Surprised','Curious','Energized','Grateful','Freudenfreude'],
+    blue: ['Sad','Lonely','Disappointed','Discouraged','Hopeless','Bored','Apathetic','Tired','Drained','Numb','Ashamed','Guilty','Embarrassed','Regretful','Grief','Melancholy','Despondent','Vulnerable','Forlorn','Powerless'],
+    green: ['Calm','Content','Peaceful','Relaxed','Safe','Secure','Grateful','Loved','Accepted','Hopeful','Compassionate','Connected','Relieved','Satisfied','At Ease','Curious','Thoughtful','Proud','Inspired','Awe']
+  };
+  Object.keys(ZONES).forEach(zone => {
+    const container = document.getElementById('emo-defs-' + zone);
+    const heading = document.createElement('div');
+    heading.style.cssText = 'font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)';
+    heading.textContent = { red:'🔴 Red Zone', yellow:'🟡 Yellow Zone', blue:'🔵 Blue Zone', green:'🟢 Green Zone' }[zone];
+    container.appendChild(heading);
+    ZONES[zone].forEach(name => {
+      const id = 'emod-' + zone + '-' + name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+      const wrap = document.createElement('div');
+      wrap.className = 'ed-field';
+      wrap.innerHTML = `<label class="ed-lbl" style="font-weight:700;color:var(--text)">${name}</label><input class="ed-inp" id="${id}-def" placeholder="Definition…" style="margin-bottom:4px"><input class="ed-inp" id="${id}-msg" placeholder="As a messenger: …">`;
+      container.appendChild(wrap);
+    });
+  });
 }
 
 async function saveEd(section) {
