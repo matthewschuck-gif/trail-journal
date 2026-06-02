@@ -188,6 +188,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si">✏️</span>Content Editor</button>
       <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si">🤖</span>AI Prompts</button>
       <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si">🧩</span>Widgets</button>
+      <div class="sb-section">Tools</div>
+      <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si">📬</span>Parent Letters</button>
+      <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si">📈</span>Pattern Analysis</button>
+      <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si">🏔️</span>Your Side of the Trail</button>
+      <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
     </div>
     <div class="sb-footer">
       <button class="sb-out" onclick="doLogout()">Sign Out</button>
@@ -383,6 +388,128 @@ Required structure:
           <div class="tog-row"><div><div class="tog-lbl">AI Staff Summary + CPS Script</div><div class="tog-sub">Full AI analysis including consequences, restorative questions, and reading list</div></div><label class="toggle"><input type="checkbox" id="w-summary" checked><span class="tslider"></span></label></div>
         </div>
         <div class="ed-actions"><button class="save-btn" onclick="saveWidgets()">Save Settings</button><div class="save-ok" id="sok-widgets">✓ Saved</div></div>
+      </div>
+    </div>
+
+    <!-- FEATURE 4: PARENT LETTERS -->
+    <div class="page" id="page-letters">
+      <div class="page-hd">
+        <h2>Parent Letters</h2>
+        <p>Generate a privacy-safe parent communication from any submission. No other student names included.</p>
+      </div>
+      <div class="ed-panel">
+        <div class="ed-sec">
+          <h4>Select a Submission</h4>
+          <div class="ed-field">
+            <label class="ed-lbl">Paste the session ID from the submissions table, or select below</label>
+            <input class="ed-inp" id="letter-session-id" placeholder="Session ID from submissions table…">
+          </div>
+          <div class="ed-field">
+            <label class="ed-lbl">Or load recent submissions</label>
+            <div id="letter-sub-list" style="margin-top:8px"></div>
+          </div>
+        </div>
+        <button class="save-btn" onclick="generateLetter()">Generate Parent Letter</button>
+        <div id="letter-output" style="margin-top:20px;display:none">
+          <div class="ed-sec">
+            <h4>Generated Letter</h4>
+            <div class="ed-field">
+              <label class="ed-lbl">Subject Line</label>
+              <input class="ed-inp" id="letter-subject" readonly>
+            </div>
+            <div class="ed-field">
+              <label class="ed-lbl">Letter Body — review and edit before sending</label>
+              <textarea class="ed-ta" id="letter-body" rows="16" style="font-size:.85rem;line-height:1.7"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <button class="save-btn" onclick="copyLetter()">Copy to Clipboard</button>
+              <div class="save-ok" id="sok-letter" style="display:none">✓ Copied</div>
+            </div>
+          </div>
+        </div>
+        <div id="letter-loading" style="display:none;color:var(--muted);font-size:.84rem;margin-top:12px">⏳ Generating letter…</div>
+      </div>
+    </div>
+
+    <!-- FEATURE 6: PATTERN ANALYSIS -->
+    <div class="page" id="page-patterns">
+      <div class="page-hd">
+        <h2>Pattern Analysis</h2>
+        <p>AI-powered analysis of trends across all anonymous submissions. Run this monthly to inform programming decisions.</p>
+      </div>
+      <div class="ed-panel" style="margin-bottom:16px">
+        <div class="ed-sec">
+          <h4>Date Range</h4>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">From</label>
+              <input type="date" class="ed-inp" id="pat-from" style="width:160px">
+            </div>
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">To</label>
+              <input type="date" class="ed-inp" id="pat-to" style="width:160px">
+            </div>
+            <button class="save-btn" style="margin-top:16px" onclick="runPatternAnalysis()">Run Analysis</button>
+          </div>
+        </div>
+        <div id="pat-loading" style="display:none;color:var(--muted);font-size:.84rem;margin-top:12px">⏳ Analyzing submissions…</div>
+      </div>
+      <div id="pat-output" style="display:none">
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+          <div class="stat-card" style="grid-column:1/-1"><div class="stat-lbl">Overview</div><div id="pat-summary" style="font-size:.9rem;color:var(--text);line-height:1.7;margin-top:4px"></div></div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-card"><h3>Trigger Patterns</h3><div id="pat-triggers" style="font-size:.84rem;color:var(--muted);line-height:1.7"></div></div>
+          <div class="chart-card"><h3>Emotion Patterns</h3><div id="pat-emotions" style="font-size:.84rem;color:var(--muted);line-height:1.7"></div></div>
+          <div class="chart-card"><h3>Insight Level Patterns</h3><div id="pat-insight" style="font-size:.84rem;color:var(--muted);line-height:1.7"></div></div>
+          <div class="chart-card"><h3>LRG Trait Patterns</h3><div id="pat-lrg" style="font-size:.84rem;color:var(--muted);line-height:1.7"></div></div>
+        </div>
+        <div class="ed-panel" style="margin-top:16px">
+          <h4 style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Recommendations</h4>
+          <div id="pat-recs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURE 8: YOUR SIDE OF THE TRAIL -->
+    <div class="page" id="page-responders">
+      <div class="page-hd">
+        <h2>Your Side of the Trail</h2>
+        <p>Responses from students who were affected by an incident. These feed into the conference brief alongside the Trail Journal.</p>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-controls">
+          <input type="text" class="tbl-search" id="resp-search" placeholder="Search by initial…" oninput="filterResp()">
+          <button class="save-btn" style="padding:7px 16px;font-size:.78rem" onclick="loadResponders()">Refresh</button>
+        </div>
+        <div id="resp-tbl-body"><div class="empty"><div class="ei">🏔️</div><p>Loading…</p></div></div>
+      </div>
+      <div style="margin-top:20px" id="conf-brief-wrap" style="display:none">
+        <div class="ed-panel">
+          <h4 style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Conference Brief Generator</h4>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Enter both session IDs to generate a combined conference brief with both sides mapped.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="flex:1"><label class="ed-lbl">Trail Journal Session ID</label><input class="ed-inp" id="brief-journal-id" placeholder="From submissions table…"></div>
+            <div style="flex:1"><label class="ed-lbl">Your Side Session ID</label><input class="ed-inp" id="brief-responder-id" placeholder="From above table…"></div>
+          </div>
+          <button class="save-btn" onclick="generateBrief()">Generate Conference Brief</button>
+          <div id="brief-loading" style="display:none;font-size:.82rem;color:var(--muted);margin-top:10px">⏳ Generating brief…</div>
+          <div id="brief-output" style="display:none;margin-top:16px">
+            <textarea class="ed-ta" id="brief-text" rows="20" style="font-size:.84rem;line-height:1.7" readonly></textarea>
+            <button class="save-btn" style="margin-top:10px" onclick="copyBrief()">Copy Brief</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURE 9: CLASH FLAGS -->
+    <div class="page" id="page-clash">
+      <div class="page-hd">
+        <h2>Clash of Classes Flags</h2>
+        <p>Students who completed a High insight reflection. Review and award squad points manually.</p>
+      </div>
+      <div class="tbl-wrap">
+        <div id="clash-tbl-body"><div class="empty"><div class="ei">🏆</div><p>Loading…</p></div></div>
       </div>
     </div>
 
@@ -617,7 +744,225 @@ function showOk(id) {
   el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 2500);
 }
+
+// ── EXTENDED PAGE NAV ─────────────────────────────────────────────────────
+const _origShowPage = showPage;
+window.showPage = function(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'dashboard') loadDash();
+  if (name === 'submissions') loadSubs();
+  if (name === 'letters') loadLetterSubs();
+  if (name === 'responders') loadResponders();
+  if (name === 'clash') loadClashFlags();
+  if (name === 'patterns') {
+    // Set default date range to last 30 days
+    const now = new Date();
+    const from = new Date(now - 30*24*60*60*1000);
+    document.getElementById('pat-to').value = now.toISOString().split('T')[0];
+    document.getElementById('pat-from').value = from.toISOString().split('T')[0];
+  }
+};
+
+// ── FEATURE 4: PARENT LETTERS ─────────────────────────────────────────────
+let letterSubs = [];
+async function loadLetterSubs() {
+  const data = await sb('reflections?select=id,session_id,initial,created_at,insight_level,part3_json&order=created_at.desc&limit=20');
+  if (!data) return;
+  letterSubs = data;
+  document.getElementById('letter-sub-list').innerHTML = data.map(r => {
+    const d = new Date(r.created_at).toLocaleDateString();
+    return `<button onclick="document.getElementById('letter-session-id').value='${r.session_id}'" style="display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:var(--navy3);border:1px solid var(--border);border-radius:7px;color:var(--text);cursor:pointer;font-family:'Barlow',sans-serif;font-size:.82rem">
+      <strong>${r.initial||'?'}</strong> · ${d} · ${(r.part3_json?.trait||'—').split('&')[0]} · <span style="color:var(--${r.insight_level==='High'?'green':r.insight_level==='Medium'?'gold':'red'})">${r.insight_level||'—'}</span>
+    </button>`;
+  }).join('');
+}
+
+async function generateLetter() {
+  const sessionId = document.getElementById('letter-session-id').value.trim();
+  if (!sessionId) return;
+  document.getElementById('letter-loading').style.display = 'block';
+  document.getElementById('letter-output').style.display = 'none';
+  const rows = await sb('reflections?session_id=eq.' + sessionId + '&select=*');
+  if (!rows || !rows[0]) { document.getElementById('letter-loading').textContent = 'Submission not found.'; return; }
+  const r = rows[0];
+  const ai = r.ai_staff_summary || {};
+  const res = await fetch(SB_URL + '/functions/v1/ai-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
+    body: JSON.stringify({ type: 'parent_letter', payload: {
+      part1: r.part1_json||{}, part2: r.part2_json||{}, part3: r.part3_json||{},
+      insightLevel: r.insight_level||'Medium',
+      repairPlan: ai.repairPlan||'',
+      studentGoal: r.goal||''
+    }})
+  });
+  const data = await res.json();
+  document.getElementById('letter-loading').style.display = 'none';
+  if (data?.subject && data?.body) {
+    document.getElementById('letter-subject').value = data.subject;
+    document.getElementById('letter-body').value = data.body;
+    document.getElementById('letter-output').style.display = 'block';
+  }
+}
+
+function copyLetter() {
+  const text = 'Subject: ' + document.getElementById('letter-subject').value + '\n\n' + document.getElementById('letter-body').value;
+  navigator.clipboard.writeText(text);
+  showOk('sok-letter');
+}
+
+// ── FEATURE 6: PATTERN ANALYSIS ───────────────────────────────────────────
+async function runPatternAnalysis() {
+  const from = document.getElementById('pat-from').value;
+  const to = document.getElementById('pat-to').value;
+  if (!from || !to) return;
+  document.getElementById('pat-loading').style.display = 'block';
+  document.getElementById('pat-output').style.display = 'none';
+
+  const data = await sb(`reflections?created_at=gte.${from}T00:00:00&created_at=lte.${to}T23:59:59&select=insight_level,part1_json,part2_json,part3_json&limit=200`);
+  if (!data || !data.length) { document.getElementById('pat-loading').textContent = 'No submissions in this range.'; return; }
+
+  // Build summary stats to send to AI
+  const traitCounts = {}, emoCounts = {}, insCounts = {Low:0,Medium:0,High:0};
+  data.forEach(r => {
+    const t = r.part3_json?.trait; if (t) traitCounts[t] = (traitCounts[t]||0)+1;
+    (r.part1_json?.emotionsDuring||[]).forEach(e => { emoCounts[e] = (emoCounts[e]||0)+1; });
+    if (r.insight_level) insCounts[r.insight_level]++;
+  });
+  const summaryStats = { total:data.length, insights:insCounts, topTraits: Object.entries(traitCounts).sort((a,b)=>b[1]-a[1]).slice(0,5), topEmotions: Object.entries(emoCounts).sort((a,b)=>b[1]-a[1]).slice(0,8) };
+
+  const res = await fetch(SB_URL + '/functions/v1/ai-proxy', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_ANON},
+    body: JSON.stringify({ type:'pattern_analysis', payload:{ submissions: summaryStats, dateRange: from + ' to ' + to }})
+  });
+  const result = await res.json();
+  document.getElementById('pat-loading').style.display = 'none';
+  if (result?.summary) {
+    document.getElementById('pat-output').style.display = 'block';
+    document.getElementById('pat-summary').textContent = result.summary;
+    document.getElementById('pat-triggers').textContent = result.triggerPattern || result.triggers || '—';
+    document.getElementById('pat-emotions').textContent = result.emotionPattern || '—';
+    document.getElementById('pat-insight').textContent = result.insightPattern || '—';
+    document.getElementById('pat-lrg').textContent = result.lrgPattern || '—';
+    document.getElementById('pat-recs').innerHTML = (result.recommendations||[]).map(r=>`<div class="di dgreen" style="margin-bottom:8px">✓ ${r}</div>`).join('');
+  }
+}
+
+// ── FEATURE 8: RESPONDER TABLE ────────────────────────────────────────────
+async function loadResponders() {
+  document.getElementById('conf-brief-wrap').style.display = 'block';
+  const data = await sb('responder_reflections?select=*&order=created_at.desc&limit=100');
+  if (!data) return;
+  if (!data.length) { document.getElementById('resp-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏔️</div><p>No responses yet.</p></div>'; return; }
+  const rows = data.map(r => {
+    const d = new Date(r.created_at).toLocaleDateString();
+    const ready = r.ready_to_talk || '—';
+    const readyColor = ready==='yes'?'var(--green)':ready==='maybe'?'var(--gold)':'var(--red)';
+    return `<tr>
+      <td><strong>${r.initial||'?'}</strong></td>
+      <td>${d}</td>
+      <td style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.what_happened||'—'}</td>
+      <td style="color:${readyColor};font-weight:700">${ready}</td>
+      <td><button class="view-btn" onclick='openRespModal(${JSON.stringify(r).replace(/"/g,"&quot;")})'>View</button></td>
+      <td><button class="view-btn" onclick="document.getElementById('brief-responder-id').value='${r.session_id}';document.getElementById('brief-journal-id').focus()">Use in Brief</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('resp-tbl-body').innerHTML =
+    `<table><thead><tr><th>Initial</th><th>Date</th><th>What Happened</th><th>Ready to Talk</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function filterResp() { /* basic search */ }
+
+function openRespModal(r) {
+  document.getElementById('modal-title').textContent = `Your Side — Initial: ${r.initial||'?'}`;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="ds"><h4>Their Experience</h4>
+      <div class="di"><div class="di-lbl">What happened</div><div class="di-val">${r.what_happened||'—'}</div></div>
+      <div class="di"><div class="di-lbl">How affected</div><div class="di-val">${r.how_affected||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Hardest part</div><div class="di-val">${r.what_hardest||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Emotions (intensity ${r.intensity}/5)</div><div class="di-val">${(r.emotions_json||[]).map(e=>e.name||e).join(', ')||'—'}</div></div>
+      <div class="di"><div class="di-lbl">What needs to happen</div><div class="di-val">${r.what_needs_to_happen||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Ready to talk</div><div class="di-val">${r.ready_to_talk||'—'}</div></div>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+async function generateBrief() {
+  const jId = document.getElementById('brief-journal-id').value.trim();
+  const rId = document.getElementById('brief-responder-id').value.trim();
+  if (!jId || !rId) { alert('Please enter both session IDs.'); return; }
+  document.getElementById('brief-loading').style.display = 'block';
+  const [jRows, rRows] = await Promise.all([
+    sb('reflections?session_id=eq.' + jId + '&select=*'),
+    sb('responder_reflections?session_id=eq.' + rId + '&select=*'),
+  ]);
+  const j = jRows?.[0], r = rRows?.[0];
+  if (!j || !r) { document.getElementById('brief-loading').textContent = 'Could not find one or both submissions.'; return; }
+  const brief = `CAMP MOUNTAINEER — CONFERENCE BRIEF\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
+    `=== STUDENT A (Trail Journal) — Initial: ${j.initial||'?'} ===\n` +
+    `What happened: ${j.part1_json?.whatHappened||'—'}\n` +
+    `Why: ${j.part1_json?.why||'—'}\n` +
+    `What they cared about: ${j.part1_json?.cpsMyConcern||'—'}\n` +
+    `What they think the other person cared about: ${j.part1_json?.cpsTheirConcern||'—'}\n` +
+    `Insight level: ${j.insight_level||'—'}\n` +
+    `Repair plan: ${j.ai_staff_summary?.repairPlan||'—'}\n` +
+    `Goal: ${j.goal||'not set'}\n\n` +
+    `=== STUDENT B (Your Side of the Trail) — Initial: ${r.initial||'?'} ===\n` +
+    `How they were affected: ${r.how_affected||'—'}\n` +
+    `Hardest part: ${r.what_hardest||'—'}\n` +
+    `What they think should happen: ${r.what_needs_to_happen||'—'}\n` +
+    `Ready to talk: ${r.ready_to_talk||'—'}\n\n` +
+    `=== BOTH CONCERNS ===\n` +
+    `Student A's concern: ${j.part1_json?.cpsMyConcern||'—'}\n` +
+    `Student B's concern: ${r.what_needs_to_happen||'—'}\n\n` +
+    `=== SUGGESTED RESTORATIVE QUESTIONS ===\n` +
+    (j.ai_staff_summary?.restorativeQuestions||[]).map((q,i)=>`${i+1}. ${q}`).join('\n') +
+    `\n\n=== CPS CONFERENCE SCRIPT ===\n` +
+    (j.ai_staff_summary?.cpsScript||[]).map(l=>`${l.speaker}: "${l.text}"`).join('\n');
+
+  document.getElementById('brief-loading').style.display = 'none';
+  document.getElementById('brief-output').style.display = 'block';
+  document.getElementById('brief-text').value = brief;
+}
+
+function copyBrief() { navigator.clipboard.writeText(document.getElementById('brief-text').value); }
+
+// ── FEATURE 9: CLASH FLAGS ────────────────────────────────────────────────
+async function loadClashFlags() {
+  const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
+  if (!data || !data.length) {
+    document.getElementById('clash-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏆</div><p>No High insight flags yet.</p></div>';
+    return;
+  }
+  const rows = data.map(r => {
+    const d = new Date(r.created_at).toLocaleDateString();
+    const awarded = r.clash_points_awarded;
+    return `<tr>
+      <td><strong>${r.initial||'?'}</strong></td>
+      <td>${d}</td>
+      <td>${(r.part3_json?.trait||'—').split('&')[0]}</td>
+      <td style="color:var(--green);font-weight:700">High</td>
+      <td>${awarded ? '<span style="color:var(--green)">✓ Awarded</span>' : '<span style="color:var(--muted)">Pending</span>'}</td>
+      <td>${!awarded ? `<button class="save-btn" style="padding:5px 12px;font-size:.74rem" onclick="awardPoint('${r.session_id}',this)">Award Point</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('clash-tbl-body').innerHTML =
+    `<table><thead><tr><th>Initial</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function awardPoint(sessionId, btn) {
+  btn.textContent = 'Awarding…'; btn.disabled = true;
+  await sb('reflections?session_id=eq.' + sessionId, {
+    method:'PATCH', headers:{Prefer:'return=minimal'},
+    body: JSON.stringify({ clash_points_awarded: true })
+  });
+  btn.closest('tr').querySelector('td:nth-child(5)').innerHTML = '<span style="color:var(--green)">✓ Awarded</span>';
+  btn.closest('td').innerHTML = '';
+}
 </script>
 </body>
 </html>
-
