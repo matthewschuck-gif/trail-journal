@@ -268,6 +268,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="ed-nav-item" onclick="showEdSec('pause1',this)">Pause Block 1</div>
           <div class="ed-nav-item" onclick="showEdSec('p2-ripple',this)">Part 2 — Ripple</div>
           <div class="ed-nav-item" onclick="showEdSec('p2-consequences',this)">Part 2 — Consequences</div>
+          <div class="ed-nav-item" onclick="showEdSec('fair',this)">Fair Screen</div>
           <div class="ed-nav-item" onclick="showEdSec('p2-questions',this)">Part 2 — Questions</div>
           <div class="ed-nav-item" onclick="showEdSec('pause2',this)">Pause Block 2</div>
           <div class="ed-nav-item" onclick="showEdSec('p3-trait',this)">Part 3 — LRG Traits</div>
@@ -453,7 +454,84 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div class="ed-actions"><button class="save-btn" onclick="saveEd('p2-consequences')">Save</button><div class="save-ok" id="sok-p2-consequences">✓ Saved</div></div>
           </div>
 
-          <!-- PART 2 QUESTIONS -->
+          <!-- FAIR SCREEN -->
+          <div id="eds-fair" class="hidden">
+            <div class="ed-sec"><h4>Fair Screen — Header</h4>
+              <div class="ed-field"><label class="ed-lbl">Section Badge</label><input class="ed-inp" id="efs-badge" value="⚖️ Before You Choose"></div>
+              <div class="ed-field"><label class="ed-lbl">Page Title</label><input class="ed-inp" id="efs-title" value="What Does Fair Actually Mean?"></div>
+              <div class="ed-field"><label class="ed-lbl">Page Intro</label><textarea class="ed-ta" id="efs-intro" rows="2">Most people think fair means everyone gets the same thing. Research says something different — and it changes everything about how this works.</textarea></div>
+            </div>
+            <div class="ed-sec"><h4>Tab 1 — Fair Process</h4>
+              <div class="ed-field"><label class="ed-lbl">Tab Label</label><input class="ed-inp" id="efs-t1-tab" value="Fair Process"></div>
+              <div class="ed-field"><label class="ed-lbl">Intro Paragraph</label><textarea class="ed-ta" id="efs-t1-intro" rows="3">Research by Kim and Mauborgne found something surprising: most people will accept an unfavorable outcome as long as the process that reached that conclusion is fair. You don't have to love what happens next — you just need to trust how it was decided.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Myth Column Heading</label><input class="ed-inp" id="efs-myth-head" value="❌ What people think fair means"></div>
+              <div class="ed-field"><label class="ed-lbl">Myth Item 1</label><input class="ed-inp" id="efs-myth-1" value="Everyone gets the same consequence"></div>
+              <div class="ed-field"><label class="ed-lbl">Myth Item 2</label><input class="ed-inp" id="efs-myth-2" value="The student who wins gets less"></div>
+              <div class="ed-field"><label class="ed-lbl">Myth Item 3</label><input class="ed-inp" id="efs-myth-3" value="It's about the outcome being equal"></div>
+              <div class="ed-field"><label class="ed-lbl">Myth Item 4</label><input class="ed-inp" id="efs-myth-4" value="Fair = no consequences at all"></div>
+              <div class="ed-field"><label class="ed-lbl">Truth Column Heading</label><input class="ed-inp" id="efs-truth-head" value="✅ What fair actually means"></div>
+              <div class="ed-field"><label class="ed-lbl">Truth Item 1</label><input class="ed-inp" id="efs-truth-1" value="The process is transparent and consistent"></div>
+              <div class="ed-field"><label class="ed-lbl">Truth Item 2</label><input class="ed-inp" id="efs-truth-2" value="Your voice was heard before decisions were made"></div>
+              <div class="ed-field"><label class="ed-lbl">Truth Item 3</label><input class="ed-inp" id="efs-truth-3" value="You understand why what happened is happening"></div>
+              <div class="ed-field"><label class="ed-lbl">Truth Item 4</label><input class="ed-inp" id="efs-truth-4" value="You know exactly what comes next"></div>
+              <div class="ed-field"><label class="ed-lbl">Connector Label</label><input class="ed-inp" id="efs-connector" value="Fair process has three parts. Your journal is designed around all three:"></div>
+              <div class="ed-field"><label class="ed-lbl">E1 — Icon</label><input class="ed-inp" id="efs-e1-icon" value="🗣️" style="width:60px"></div>
+              <div class="ed-field"><label class="ed-lbl">E1 — Title</label><input class="ed-inp" id="efs-e1-title" value="Engagement"></div>
+              <div class="ed-field"><label class="ed-lbl">E1 — Description</label><textarea class="ed-ta" id="efs-e1-desc" rows="2">You had the chance to tell your full story — what happened, why, and what was going on underneath. Your voice was heard before anything was decided.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">E1 — Checkmark Text</label><input class="ed-inp" id="efs-e1-check" value="✓ You did this in Part 1"></div>
+              <div class="ed-field"><label class="ed-lbl">E2 — Icon</label><input class="ed-inp" id="efs-e2-icon" value="💡" style="width:60px"></div>
+              <div class="ed-field"><label class="ed-lbl">E2 — Title</label><input class="ed-inp" id="efs-e2-title" value="Explanation"></div>
+              <div class="ed-field"><label class="ed-lbl">E2 — Description</label><textarea class="ed-ta" id="efs-e2-desc" rows="2">You now understand what makes a consequence logical, what the 3 R's mean, and how the four buckets work. Nothing is random or hidden.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">E2 — Checkmark Text</label><input class="ed-inp" id="efs-e2-check" value="✓ You learned this in the last screen"></div>
+              <div class="ed-field"><label class="ed-lbl">E3 — Icon</label><input class="ed-inp" id="efs-e3-icon" value="🗺️" style="width:60px"></div>
+              <div class="ed-field"><label class="ed-lbl">E3 — Title</label><input class="ed-inp" id="efs-e3-title" value="Expectation Clarity"></div>
+              <div class="ed-field"><label class="ed-lbl">E3 — Description</label><textarea class="ed-ta" id="efs-e3-desc" rows="2">You'll know exactly what happens next, when, and what your role is. No surprises. A clear path forward — built with you, not handed to you.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">E3 — Checkmark Text</label><input class="ed-inp" id="efs-e3-check" value="✓ You'll build this in Part 2"></div>
+              <div class="ed-field"><label class="ed-lbl">Trail Test Callout</label><textarea class="ed-ta" id="efs-trail-test" rows="2">🏔 The trail test for fair: Were you heard? Do you understand why? Do you know what's next? If all three are yes — the process was fair, even if the outcome is hard.</textarea></div>
+            </div>
+            <div class="ed-sec"><h4>Tab 2 — Hope Is a Skill</h4>
+              <div class="ed-field"><label class="ed-lbl">Tab Label</label><input class="ed-inp" id="efs-t2-tab" value="Hope is a Skill"></div>
+              <div class="ed-field"><label class="ed-lbl">Intro Paragraph</label><textarea class="ed-ta" id="efs-t2-intro" rows="2">Hope isn't a feeling — it's a skill. The difference between hope and a wish is that hopeful people are willing to do the work. They have a destination, a map, and fuel in the engine.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Goals Pillar — Title</label><input class="ed-inp" id="efs-p1-title" value="Goals"></div>
+              <div class="ed-field"><label class="ed-lbl">Goals Pillar — Description</label><textarea class="ed-ta" id="efs-p1-desc" rows="2">A destination worth working toward. Hope is about intention — what you actually believe in, not just what you say you want.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Pathways Pillar — Title</label><input class="ed-inp" id="efs-p2-title" value="Pathways"></div>
+              <div class="ed-field"><label class="ed-lbl">Pathways Pillar — Description</label><textarea class="ed-ta" id="efs-p2-desc" rows="2">The map that gets you there. Hopeful people can see multiple routes to their goal — and they find new ones when obstacles come up.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Pillar — Title</label><input class="ed-inp" id="efs-p3-title" value="Agency"></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Pillar — Description</label><textarea class="ed-ta" id="efs-p3-desc" rows="2">The engine and the fuel. The motivation to actually walk the path. High-hope people are resource seekers — they never go at it alone.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Willpower Quote Callout</label><textarea class="ed-ta" id="efs-will-quote" rows="2">💬 Willpower without pathways is a wish. Pathways without willpower go nowhere. You need both — and this journal is helping you build both right now.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Hope Staircase Label</label><input class="ed-inp" id="efs-stair-label" value="Where are you on the Hope Staircase right now?"></div>
+              <div class="ed-field"><label class="ed-lbl">Hope Staircase Sub-label</label><input class="ed-inp" id="efs-stair-sub" value="Be honest — hope is situational. You might feel different in different places."></div>
+              <div class="ed-field"><label class="ed-lbl">Step 1 — Label</label><input class="ed-inp" id="efs-s1-label" value="I can't see a way forward right now"></div>
+              <div class="ed-field"><label class="ed-lbl">Step 1 — Description</label><input class="ed-inp" id="efs-s1-desc" value="Things feel stuck. I'm not sure anything I do will make a difference."></div>
+              <div class="ed-field"><label class="ed-lbl">Step 2 — Label</label><input class="ed-inp" id="efs-s2-label" value="I want things to be better but I don't know how"></div>
+              <div class="ed-field"><label class="ed-lbl">Step 2 — Description</label><input class="ed-inp" id="efs-s2-desc" value="I have the wish, but not the map or the energy to get there yet."></div>
+              <div class="ed-field"><label class="ed-lbl">Step 3 — Label</label><input class="ed-inp" id="efs-s3-label" value="I can see a path but I need help walking it"></div>
+              <div class="ed-field"><label class="ed-lbl">Step 3 — Description</label><input class="ed-inp" id="efs-s3-desc" value="I know what needs to happen — I just need support to actually do it."></div>
+              <div class="ed-field"><label class="ed-lbl">Step 4 — Label</label><input class="ed-inp" id="efs-s4-label" value="I'm ready to do the work"></div>
+              <div class="ed-field"><label class="ed-lbl">Step 4 — Description</label><input class="ed-inp" id="efs-s4-desc" value="I have a goal, I can see the path, and I'm motivated to follow through."></div>
+            </div>
+            <div class="ed-sec"><h4>Tab 3 — This Is Yours</h4>
+              <div class="ed-field"><label class="ed-lbl">Tab Label</label><input class="ed-inp" id="efs-t3-tab" value="This Is Yours"></div>
+              <div class="ed-field"><label class="ed-lbl">Intro Paragraph</label><textarea class="ed-ta" id="efs-t3-intro" rows="2">Geoffrey Cohen calls this Situation Crafting. What you're about to do isn't a random punishment — it was designed with three things in mind.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Tailoring Card — Title</label><input class="ed-inp" id="efs-sc1-title" value="Tailoring"></div>
+              <div class="ed-field"><label class="ed-lbl">Tailoring Card — Description</label><textarea class="ed-ta" id="efs-sc1-desc" rows="2">The right message for you — based on what you shared, what happened, and what you need to grow.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Targeting Card — Title</label><input class="ed-inp" id="efs-sc2-title" value="Targeting"></div>
+              <div class="ed-field"><label class="ed-lbl">Targeting Card — Description</label><textarea class="ed-ta" id="efs-sc2-desc" rows="2">Designed for the right person. This isn't a one-size-fits-all consequence. It's built for your specific situation.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Timeliness Card — Title</label><input class="ed-inp" id="efs-sc3-title" value="Timeliness"></div>
+              <div class="ed-field"><label class="ed-lbl">Timeliness Card — Description</label><textarea class="ed-ta" id="efs-sc3-desc" rows="2">Happening at the right time — now, while the experience is fresh and the brain is ready to learn.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Social Discipline Window Callout</label><textarea class="ed-ta" id="efs-sdw" rows="2">⚖️ The Social Discipline Window: The most effective interventions apply both pressure and support at the same time — done with you, not to you or for you. That's what this journal is.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Lending Hope Callout</label><textarea class="ed-ta" id="efs-lhope" rows="3">💡 Lending Hope: An adult is going to be part of what happens next. Research shows we only accept hope from people we actually trust. The adult walking through this with you is choosing to be on your side — not just enforcing rules.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Reflection Question</label><input class="ed-inp" id="efs-agency-q" value="Right now, what feels most true for you?"></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Option 1</label><input class="ed-inp" id="efs-ao1" value="I'm ready to own this"></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Option 2</label><input class="ed-inp" id="efs-ao2" value="I'm trying but it's hard"></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Option 3</label><input class="ed-inp" id="efs-ao3" value="I'm not sure yet"></div>
+              <div class="ed-field"><label class="ed-lbl">Agency Option 4</label><input class="ed-inp" id="efs-ao4" value="I don't really want to"></div>
+              <div class="ed-field"><label class="ed-lbl">Reflection Textarea Placeholder</label><input class="ed-inp" id="efs-reflect-ph" value="Write what's going through your mind right now — even if it's complicated…"></div>
+              <div class="ed-field"><label class="ed-lbl">Gate Unlock Message</label><textarea class="ed-ta" id="efs-gate-msg" rows="2">✅ The process is fair. You understand it. Now it's yours to shape.</textarea></div>
+              <div class="ed-field"><label class="ed-lbl">Continue Button Text</label><input class="ed-inp" id="efs-continue-btn" value="Continue to Part 2 — Making Things Right →"></div>
+            </div>
+            <div class="ed-actions"><button class="save-btn" onclick="saveEd('fair')">Save</button><div class="save-ok" id="sok-fair">✓ Saved</div></div>
+          </div>
           <div id="eds-p2-questions" class="hidden">
             <div class="ed-sec"><h4>Part 2 — Follow-Up Questions</h4>
               <div class="ed-field"><label class="ed-lbl">Best Idea — Label</label><input class="ed-inp" id="ep2-bi-label" value="Why Is That Your Best Idea?"></div>
