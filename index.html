@@ -2204,9 +2204,30 @@ const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const EDGE_FN          = 'https://kduypmpqkirvjkbnmuha.supabase.co/functions/v1/ai-proxy';
 
 // ─── STATE ────────────────────────────────────────────────────────────────
+// ─── UTILITIES ───────────────────────────────────────────────────────────
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+// IS_PREVIEW must be declared before S and begin()
+const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
+if (IS_PREVIEW) {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#4a2d7f;color:white;text-align:center;padding:10px;font-family:Barlow,sans-serif;font-size:.82rem;z-index:9999;';
+  banner.innerHTML = '🔐 <strong>Admin Preview Mode</strong> — Validation is disabled. <a href="?" style="color:#c9a84c;margin-left:12px">Exit Preview</a>';
+  document.body.appendChild(banner);
+}
+
 const S = {
   initial: '',
-  sessionId: crypto.randomUUID(),
+  sessionId: generateUUID(),
   eduring: [], enow: [],
   intDuring: 3, intNow: 3,
   yn: null,
@@ -2544,15 +2565,6 @@ const EMOTIONS = {
     { name:'Awe', emoji:'🌄', def:'Feeling small but connected — moved by something vast or beautiful. (Atlas of the Heart)', msg:'Awe expands perspective and shrinks the ego in the best way.' },
   ]
 };
-
-// ─── ADMIN PREVIEW BYPASS ────────────────────────────────────────────────
-const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
-if (IS_PREVIEW) {
-  const banner = document.createElement('div');
-  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#4a2d7f;color:white;text-align:center;padding:10px;font-family:Barlow,sans-serif;font-size:.82rem;z-index:9999;';
-  banner.innerHTML = '🔐 <strong>Admin Preview Mode</strong> — Validation is disabled. <a href="?" style="color:#c9a84c;margin-left:12px">Exit Preview</a>';
-  document.body.appendChild(banner);
-}
 
 // ─── VALIDATION HELPERS ───────────────────────────────────────────────────
 const DISMISSIVE = /^(n\/?a|idk|i\s*don'?t\s*care|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|no idea|skip)$/i;
