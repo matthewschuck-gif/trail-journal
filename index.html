@@ -1045,7 +1045,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .check-gate-item.checked .cg-box { background: var(--trail); border-color: var(--trail); color: white; }
 .gate-unlock { display: none; margin-top: 14px; }
-.gate-unlock.show { display: block; animation: trailIn 0.3s ease; }
+.gate-unlock.show { display: block !important; animation: trailIn 0.3s ease; }
 
 /* ── CREATIVE AI CHALLENGE ── */
 .creative-challenge {
@@ -1681,7 +1681,15 @@ input[type="range"]::-webkit-slider-thumb {
         <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
           ✅ You're ready. You now understand what makes a consequence actually meaningful. Let's find the right one for your situation.
         </div>
-        <button class="pause-btn" onclick="goTo('2c')">Continue — What Is Fair? →</button>
+        <button class="pause-btn" style="width:100%;font-size:1rem;padding:16px" onclick="goTo('2c')">Continue — What Is Fair? →</button>
+      </div>
+      <!-- Fallback: always show a muted progress indicator -->
+      <div id="lc-progress-hint" style="margin-top:16px;font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);text-align:center">
+        Check all 5 boxes above to continue — <span id="lc-checked-count">0</span> of 5 checked
+      </div>
+      <!-- Preview bypass -->
+      <div id="lc-preview-bypass" style="display:none;margin-top:12px;text-align:center">
+        <button class="pause-btn" style="background:var(--purple);font-size:.8rem;padding:8px 20px" onclick="goTo('2c')">Preview: Skip checklist →</button>
       </div>
     </div>
   </div>
@@ -2223,6 +2231,11 @@ if (IS_PREVIEW) {
   banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#4a2d7f;color:white;text-align:center;padding:10px;font-family:Barlow,sans-serif;font-size:.82rem;z-index:9999;';
   banner.innerHTML = '🔐 <strong>Admin Preview Mode</strong> — Validation is disabled. <a href="?" style="color:#c9a84c;margin-left:12px">Exit Preview</a>';
   document.body.appendChild(banner);
+  // Show bypass buttons for gated screens
+  document.addEventListener('DOMContentLoaded', () => {
+    const bypass = document.getElementById('lc-preview-bypass');
+    if (bypass) bypass.style.display = 'block';
+  });
 }
 
 const S = {
@@ -2744,7 +2757,20 @@ function toggleCheck(el) {
   el.classList.toggle('checked');
   box.textContent = wasChecked ? '' : '✓';
   lcChecked += wasChecked ? -1 : 1;
-  document.getElementById('lc-unlock').classList.toggle('show', lcChecked >= 5);
+  // Update progress hint
+  const hint = document.getElementById('lc-checked-count');
+  if (hint) hint.textContent = lcChecked;
+  // Show unlock when all 5 checked
+  const unlock = document.getElementById('lc-unlock');
+  const progressHint = document.getElementById('lc-progress-hint');
+  if (lcChecked >= 5) {
+    unlock.classList.add('show');
+    if (progressHint) progressHint.style.display = 'none';
+    setTimeout(() => unlock.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  } else {
+    unlock.classList.remove('show');
+    if (progressHint) progressHint.style.display = 'block';
+  }
 }
 
 // ─── CREATIVE CHALLENGE ───────────────────────────────────────────────────
