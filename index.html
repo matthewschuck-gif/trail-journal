@@ -447,70 +447,96 @@ input[type="range"]::-webkit-slider-thumb {
 .cps-ta::placeholder { opacity: 0.42; }
 .cps-ta:focus { outline: none; border-color: var(--gold); }
 
-/* ── RIPPLE VISUAL ── */
-.ripple-wrap {
-  position: relative;
-  height: 300px;
+/* ── TRAIL MAP ── */
+.trail-map-outer { margin: 16px 0 8px; }
+.trail-map-canvas {
+  position: relative; width: 100%; border-radius: 14px;
+  background: linear-gradient(180deg, #e8f0e4 0%, #d4e6cc 40%, #c8dfc0 100%);
+  border: 2px solid var(--trail-mid); overflow: hidden;
+  min-height: 260px;
+}
+/* Dotted trail path drawn via SVG */
+.trail-path-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* YOU marker at bottom center */
+.trail-you {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; z-index: 10;
+}
+.trail-you-badge {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--trail); border: 3px solid #1a4a2a;
   display: flex; align-items: center; justify-content: center;
-  margin: 20px 0 0;
+  font-family: 'Walter Turncoat', cursive; font-size: 1.5rem; color: white;
+  box-shadow: 0 4px 18px rgba(44,74,53,0.4);
 }
-.r-ring {
-  position: absolute; border-radius: 50%;
-  border: 2px solid var(--border);
+.trail-you-label {
+  font-family: 'Barlow', sans-serif; font-size: 0.65rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--trail-deep);
+  margin-top: 5px; background: rgba(255,255,255,0.7); padding: 2px 7px; border-radius: 10px;
+}
+/* Marker pins */
+.trail-pin {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  transform: translateX(-50%);
+  animation: pinDrop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes pinDrop {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.5); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+.pin-body {
+  width: 34px; height: 34px;
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.55s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.22);
 }
-.r-ring:nth-child(1) { width: 80px; height: 80px; background: var(--trail); border-color: var(--trail); z-index: 4; }
-.r-ring:nth-child(2) { width: 145px; height: 145px; z-index: 3; }
-.r-ring:nth-child(3) { width: 210px; height: 210px; z-index: 2; }
-.r-ring:nth-child(4) { width: 290px; height: 290px; z-index: 1; }
-.r-ring.lit { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-.r-center {
-  color: white; font-family: 'Walter Turncoat', cursive;
-  font-size: 1.7rem; line-height: 1;
+.pin-icon {
+  transform: rotate(45deg); font-size: 0.85rem;
+  font-family: 'Barlow', sans-serif; font-weight: 800; color: white;
 }
-/* Labels sit outside the rings at fixed offsets from center */
-.r-tag {
-  position: absolute;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.63rem; color: var(--ink-light);
-  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  white-space: nowrap; text-align: center;
-  background: white; padding: 0 4px;
-  pointer-events: none;
+.pin-label-wrap {
+  background: white; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 4px 9px; margin-top: 5px; text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 100px;
 }
-/* Each ring's label sits just below its own bottom edge */
-.r-ring:nth-child(1) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
-.r-ring:nth-child(2) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
-.r-ring:nth-child(3) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
-.r-ring:nth-child(4) .r-tag { bottom: -18px; width: auto; left: 50%; transform: translateX(-50%); }
-.r-names {
-  position: absolute; top: 8px;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.7rem; color: white;
-  font-weight: 600; text-align: center; line-height: 1.6;
-  pointer-events: none;
+.pin-name {
+  font-family: 'Barlow', sans-serif; font-size: 0.75rem; font-weight: 700;
+  color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 88px;
 }
-/* Legend row below the visual */
-.ripple-legend {
-  display: flex; justify-content: center; gap: 0;
-  margin-top: 16px; flex-wrap: wrap;
+.pin-zone-label {
+  font-family: 'Barlow', sans-serif; font-size: 0.58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);
 }
-.ripple-legend-item {
+/* Zone colors */
+.pin-direct .pin-body { background: var(--gold); }
+.pin-group  .pin-body { background: var(--trail-mid); }
+.pin-school .pin-body { background: var(--sky); }
+/* Empty state */
+.trail-empty {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%);
+  text-align: center; pointer-events: none;
+}
+.trail-empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
+.trail-empty-text {
+  font-family: 'Barlow', sans-serif; font-size: 0.82rem; font-style: italic;
+  color: var(--trail-deep); opacity: 0.5;
+}
+/* Zone legend chips */
+.trail-legend {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;
+}
+.tl-chip {
   display: flex; align-items: center; gap: 5px;
-  font-family: 'Barlow', sans-serif; font-size: 0.68rem;
-  font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-  color: var(--ink-light); padding: 4px 10px;
-  border-right: 1px solid var(--border);
+  font-family: 'Barlow', sans-serif; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border);
+  color: var(--ink-light); background: var(--paper); transition: all 0.3s;
 }
-.ripple-legend-item:last-child { border-right: none; }
-.ripple-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-}
-.ripple-note {
-  font-family: 'Barlow', sans-serif; font-style: italic;
-  font-size: 0.82rem; color: var(--ink-light); text-align: center; margin-top: 8px;
-}
+.tl-chip.active { border-color: var(--trail-mid); color: var(--ink); background: var(--trail-light); }
+.tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+/* Name inputs */
+.hurt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
 
 /* ── HURT PEOPLE INPUTS ── */
 .hurt-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 12px; }
@@ -1240,6 +1266,52 @@ input[type="range"]::-webkit-slider-thumb {
 .fair-gate-unlock { display: none; margin-top: 14px; }
 .fair-gate-unlock.show { display: block; animation: trailIn 0.3s ease; }
 
+/* ── AI RIPPLE SUGGESTIONS ── */
+.ripple-suggest {
+  display: none; margin-top: 14px; padding: 16px;
+  background: linear-gradient(135deg, #1a2e1f 0%, #0d1c10 100%);
+  border-radius: 10px; animation: trailIn 0.4s ease;
+}
+.ripple-suggest.show { display: block; }
+.rs-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.rs-badge {
+  background: var(--gold); color: var(--trail-deep);
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
+  font-family: 'Barlow', sans-serif;
+}
+.rs-thinking {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.5); font-size: 0.8rem;
+  font-family: 'Barlow', sans-serif;
+}
+.rs-cards { display: flex; flex-direction: column; gap: 8px; }
+.rs-card {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 9px; padding: 12px 14px;
+  animation: trailIn 0.35s ease both;
+}
+.rs-card:nth-child(2) { animation-delay: 0.1s; }
+.rs-card:nth-child(3) { animation-delay: 0.2s; }
+.rs-person {
+  font-family: 'Barlow', sans-serif; font-size: 0.8rem; font-weight: 700;
+  color: var(--gold); margin-bottom: 4px;
+}
+.rs-insight {
+  font-family: 'Barlow', sans-serif; font-size: 0.82rem;
+  color: rgba(255,255,255,0.82); line-height: 1.6;
+}
+.rs-add-btn {
+  margin-top: 8px; padding: 5px 12px;
+  background: rgba(201,168,76,0.15); border: 1px solid var(--gold);
+  border-radius: 20px; color: var(--gold); font-family: 'Barlow', sans-serif;
+  font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.rs-add-btn:hover { background: var(--gold); color: var(--trail-deep); }
+.rs-add-btn.added { background: var(--trail-mid); border-color: var(--trail-mid); color: white; cursor: default; }
+
 /* ── MISC ── */
 .hidden { display: none !important; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
@@ -1872,33 +1944,64 @@ input[type="range"]::-webkit-slider-thumb {
     <p>Restorative thinking isn't just about accepting a consequence — it's about truly repairing what was broken. Think carefully about each person affected and what it would actually take to make this right.</p>
   </div>
 
-  <!-- RIPPLE -->
+  <!-- TRAIL MAP -->
   <div class="jcard">
-    <div class="jcard-label">🌊 The Ripple Effect</div>
-    <div class="jcard-sub">Every action touches more people than we realize. Name who was hurt below and watch the ripple grow.</div>
+    <div class="jcard-label">🗺️ Impact Trail</div>
+    <div class="jcard-sub">Every action sends ripples down the trail. Type the names of people who were hurt — watch them appear as trail markers. The further up the trail, the wider the impact reached.</div>
     <div class="hurt-grid">
-      <input type="text" class="hurt-p" placeholder="Person 1" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 2" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 3" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 4" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 5" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 6" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 7" oninput="updateRipple()">
-      <input type="text" class="hurt-p" placeholder="Person 8" oninput="updateRipple()">
+      <input type="text" class="hurt-p" placeholder="Person 1" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 2" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 3" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 4" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 5" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 6" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 7" oninput="updateTrailMap()">
+      <input type="text" class="hurt-p" placeholder="Person 8" oninput="updateTrailMap()">
     </div>
-    <div class="ripple-wrap" id="ripple-wrap">
-      <div class="r-ring" id="rr1"><div class="r-center" id="r-init">?</div></div>
-      <div class="r-ring" id="rr2"><div class="r-names" id="r-names"></div></div>
-      <div class="r-ring" id="rr3"></div>
-      <div class="r-ring" id="rr4"></div>
+    <div class="trail-map-outer">
+      <div class="trail-map-canvas" id="trail-map-canvas">
+        <!-- SVG trail path -->
+        <svg class="trail-path-svg" id="trail-svg" viewBox="0 0 400 260" preserveAspectRatio="none">
+          <!-- Winding trail path from bottom center upward -->
+          <path id="trail-path-line"
+            d="M 200,240 C 200,220 160,200 180,175 C 200,150 240,140 220,115 C 200,90 150,85 175,60 C 195,40 220,30 200,15"
+            stroke="#2c4a35" stroke-width="3" stroke-dasharray="8,6"
+            fill="none" opacity="0.35"/>
+          <!-- Distance zone rings (ellipses around YOU) -->
+          <ellipse cx="200" cy="220" rx="60" ry="22" fill="none" stroke="var(--gold)" stroke-width="1" stroke-dasharray="4,4" opacity="0" id="zone-ring-1"/>
+          <ellipse cx="200" cy="220" rx="110" ry="42" fill="none" stroke="var(--trail-mid)" stroke-width="1" stroke-dasharray="4,4" opacity="0" id="zone-ring-2"/>
+          <ellipse cx="200" cy="220" rx="170" ry="65" fill="none" stroke="var(--sky)" stroke-width="1" stroke-dasharray="4,4" opacity="0" id="zone-ring-3"/>
+        </svg>
+        <!-- Empty state -->
+        <div class="trail-empty" id="trail-empty">
+          <div class="trail-empty-icon">🏔️</div>
+          <div class="trail-empty-text">Type names above to place trail markers</div>
+        </div>
+        <!-- Marker container -->
+        <div id="trail-pins"></div>
+        <!-- YOU badge -->
+        <div class="trail-you">
+          <div class="trail-you-badge" id="r-init">?</div>
+          <div class="trail-you-label">You</div>
+        </div>
+      </div>
+      <div class="trail-legend" id="trail-legend">
+        <div class="tl-chip" id="tl-direct"><div class="tl-dot" style="background:var(--gold)"></div>Direct Impact</div>
+        <div class="tl-chip" id="tl-group"><div class="tl-dot" style="background:var(--trail-mid)"></div>Classroom / Group</div>
+        <div class="tl-chip" id="tl-school"><div class="tl-dot" style="background:var(--sky)"></div>School Community</div>
+      </div>
     </div>
-    <div class="ripple-legend">
-      <div class="ripple-legend-item"><div class="ripple-dot" style="background:var(--trail)"></div>You</div>
-      <div class="ripple-legend-item" id="rl-2"><div class="ripple-dot" style="background:var(--border)"></div>Direct Impact</div>
-      <div class="ripple-legend-item" id="rl-3"><div class="ripple-dot" style="background:var(--border)"></div>Classroom / Group</div>
-      <div class="ripple-legend-item" id="rl-4"><div class="ripple-dot" style="background:var(--border)"></div>School Community</div>
+
+    <!-- AI RIPPLE SUGGESTIONS -->
+    <div class="ripple-suggest" id="ripple-suggest">
+      <div class="rs-header">
+        <div class="rs-badge">🌊 Who else?</div>
+      </div>
+      <div class="rs-thinking" id="rs-thinking">
+        <div class="spin"></div>Thinking about who else might have been affected…
+      </div>
+      <div class="rs-cards hidden" id="rs-cards"></div>
     </div>
-    <p class="ripple-note">Add names above to see the ripple of impact expand.</p>
   </div>
 
   <div class="jcard" id="jc-makeright">
@@ -2981,6 +3084,7 @@ function selectAgency(btn, val) {
 }
 
 buildZoneGrids();
+updateTrailMap();
 
 function setYN(v) {
   S.yn = v;
@@ -2996,26 +3100,145 @@ function setYN(v) {
 function flipCard(n) { document.getElementById('fc' + n).classList.toggle('flipped'); }
 
 // ─── RIPPLE ──────────────────────────────────────────────────────────────
-function updateRipple() {
-  const people = Array.from(document.querySelectorAll('.hurt-p')).map(i => i.value.trim()).filter(Boolean);
-  const ringIds = ['rr2','rr3','rr4'];
-  const legendIds = ['rl-2','rl-3','rl-4'];
-  const dotColors = ['var(--gold)','var(--trail-mid)','var(--trail)'];
+// ─── TRAIL MAP ────────────────────────────────────────────────────────────
+// Pin positions along the trail path — distributed from bottom to top
+// Each slot has {x%, y%} relative to the canvas, and a zone
+const TRAIL_SLOTS = [
+  { x: 44, y: 72, zone: 'direct' },
+  { x: 58, y: 68, zone: 'direct' },
+  { x: 35, y: 55, zone: 'group'  },
+  { x: 62, y: 48, zone: 'group'  },
+  { x: 42, y: 38, zone: 'group'  },
+  { x: 58, y: 30, zone: 'school' },
+  { x: 38, y: 20, zone: 'school' },
+  { x: 55, y: 12, zone: 'school' },
+];
 
-  ringIds.forEach((id, i) => {
-    const ring = document.getElementById(id);
-    const legend = document.getElementById(legendIds[i]);
-    const dot = legend?.querySelector('.ripple-dot');
-    const active = people.length > i;
-    ring.classList.toggle('lit', active);
-    if (dot) dot.style.background = active ? dotColors[i] : 'var(--border)';
-    if (legend) legend.style.color = active ? 'var(--ink)' : '';
+const ZONE_LABELS = { direct: 'Direct Impact', group: 'Classroom/Group', school: 'School Community' };
+const ZONE_ICONS  = { direct: '🎯', group: '👥', school: '🏫' };
+
+// Debounce timer and state for AI suggestions
+let rippleSuggestTimer = null;
+let rippleSuggestFired = false;
+let rippleSuggestNames = [];
+
+function updateTrailMap() {
+  const people = Array.from(document.querySelectorAll('.hurt-p'))
+    .map(i => i.value.trim()).filter(Boolean);
+
+  // Update YOU badge
+  const badge = document.getElementById('r-init');
+  if (badge) badge.textContent = S.initial || '?';
+
+  // Empty state
+  const empty = document.getElementById('trail-empty');
+  if (empty) empty.style.display = people.length ? 'none' : 'block';
+
+  // Zone rings
+  ['1','2','3'].forEach(n => {
+    const ring = document.getElementById('zone-ring-' + n);
+    if (!ring) return;
+    const visible = (n==='1' && people.length >= 1) ||
+                    (n==='2' && people.length >= 3) ||
+                    (n==='3' && people.length >= 6);
+    ring.style.opacity = visible ? '0.6' : '0';
+    ring.style.transition = 'opacity 0.5s ease';
   });
 
-  // Show names in ring 2
-  const namesEl = document.getElementById('r-names');
-  if (namesEl) namesEl.textContent = people.slice(0, 3).join('\n');
+  // Legend chips
+  document.getElementById('tl-direct')?.classList.toggle('active', people.length > 0);
+  document.getElementById('tl-group')?.classList.toggle('active', people.length >= 3);
+  document.getElementById('tl-school')?.classList.toggle('active', people.length >= 6);
+
+  // Render pins
+  const container = document.getElementById('trail-pins');
+  if (!container) return;
+  container.innerHTML = '';
+  people.forEach((name, i) => {
+    if (i >= TRAIL_SLOTS.length) return;
+    const slot = TRAIL_SLOTS[i];
+    const pin = document.createElement('div');
+    pin.className = `trail-pin pin-${slot.zone}`;
+    pin.style.left = slot.x + '%';
+    pin.style.top = slot.y + '%';
+    pin.style.animationDelay = (i * 0.06) + 's';
+    pin.innerHTML = `
+      <div class="pin-body"><div class="pin-icon">${ZONE_ICONS[slot.zone]}</div></div>
+      <div class="pin-label-wrap">
+        <div class="pin-name">${name}</div>
+        <div class="pin-zone-label">${ZONE_LABELS[slot.zone]}</div>
+      </div>`;
+    container.appendChild(pin);
+  });
+
+  // Trigger AI suggestions after student has typed at least 1 name, debounced
+  if (people.length >= 1) {
+    const namesKey = people.join(',');
+    // Only fire if names have actually changed and suggestions haven't been shown yet
+    if (!rippleSuggestFired || namesKey !== rippleSuggestNames.join(',')) {
+      clearTimeout(rippleSuggestTimer);
+      rippleSuggestTimer = setTimeout(() => {
+        triggerRippleSuggestions(people);
+      }, 1800); // wait for typing to settle
+    }
+  }
 }
+
+async function triggerRippleSuggestions(namedPeople) {
+  rippleSuggestFired = true;
+  rippleSuggestNames = [...namedPeople];
+
+  const panel = document.getElementById('ripple-suggest');
+  panel.classList.add('show');
+  document.getElementById('rs-thinking').classList.remove('hidden');
+  document.getElementById('rs-cards').classList.add('hidden');
+
+  const p1 = getPart1();
+  const result = await callEdge('ripple_suggest', {
+    named: namedPeople,
+    whatHappened: p1.whatHappened,
+    where: p1.where,
+    whoInvolved: p1.whoInvolved,
+  });
+
+  document.getElementById('rs-thinking').classList.add('hidden');
+  const cards = document.getElementById('rs-cards');
+  cards.classList.remove('hidden');
+
+  const suggestions = result?.suggestions || [];
+  if (!suggestions.length) {
+    panel.classList.remove('show');
+    return;
+  }
+
+  cards.innerHTML = suggestions.map((s, i) => `
+    <div class="rs-card">
+      <div class="rs-person">${s.person}</div>
+      <div class="rs-insight">${s.insight}</div>
+      <button class="rs-add-btn" id="rs-btn-${i}" onclick="addRippleSuggestion('${s.person.replace(/'/g,"\\'")}', ${i})">
+        + Add to my trail
+      </button>
+    </div>
+  `).join('');
+}
+
+function addRippleSuggestion(name, idx) {
+  // Find first empty hurt-p input and fill it
+  const inputs = document.querySelectorAll('.hurt-p');
+  for (let input of inputs) {
+    if (!input.value.trim()) {
+      input.value = name;
+      updateTrailMap();
+      break;
+    }
+  }
+  // Mark button as added
+  const btn = document.getElementById('rs-btn-' + idx);
+  if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); btn.disabled = true; }
+}
+
+// Keep updateRipple as alias for compatibility
+function updateRipple() { updateTrailMap(); }
 
 // ─── CONSEQUENCE + DRAG ───────────────────────────────────────────────────
 document.querySelectorAll('.cc').forEach(cb => {
