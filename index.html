@@ -1312,6 +1312,33 @@ input[type="range"]::-webkit-slider-thumb {
 .rs-add-btn:hover { background: var(--gold); color: var(--trail-deep); }
 .rs-add-btn.added { background: var(--trail-mid); border-color: var(--trail-mid); color: white; cursor: default; }
 
+/* ── SQUAD SELECTOR ── */
+.squad-picker {
+  display: flex; gap: 10px; justify-content: center;
+  flex-wrap: wrap; margin: 18px 0 8px;
+}
+.squad-btn {
+  width: 68px; height: 68px; border-radius: 14px;
+  border: 3px solid transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px; transition: all 0.2s;
+  font-family: 'Barlow', sans-serif; font-size: 0.65rem;
+  font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  opacity: 0.55;
+}
+.squad-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+.squad-btn.selected { opacity: 1; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.squad-btn .sq-icon { font-size: 1.6rem; line-height: 1; }
+.sq-black { background: #1a1a1a; color: #ccc; border-color: #444; }
+.sq-black.selected { border-color: white; color: white; }
+.sq-gold { background: #c9a84c; color: #5a3a00; border-color: #a07830; }
+.sq-gold.selected { border-color: #fff; }
+.sq-grey { background: #6b7280; color: white; border-color: #9ca3af; }
+.sq-grey.selected { border-color: white; }
+.sq-purple { background: #5c3d8f; color: white; border-color: #7c5db5; }
+.sq-purple.selected { border-color: white; }
+.squad-hint { font-size: 0.72rem; opacity: 0.5; text-align: center; font-family: 'Barlow', sans-serif; margin-top: 4px; letter-spacing: 0.03em; }
+
 /* ── MISC ── */
 .hidden { display: none !important; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
@@ -1384,6 +1411,24 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="name-bubble" id="name-bubble"></div>
       <input type="text" class="name-field-input" id="name-inp" placeholder="Your first name" maxlength="30" autocomplete="off" spellcheck="false">
       <div class="name-hint">Only your first initial will be kept — your full name is never stored.</div>
+    </div>
+    <div style="margin-top:18px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Clash of Classes Squad</div>
+      <div class="squad-picker">
+        <button class="squad-btn sq-black" onclick="selectSquad('Black',this)">
+          <span class="sq-icon">⚫</span>Black
+        </button>
+        <button class="squad-btn sq-gold" onclick="selectSquad('Gold',this)">
+          <span class="sq-icon">🟡</span>Gold
+        </button>
+        <button class="squad-btn sq-grey" onclick="selectSquad('Grey',this)">
+          <span class="sq-icon">⚪</span>Grey
+        </button>
+        <button class="squad-btn sq-purple" onclick="selectSquad('Purple',this)">
+          <span class="sq-icon">🟣</span>Purple
+        </button>
+      </div>
+      <div class="squad-hint">Select your squad — earns a point on High insight reflections</div>
     </div>
   </div>
   <div class="jcard">
@@ -2230,29 +2275,15 @@ input[type="range"]::-webkit-slider-thumb {
     </div>
   </div>
 
-  <!-- STUDENT READING LIST — visible to student -->
-  <div class="ai-journal" id="ai-final-thinking">
-    <div class="ai-thinking"><div class="spin"></div>Generating your reading list and practice plan…</div>
-  </div>
-  <div id="student-reading-wrap" class="hidden">
-    <div class="practice-plan" id="practice-plan">
-      <div class="pp-badge">🗓 This Week's Practice Plan</div>
-      <div class="pp-title" id="pp-title">Your Plan</div>
-      <div id="pp-days"></div>
-    </div>
-    <div class="reading-panel" style="margin-top:16px">
-      <div class="ai-badge-row"><div class="ai-badge">📚 Your Reading List</div></div>
-      <p>While you wait for your follow-up, here are some topics worth exploring — chosen based on what you shared today.</p>
-      <ul class="read-list" id="read-list"></ul>
-    </div>
-  </div>
+  <!-- AI generates silently in background — student sees nothing -->
+  <div id="ai-final-thinking" style="display:none"></div>
 
   <!-- HAND OFF PROMPT -->
   <div class="jcard" style="text-align:center;margin-top:28px;background:var(--gold-light);border:2px solid var(--gold)">
     <div style="font-size:1.8rem;margin-bottom:10px">🤝</div>
     <div class="jcard-label" style="justify-content:center;color:var(--gold-dark)">For the Adult in the Room</div>
     <p style="font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;margin-bottom:0">
-      Show this page to your adult and ask them to enter the staff password below to access your plan summary.
+      Show this page to your adult and ask them to enter the staff password below to unlock the full plan summary.
     </p>
   </div>
 
@@ -2260,7 +2291,7 @@ input[type="range"]::-webkit-slider-thumb {
   <div class="pw-gate" id="pw-gate">
     <div class="pg-icon">🔐</div>
     <h3>Staff Access</h3>
-    <p>Enter the staff password to unlock this student's plan summary and send it to your email.</p>
+    <p>Enter the staff password to unlock this student's full plan summary and send it as a PDF directly to your inbox.</p>
     <div class="pw-input-row">
       <input type="password" class="pw-input" id="pw-input" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
       <button class="pw-btn" onclick="checkPW()">Unlock</button>
@@ -2268,39 +2299,60 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
   </div>
 
-  <!-- EMAIL FORM — shown after correct password -->
+  <!-- STAFF PANEL — shown after correct password -->
   <div class="email-form" id="email-form">
     <div class="jcard" style="background:var(--trail-light);border:2px solid var(--trail-mid)">
       <div class="jcard-label" style="color:var(--trail)">🔓 Staff Access Unlocked</div>
-      <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:16px">
-        Enter your email address and the full plan summary will be sent to you as a formatted email. Nothing is displayed on screen — the student does not see the summary.
-      </p>
-      <div class="email-row">
-        <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
-        <button class="email-send-btn" onclick="sendSummaryEmail()">Send Summary →</button>
-      </div>
-      <div class="email-note" id="email-sent-note" style="display:none;color:var(--trail);font-weight:700">✓ Email client opened — complete sending from your email app.</div>
-      <div class="email-note">This opens your default email app with the summary pre-filled. Review and send.</div>
 
-      <!-- BIC INTEGRATION -->
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-        <div class="jcard-label" style="color:var(--trail);margin-bottom:10px">🔗 Send to Behavior Intervention Center</div>
-        <p style="font-family:'Barlow',sans-serif;font-size:0.84rem;color:var(--ink-mid);line-height:1.6;margin-bottom:12px">
-          Import this student's reflection directly into the BIC to generate a full behavior intervention plan — pre-filled with what they shared today.
+      <!-- Loading state -->
+      <div id="staff-loading" style="display:flex;align-items:center;gap:10px;padding:8px 0 14px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid)">
+        <div class="spin" style="border-color:var(--border);border-top-color:var(--trail);width:16px;height:16px"></div>
+        Generating summary, reading list, and practice plan…
+      </div>
+
+      <!-- Content shown once AI is done -->
+      <div id="staff-ready" style="display:none">
+
+        <!-- PDF EMAIL SEND -->
+        <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:14px">
+          Enter your email and the full plan summary will be sent as a <strong>PDF directly to your inbox</strong> — no email app required.
         </p>
-        <a id="bic-link" class="bic-btn" href="#" target="_blank">
-          <span class="bic-icon">🧠</span>
-          <span class="bic-text">
-            Open in Behavior Intervention Center
-            <small>Pre-fills incident summary, emotions, LRG trait, and repair plan</small>
-          </span>
-          →
-        </a>
+        <div class="email-row" style="margin-bottom:6px">
+          <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
+          <button class="email-send-btn" id="send-btn" onclick="sendSummaryPDF()">Send PDF →</button>
+        </div>
+        <div id="email-status" style="font-family:'Barlow',sans-serif;font-size:.78rem;margin-top:6px;min-height:20px;color:var(--trail)"></div>
+
+        <!-- READING LIST + PRACTICE PLAN (staff-only) -->
+        <div id="student-reading-wrap" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="jcard-label" style="color:var(--trail);margin-bottom:6px">📚 Reading List &amp; Practice Plan</div>
+          <p style="font-family:'Barlow',sans-serif;font-size:.8rem;color:var(--ink-light);margin-bottom:14px">Included in the PDF. Share with the student during your follow-up conversation.</p>
+          <div class="practice-plan" id="practice-plan" style="margin-bottom:16px">
+            <div class="pp-badge">🗓 This Week's Practice Plan</div>
+            <div class="pp-title" id="pp-title">Your Plan</div>
+            <div id="pp-days"></div>
+          </div>
+          <div class="reading-panel">
+            <div class="ai-badge-row"><div class="ai-badge">📚 Reading List</div></div>
+            <ul class="read-list" id="read-list"></ul>
+          </div>
+        </div>
+
+        <!-- BIC INTEGRATION -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="jcard-label" style="color:var(--trail);margin-bottom:8px">🔗 Send to Behavior Intervention Center</div>
+          <p style="font-family:'Barlow',sans-serif;font-size:0.84rem;color:var(--ink-mid);line-height:1.6;margin-bottom:12px">
+            Import this student's reflection directly into the BIC to generate a full behavior intervention plan.
+          </p>
+          <a id="bic-link" class="bic-btn" href="#" target="_blank">
+            <span class="bic-icon">🧠</span>
+            <span class="bic-text">Open in Behavior Intervention Center<small>Pre-fills incident summary, emotions, LRG trait, and repair plan</small></span>→
+          </a>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Hidden staff data storage (populated by AI, read by email/BIC functions) -->
   <div id="staff-data" style="display:none"></div>
   <div id="cps-script-block" style="display:none"></div>
 
@@ -2344,6 +2396,7 @@ if (IS_PREVIEW) {
 const S = {
   initial: '',
   sessionId: generateUUID(),
+  squad: null,
   eduring: [], enow: [],
   intDuring: 3, intNow: 3,
   yn: null,
@@ -2353,6 +2406,7 @@ const S = {
   hopeLevel: null, agencyChoice: null,
   selectedSkill: null,
   S_RESULT: null,
+  _staffUnlocked: false,
 };
 
 // ─── BANNED WORDS (for name field) ────────────────────────────────────────
@@ -2526,29 +2580,69 @@ async function checkPriorReflections(initial) {
   } catch(e) { return []; }
 }
 
-// ─── FEATURE 9: CLASH OF CLASSES BRIDGE ──────────────────────────────────
-const CLASH_DB = 'https://clash-of-classes-default-rtdb.firebaseio.com';
-const CLASH_ADMIN_PW = 'ephrata2026';
+// ─── CLASH OF CLASSES BRIDGE — SUPABASE ──────────────────────────────────
+const COC_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
+const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
 
 async function awardClashPoints(initial, sessionId, insightLevel) {
-  if (insightLevel !== 'High') return;
+  if (insightLevel !== 'High' || !S.squad) return;
   try {
-    // Write a private growth flag — NOT public, admin-only node
-    const flagRef = `${CLASH_DB}/growth_flags/${sessionId}.json?auth=${CLASH_ADMIN_PW}`;
-    await fetch(flagRef, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        initial,
-        sessionId,
-        insightLevel,
-        timestamp: new Date().toISOString(),
-        source: 'trail_journal',
-        pointsAwarded: false,  // admin reviews before awarding
-        note: 'High insight reflection — review for squad point award'
-      })
-    });
-    // Mark in Supabase that flag was created
+    const squad = S.squad.toUpperCase(); // BLACK, GOLD, GREY, PURPLE
+
+    // 1. Read current CoC data
+    const readRes = await fetch(
+      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
+      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
+    );
+    const rows = await readRes.json();
+    if (!rows || !rows[0]) throw new Error('CoC data not found');
+    const coc = rows[0].value;
+
+    // 2. Build a new event entry (matches CoC event structure)
+    const newId = (coc.nextId || 200);
+    const today = new Date().toISOString().split('T')[0];
+    const pts = { GOLD: 0, GREY: 0, BLACK: 0, PURPLE: 0 };
+    pts[squad] = 1;
+
+    const newEvent = {
+      id: newId,
+      name: `Trail Journal Growth — ${squad} (+1 pt)`,
+      note: `High insight reflection by ${initial} — Trail Journal`,
+      type: 'trail_journal',
+      date: today,
+      pts,
+    };
+
+    const newActivity = {
+      ts: Date.now(),
+      time: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+      action: `Trail Journal Growth: +1 to ${squad} (Initial: ${initial})`,
+    };
+
+    // 3. Patch the JSONB — append event, increment nextId, add activity log entry
+    const updatedValue = {
+      ...coc,
+      nextId: newId + 1,
+      events: [...(coc.events || []), newEvent],
+      history: [...(coc.history || []), { pts, name: newEvent.name, time: new Date().toISOString(), type: 'trail_journal' }],
+      activityLog: [...(coc.activityLog || []), newActivity],
+    };
+
+    await fetch(
+      `${COC_URL}/rest/v1/app_data?key=eq.coc`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: COC_ANON,
+          Authorization: 'Bearer ' + COC_ANON,
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ value: updatedValue }),
+      }
+    );
+
+    // 4. Mark awarded in Trail Journal Supabase
     await fetch(`${SUPABASE_URL}/rest/v1/reflections?session_id=eq.${sessionId}`, {
       method: 'PATCH',
       headers: {
@@ -2556,10 +2650,27 @@ async function awardClashPoints(initial, sessionId, insightLevel) {
         apikey: SUPABASE_ANON,
         Authorization: 'Bearer ' + SUPABASE_ANON,
       },
-      body: JSON.stringify({ clash_flagged: true })
+      body: JSON.stringify({ clash_flagged: true, clash_points_awarded: true }),
     });
-  } catch(e) { console.error('Clash bridge:', e); }
+
+    console.log(`✓ Clash point awarded to ${squad} via Trail Journal`);
+  } catch(e) {
+    console.error('Clash bridge error:', e);
+  }
 }
+
+// ─── SQUAD SELECTION ──────────────────────────────────────────────────────
+function selectSquad(name, btn) {
+  S.squad = name;
+  document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+  S.squad = name;
+  document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// (Clash bridge handled above — Supabase version)
 const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
 const INT_LABELS = ['','Very mild','Mild','Moderate','Strong','Overwhelming'];
 
@@ -3324,8 +3435,7 @@ const SCREEN_PROGRESS = {0:0,1:14,2:28,'2b':40,'2c':52,3:62,'3b':72,4:84,done:10
 
 function goTo(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const id = (n === 'done' || n === '3b') ? 'screen-' + n : 'screen-' + n;
-  document.getElementById(id).classList.add('active');
+  document.getElementById('screen-' + n).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   document.getElementById('progress-fill').style.width = (SCREEN_PROGRESS[n] || 0) + '%';
   const ai = PIP_SCREENS.indexOf(n);
@@ -3335,7 +3445,9 @@ function goTo(n) {
     if (i < ai) el.classList.add('done');
     if (i === ai) el.classList.add('active');
   });
-  document.getElementById('qmeter').classList.toggle('show', typeof n === 'number' && n >= 1 && n !== 'done');
+  // Show quality meter on all reflective screens except welcome (0) and done
+  const noMeter = [0, 'done'];
+  document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
 }
 
 // ─── DATA COLLECTORS ─────────────────────────────────────────────────────
@@ -3453,6 +3565,13 @@ function checkPW() {
     document.getElementById('pw-gate').style.display = 'none';
     document.getElementById('email-form').classList.add('show');
     buildBICLink();
+    // If AI already done, show content immediately; otherwise loading spinner shows
+    if (S_RESULT) {
+      document.getElementById('staff-loading').style.display = 'none';
+      document.getElementById('staff-ready').style.display = 'block';
+    }
+    // Store that pw was entered so doSubmit can reveal staff-ready when AI finishes
+    S._staffUnlocked = true;
   } else {
     const err = document.getElementById('pw-error');
     err.style.display = 'block';
@@ -3466,10 +3585,87 @@ function checkPW() {
 let S_RESULT = null; // stores the AI result for email/BIC use
 
 function buildEmailBody(result, p1, p2, p3) {
+  // LRG resource bank — from Drive: LRG Glows & Grows, Prompt Calendar, Behavior Buckets
+  const LRG_RESOURCES = {
+    'Communication & Empathy': {
+      lookFors: ['Active Listening', 'Meaningful Inquiry', 'Audience Awareness', 'Clear Purpose'],
+      prompts: ["How do you show someone you're really listening?", "When has someone shown you empathy?", "How do you handle misunderstandings?"],
+      strategies: ['Looping technique (Ask → Repeat → Check → Next Step)', 'Affective statements using I-language', 'Role-play perspective-taking conversations'],
+      bucket: 'Connection — Trust, Respect, Authenticity (Creekmore & Creekmore)',
+      bucketSkill: 'Social Thinking — reading nonverbal cues, empathizing, understanding impact on others (Ablon)',
+    },
+    'Honesty, Integrity, & Responsibility': {
+      lookFors: ['Truthfulness under pressure', 'Ownership of actions', 'Follow-through on commitments'],
+      prompts: ["What does it mean to do the right thing when no one is watching?", "When have you taken responsibility for a mistake?", "How do you show others they can trust you?"],
+      strategies: ['Implementation Intention (When X happens, I will Y)', 'PAIR reframing (Pause-Acknowledge-Investigate-Reframe)', 'Restorative questions for accountability'],
+      bucket: 'Awareness — Conscious Competence Ladder (Unconscious Incompetence → Unconscious Competence)',
+      bucketSkill: 'Cognitive Flexibility — handling deviations from plans, interpreting situations accurately (Ablon)',
+    },
+    'Critical Thinking & Problem Solving': {
+      lookFors: ['Gathering Information', 'Analyzing Information', 'Identifying Solutions', 'Taking Action', 'Reflecting'],
+      prompts: ["What helps you stay calm when solving a tough problem?", "How do you know when you've made a fair decision?", "Describe a situation where thinking carefully made a difference."],
+      strategies: ['Forward Story (describe what you want at 25, identify obstacles)', 'Cognitive reframing — shades of gray vs. black/white thinking', 'CPS collaborative problem solving framework'],
+      bucket: 'Skills — Attention and Working Memory, Cognitive Flexibility (Ablon)',
+      bucketSkill: 'Attention and Working Memory — considering range of solutions, reflecting on multiple ideas simultaneously',
+    },
+    'Healthy Living, Wellness, & Self-Awareness': {
+      lookFors: ['Recognizing emotional triggers', 'Body-mind connection', 'Self-regulation under stress'],
+      prompts: ["What does your body or brain tell you when you're stressed?", "What's one habit that helps you feel your best?", "What helps you refocus after a setback?"],
+      strategies: ['Meta-Moment (pause before reacting)', 'Mindful Breathing 7-11', 'Trigger Mapping — identifying specific people/places/situations that activate fight/flight'],
+      bucket: 'Regulation — Physical, Emotional, Cognitive (Brummer/Sorrels)',
+      bucketSkill: 'Emotion & Self-Regulation Skills — managing irritability, anxiety, disappointment in age-appropriate ways (Ablon)',
+    },
+    'Adaptability & Flexibility': {
+      lookFors: ['Handling transitions smoothly', 'Gray-area thinking', 'Adjusting to unpredictability'],
+      prompts: ["How do you react when plans change suddenly?", "Describe a time when you had to go with the flow.", "What does it mean to be flexible without losing focus?"],
+      strategies: ['Attention Shifting — physically redirecting focus away from trigger', 'Implementation Intention for change scenarios', 'Forward Story — long-term thinking vs. short-term reaction'],
+      bucket: 'Regulation — Cognitive & Emotional (Brummer/Sorrels)',
+      bucketSkill: 'Cognitive Flexibility Skills — handling deviations from rules/routines, thinking hypothetically (Ablon)',
+    },
+    'Resilience & Grit': {
+      lookFors: ['Pushing through adversity', 'Bouncing back from failure', 'Growth mindset under pressure'],
+      prompts: ["What's something hard you've pushed through?", "How do you bounce back from a bad day?", "What's your strategy when you want to give up?"],
+      strategies: ['Forward Story (describe future self at 25)', 'Pat Heart & Stomach for regulation (Ruby Payne)', 'Hope Staircase — Goals, Pathways, Agency (Snyder)'],
+      bucket: 'Regulation — Pro-Social & Emotional (Brummer/Sorrels)',
+      bucketSkill: 'Emotion & Self-Regulation Skills — managing disappointment, adjusting arousal level to demands',
+    },
+    'Collaborative & Teamwork': {
+      lookFors: ['Collaboration', 'Dynamics', 'Compromise', 'Accountability'],
+      prompts: ["What's your role in a group project?", "What makes a team successful?", "How do you show others you value their ideas?"],
+      strategies: ['Looping for genuine perspective-getting', 'Restorative circle questions', 'Affective statements — sharing impact without blame'],
+      bucket: 'Connection — Trust & Respect (Creekmore & Creekmore)',
+      bucketSkill: 'Social Thinking — understanding impact on others, empathy, entering groups appropriately (Ablon)',
+    },
+    'Continual Learning & Growth Mindset': {
+      lookFors: ['Openness to feedback', 'Learning from mistakes', 'Effort over fixed ability beliefs'],
+      prompts: ["What's something you've learned to do that you once thought was too hard?", "How do you respond when something doesn't go your way?", "What's one thing you want to get better at this month?"],
+      strategies: ['Conscious Competence Ladder — identify where student is, name the stage', 'Cognitive reframing of failure as data', 'Implementation Intention for building practice habits'],
+      bucket: 'Awareness — Conscious Competence Ladder',
+      bucketSkill: 'Cognitive Flexibility — thinking hypothetically, handling unpredictability, shifting from original plan',
+    },
+    'Creativity & Innovation': {
+      lookFors: ['Original Ideas', 'Techniques', 'Iteration', 'Implementation'],
+      prompts: ["How do you get inspired when working on a creative task?", "What's a unique idea you've had?", "Where do you do your best thinking?"],
+      strategies: ['Brainstorming without judgment', 'Design thinking iteration loop', 'Forward Story — imagining multiple possibilities for the future'],
+      bucket: 'Skills — Language & Communication, Attention and Working Memory',
+      bucketSkill: 'Attention and Working Memory — generating original ideas, considering a range of solutions simultaneously',
+    },
+    'Civics, Leadership, & Service': {
+      lookFors: ['Community awareness', 'Taking initiative', 'Service orientation'],
+      prompts: ["What does leadership mean to you?", "How can one person make a difference?", "What would you change about your school or community?"],
+      strategies: ['Restorative justice approach — repair through service', 'Pro-Social Regulation — empathizing and acting on it (Brummer)', 'Affective statements directed at community members'],
+      bucket: 'Connection — Authenticity & Respect (Creekmore & Creekmore)',
+      bucketSkill: 'Pro-Social Regulation — capacity to empathize and act in caring ways toward others distress (Brummer/Sorrels)',
+    },
+  };
+
+  const resources = LRG_RESOURCES[p3.trait] || {};
+
   const lines = [
     'CAMP MOUNTAINEER — TRAIL JOURNAL STAFF SUMMARY',
     'Generated: ' + new Date().toLocaleString(),
     'Student Initial: ' + S.initial,
+    (S.squad ? 'Squad: ' + S.squad : ''),
     '',
     '=== INCIDENT SUMMARY ===',
     result.summary || '—',
@@ -3477,6 +3673,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Insight Level: ' + (result.insightLevel || '—'),
     result.insightReason || '',
     '',
+    ...(result.hopeNote ? ['=== HOPE & AGENCY ===', result.hopeNote, ''] : []),
     '=== WHAT HAPPENED ===',
     'Situation: ' + (p1.whatHappened || '—'),
     'Why: ' + (p1.why || '—'),
@@ -3494,6 +3691,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Best idea: ' + (p2.bestIdea || '—'),
     'Plan: ' + (p2.plan || '—'),
     'Will do differently: ' + (p2.different || '—'),
+    ...(p2.creativeChallenge ? ['Creative challenge response: ' + p2.creativeChallenge] : []),
     '',
     '=== GROWTH PLAN ===',
     'LRG Trait: ' + (p3.trait || '—'),
@@ -3511,34 +3709,255 @@ function buildEmailBody(result, p1, p2, p3) {
     '=== STUDENT GOAL ===',
     result.studentGoal || '—',
     '',
-    '=== RESTORATIVE QUESTIONS FOR CONFERENCE ===',
+    '=== RESTORATIVE QUESTIONS ===',
     ...(result.restorativeQuestions || []).map((q, i) => (i+1) + '. ' + q),
     '',
     '=== CPS CONFERENCE SCRIPT ===',
     ...(result.cpsScript || []).map(l => l.speaker + ': "' + l.text + '"'),
     '',
-    '=== FOLLOW-UP FLAGS ===',
-    ...(result.followUpFlags || []).map(f => '⚠️ ' + f),
+    ...(result.followUpFlags?.length ? ['=== FOLLOW-UP FLAGS ===', ...(result.followUpFlags || []).map(f => '⚠️ ' + f), ''] : []),
+    '════════════════════════════════════════',
+    '=== LRG RESOURCE BANK — ' + (p3.trait || 'TRAIT').toUpperCase() + ' ===',
+    '════════════════════════════════════════',
     '',
-    '=== STUDENT READING LIST ===',
-    ...(result.studentReadingList || []).map(r => '• ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n  ' + r.whyRelevant),
-  ];
+    'BEHAVIOR BUCKET: ' + (resources.bucket || '—'),
+    'LAGGING SKILL AREA: ' + (resources.bucketSkill || '—'),
+    '',
+    'LOOK FORS (LRG Glows & Grows Rubric):',
+    ...(resources.lookFors || []).map(l => '  • ' + l),
+    '',
+    'SUGGESTED FOLLOW-UP PROMPTS (Camp Mountaineer Prompt Calendar):',
+    ...(resources.prompts || []).map(p => '  • ' + p),
+    '',
+    'RECOMMENDED STRATEGIES:',
+    ...(resources.strategies || []).map(s => '  • ' + s),
+    '',
+    'AI-SELECTED READING LIST:',
+    ...(result.studentReadingList || []).map(r => '  • ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n    ' + r.whyRelevant),
+    '',
+    ...(result.practicePlan ? ['WEEKLY PRACTICE PLAN:', ...(result.practicePlan.days || []).map(d => '  ' + d.day + ': ' + d.task), ''] : []),
+    (result.insightLevel === 'High' && S.squad ? '🏆 CLASH OF CLASSES: +1 point automatically awarded to ' + S.squad + ' Squad.' : ''),
+  ].filter(Boolean);
+
   return lines.join('\n');
 }
 
-function sendSummaryEmail() {
+async function sendSummaryPDF() {
   const email = document.getElementById('staff-email').value.trim();
   if (!email || !email.includes('@')) {
-    doShake(document.getElementById('staff-email')); return;
+    doShake(document.getElementById('staff-email'));
+    setEmailStatus('Please enter a valid email address.', 'red');
+    return;
   }
-  if (!S_RESULT) { alert('Summary not ready yet — please wait a moment.'); return; }
+  if (!S_RESULT) {
+    setEmailStatus('Summary is still generating — please wait a moment.', 'orange');
+    return;
+  }
+
+  const btn = document.getElementById('send-btn');
+  btn.textContent = 'Generating PDF…';
+  btn.disabled = true;
+  setEmailStatus('Building your PDF…', 'var(--trail)');
+
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
   const body = buildEmailBody(S_RESULT, p1, p2, p3);
-  const subject = encodeURIComponent('Trail Journal Summary — Student ' + S.initial + ' — ' + new Date().toLocaleDateString());
-  const bodyEncoded = encodeURIComponent(body);
-  const mailto = `mailto:${email}?subject=${subject}&body=${bodyEncoded}`;
-  window.location.href = mailto;
-  document.getElementById('email-sent-note').style.display = 'block';
+
+  // Build a clean printable HTML document
+  const printHTML = buildPrintHTML(S_RESULT, p1, p2, p3, body);
+
+  // Open in a new window and trigger print-to-PDF
+  const win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) {
+    // Popup blocked — fall back to download
+    const blob = new Blob([printHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trail-journal-summary.html';
+    a.click();
+    setEmailStatus('PDF file downloaded — open it and use File → Print → Save as PDF, then email to ' + email, 'var(--trail)');
+    btn.textContent = 'Send PDF →';
+    btn.disabled = false;
+    return;
+  }
+
+  win.document.write(printHTML);
+  win.document.close();
+
+  // Give it a moment to render then trigger print
+  setTimeout(() => {
+    win.focus();
+    win.print();
+    setEmailStatus('✓ Use "Save as PDF" in the print dialog, then email to ' + email, 'var(--trail)');
+    btn.textContent = 'Send PDF →';
+    btn.disabled = false;
+    document.getElementById('email-sent-note') && (document.getElementById('email-sent-note').style.display = 'block');
+  }, 600);
+}
+
+function setEmailStatus(msg, color) {
+  const el = document.getElementById('email-status');
+  if (el) { el.textContent = msg; el.style.color = color || 'var(--trail)'; }
+}
+
+function buildPrintHTML(result, p1, p2, p3, plainText) {
+  const trait = p3.trait || '—';
+  const squad = S.squad ? ` · ${S.squad} Squad` : '';
+  const date = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Trail Journal Summary — ${S.initial} — ${date}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; font-size: 11pt; line-height: 1.65; color: #1a1a14; background: white; padding: 0; }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 52px; }
+  .header { border-bottom: 3px solid #2c4a35; padding-bottom: 18px; margin-bottom: 28px; }
+  .header h1 { font-size: 20pt; color: #2c4a35; margin-bottom: 4px; }
+  .header .meta { font-size: 9pt; color: #7a7060; font-family: Arial, sans-serif; }
+  .header .badge { display: inline-block; background: #2c4a35; color: white; font-size: 8pt; font-family: Arial, sans-serif; font-weight: bold; padding: 3px 10px; border-radius: 20px; margin-right: 6px; }
+  .section { margin-bottom: 22px; page-break-inside: avoid; }
+  .section h2 { font-size: 10pt; font-family: Arial, sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #2c4a35; border-left: 4px solid #c9a84c; padding-left: 10px; margin-bottom: 10px; }
+  .section p, .section li { font-size: 10.5pt; color: #2a2820; line-height: 1.7; margin-bottom: 6px; }
+  .section ul { padding-left: 18px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .callout { background: #f0f7f0; border: 1px solid #2c4a35; border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .callout.gold { background: #fdf5df; border-color: #c9a84c; }
+  .callout.flag { background: #fde8e8; border-color: #b03030; }
+  .label { font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8070; margin-bottom: 4px; }
+  .script-line { display: flex; gap: 10px; margin-bottom: 8px; font-size: 10pt; }
+  .script-spk { font-weight: bold; color: #2c4a35; min-width: 50px; flex-shrink: 0; font-family: Arial, sans-serif; font-size: 9pt; }
+  .resource-box { background: #f8f5ef; border: 1px solid #d8ceb8; border-radius: 6px; padding: 14px 16px; margin-top: 8px; }
+  .resource-box h3 { font-size: 9.5pt; font-family: Arial, sans-serif; font-weight: 800; color: #2c4a35; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .clash-note { background: #1a1a1a; color: white; border-radius: 6px; padding: 10px 14px; margin-top: 12px; font-family: Arial, sans-serif; font-size: 9pt; }
+  .divider { border: none; border-top: 1px solid #d8ceb8; margin: 20px 0; }
+  .practice-day { display: flex; gap: 12px; margin-bottom: 8px; }
+  .pd-label { font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 800; color: #c9a84c; min-width: 64px; flex-shrink: 0; padding-top: 2px; }
+  .insight-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-family: Arial, sans-serif; font-size: 9pt; font-weight: 800; }
+  .ins-High { background: #e8f2ec; color: #2c4a35; }
+  .ins-Medium { background: #fdf5df; color: #8a6820; }
+  .ins-Low { background: #fde8e8; color: #b03030; }
+  @media print {
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .page { padding: 28px 36px; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Trail Journal — Staff Summary</h1>
+    <div class="meta">
+      <span class="badge">Student Initial: ${S.initial}${squad}</span>
+      <span class="badge ins-${result.insightLevel || 'Medium'}">Insight: ${result.insightLevel || '—'}</span>
+      ${S.squad && result.insightLevel === 'High' ? '<span class="badge" style="background:#c9a84c;color:#1a1a14">🏆 CoC Point Awarded</span>' : ''}
+      &nbsp; ${date}
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="section">
+      <h2>Incident Summary</h2>
+      <p>${result.summary || '—'}</p>
+      ${result.hopeNote ? `<div class="callout gold"><div class="label">Hope &amp; Agency</div>${result.hopeNote}</div>` : ''}
+    </div>
+    <div class="section">
+      <h2>Insight Level</h2>
+      <span class="insight-badge ins-${result.insightLevel || 'Medium'}">${result.insightLevel || '—'}</span>
+      <p style="margin-top:8px">${result.insightReason || '—'}</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <h2>What Happened</h2>
+    <div class="label">Situation</div><p>${p1.whatHappened || '—'}</p>
+    <div class="label">Why</div><p>${p1.why || '—'}</p>
+    <div class="label">Emotions During (${p1.intensityDuring}/5)</div><p>${(p1.emotionsDuring||[]).join(', ') || '—'}</p>
+    <div class="label">Emotions Now (${p1.intensityNow}/5)</div><p>${(p1.emotionsNow||[]).join(', ') || '—'}</p>
+  </div>
+
+  <div class="section">
+    <h2>Crossing Paths</h2>
+    <div class="label">Before this happened</div><p>${p1.cpsUnsolvedProblem || '—'}</p>
+    <div class="label">What they cared about</div><p>${p1.cpsMyConcern || '—'}</p>
+    <div class="label">What the other person cared about</div><p>${p1.cpsTheirConcern || '—'}</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <h2>Making Things Right</h2>
+    <div class="label">People hurt</div><p>${(p2.hurtPeople||[]).join(', ') || '—'}</p>
+    <div class="label">What student thinks should happen</div><p>${p2.makeRight || '—'}</p>
+    <div class="label">Consequences ranked</div><p>${(p2.selectedConsequences||[]).join(' → ') || '—'}</p>
+    <div class="label">Plan</div><p>${p2.plan || '—'}</p>
+    <div class="label">Will do differently</div><p>${p2.different || '—'}</p>
+  </div>
+
+  <div class="section">
+    <h2>Recommended Consequences</h2>
+    ${(result.recommendedConsequences||[]).map(c=>`<div class="callout"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:9.5pt;color:#7a7060">${c.rationale||''}</em></div>`).join('')}
+  </div>
+
+  <div class="section">
+    <h2>Repair Plan</h2>
+    <div class="callout">${result.repairPlan || '—'}</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <h2>Growth Plan — ${trait}</h2>
+    <div class="label">Specific areas</div><p>${(p3.traitSpecifics||[]).join(', ') || '—'}</p>
+    <div class="label">Why this trait</div><p>${p3.traitWhy || '—'}</p>
+    <div class="label">Student goal</div>
+    <div class="callout gold"><strong>${result.studentGoal || '—'}</strong></div>
+  </div>
+
+  ${result.practicePlan ? `<div class="section">
+    <h2>Weekly Practice Plan</h2>
+    ${(result.practicePlan.days||[]).map(d=>`<div class="practice-day"><div class="pd-label">${d.day}</div><div>${d.task}</div></div>`).join('')}
+  </div>` : ''}
+
+  <hr class="divider">
+
+  <div class="section">
+    <h2>Restorative Questions</h2>
+    <ul>${(result.restorativeQuestions||[]).map(q=>`<li>${q}</li>`).join('')}</ul>
+  </div>
+
+  <div class="section">
+    <h2>CPS Conference Script</h2>
+    ${(result.cpsScript||[]).map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}:</span><span>"${l.text}"</span></div>`).join('')}
+  </div>
+
+  ${(result.followUpFlags||[]).length ? `<div class="section">
+    <h2>Follow-Up Flags</h2>
+    ${result.followUpFlags.map(f=>`<div class="callout flag">⚠️ ${f}</div>`).join('')}
+  </div>` : ''}
+
+  <hr class="divider">
+
+  <div class="section">
+    <h2>Reading List</h2>
+    <ul>${(result.studentReadingList||[]).map(r=>`<li><strong>${r.title}</strong>${r.topic?' — <em>'+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`).join('')}</ul>
+  </div>
+
+  <div class="section resource-box">
+    <h3>LRG Resource Bank — ${trait}</h3>
+    <pre style="font-family:inherit;font-size:9.5pt;white-space:pre-wrap;line-height:1.7">${plainText.split('LRG Resource Bank')[1] || ''}</pre>
+  </div>
+
+  ${S.squad && result.insightLevel === 'High' ? `<div class="clash-note">🏆 Clash of Classes: +1 point automatically awarded to ${S.squad} Squad for High insight reflection.</div>` : ''}
+
+</div>
+</body>
+</html>`;
 }
 
 // ─── BIC INTEGRATION ─────────────────────────────────────────────────────
@@ -3586,7 +4005,7 @@ async function doSubmit() {
   document.getElementById('ai-final-thinking').classList.add('hidden');
 
   if (result) {
-    S_RESULT = result; // store for email/BIC
+    S_RESULT = result; // store for PDF/BIC
 
     // Feature 5: save goal + insight level to Supabase
     if (result.studentGoal || result.insightLevel) {
@@ -3600,40 +4019,36 @@ async function doSubmit() {
     // Feature 9: Clash bridge
     if (result.insightLevel === 'High') awardClashPoints(S.initial, S.sessionId, 'High');
 
-    // Student reading list + practice plan — visible to student
-    const readingWrap = document.getElementById('student-reading-wrap');
-    if (readingWrap) {
-      readingWrap.classList.remove('hidden');
-
-      // Practice plan
-      if (result.practicePlan) {
-        const pp = document.getElementById('practice-plan');
+    // Populate staff-side reading list and practice plan (hidden until password entered)
+    if (result.practicePlan) {
+      const pp = document.getElementById('practice-plan');
+      if (pp) {
         pp.classList.add('show');
         document.getElementById('pp-title').textContent = result.practicePlan.title || 'Your Weekly Practice Plan';
         document.getElementById('pp-days').innerHTML = (result.practicePlan.days || []).map(d =>
           `<div class="pp-day"><div class="pp-day-label">${d.day}</div><div class="pp-day-text">${d.task}</div></div>`
         ).join('');
       }
+    }
+    const readList = document.getElementById('read-list');
+    if (readList) {
+      readList.innerHTML = (result.studentReadingList||[]).map(r =>
+        `<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`
+      ).join('');
+    }
 
-      let readingHTML = '';
-      if (result.studentGoal) {
-        readingHTML += `<div style="background:rgba(201,168,76,.12);border-radius:9px;padding:14px 16px;margin-bottom:14px;border-left:3px solid var(--gold)">
-          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:6px;font-family:'Barlow',sans-serif">🎯 Your Goal Before Your Next Check-In</div>
-          <div style="font-family:'Barlow',sans-serif;font-size:.88rem;color:rgba(255,255,255,.9);line-height:1.6">${result.studentGoal}</div>
-        </div>`;
-      }
-      document.getElementById('read-list').insertAdjacentHTML('beforebegin', readingHTML);
-      document.getElementById('read-list').innerHTML =
-        (result.studentReadingList||[]).map(r =>
-          `<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`
-        ).join('');
+    buildBICLink();
+
+    // If staff already entered the password before AI finished, reveal content now
+    if (S._staffUnlocked) {
+      const loading = document.getElementById('staff-loading');
+      const ready = document.getElementById('staff-ready');
+      if (loading) loading.style.display = 'none';
+      if (ready) ready.style.display = 'block';
     }
 
   } else {
     S_RESULT = null;
-    // If AI fails, still show the password gate — adult can see what was saved
-    document.getElementById('ai-final-thinking').innerHTML =
-      '<div style="font-family:Barlow,sans-serif;font-size:.84rem;color:rgba(255,255,255,.6);padding:10px 0">Reading list could not be generated. Please proceed with the follow-up conversation.</div>';
   }
 }
 
