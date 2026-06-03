@@ -2665,10 +2665,6 @@ function selectSquad(name, btn) {
   document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
-  S.squad = name;
-  document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
 
 // (Clash bridge handled above — Supabase version)
 const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
