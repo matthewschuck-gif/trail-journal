@@ -29,6 +29,8 @@
   --border: #d8ceb8;
   --shadow-warm: 0 4px 24px rgba(44,74,53,0.12);
   --radius: 14px;
+  --purple: #5c3d8f;
+  --purple-light: #f0ebf8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -902,6 +904,342 @@ input[type="range"]::-webkit-slider-thumb {
 .cps-syn-text p { margin-bottom: 10px; }
 .cps-syn-text strong { color: #a8d5b5; }
 
+/* ── PASSWORD GATE ── */
+.pw-gate {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 32px 28px;
+  text-align: center; margin-top: 24px;
+}
+.pw-gate .pg-icon { font-size: 2.4rem; margin-bottom: 14px; }
+.pw-gate h3 { font-family: 'Walter Turncoat', cursive; font-size: 1.4rem; margin-bottom: 8px; }
+.pw-gate p { font-family: 'Barlow', sans-serif; font-size: 0.88rem; color: var(--ink-mid); line-height: 1.65; margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto; }
+.pw-input-row { display: flex; gap: 10px; max-width: 360px; margin: 0 auto; }
+.pw-input {
+  flex: 1; padding: 12px 16px; border: 2px solid var(--border);
+  border-radius: 9px; font-family: 'Barlow', sans-serif; font-size: 0.92rem;
+  background: var(--paper); text-align: center; letter-spacing: 0.08em;
+}
+.pw-input:focus { outline: none; border-color: var(--trail-mid); background: white; }
+.pw-btn {
+  padding: 12px 20px; background: var(--trail); color: white; border: none;
+  border-radius: 9px; font-family: 'Barlow', sans-serif; font-weight: 700;
+  font-size: 0.88rem; cursor: pointer; transition: opacity 0.2s;
+}
+.pw-btn:hover { opacity: 0.88; }
+.pw-error { font-size: 0.78rem; color: var(--red); margin-top: 8px; display: none; }
+
+/* ── EMAIL FORM ── */
+.email-form {
+  display: none; margin-top: 20px; animation: trailIn 0.4s ease;
+}
+.email-form.show { display: block; }
+.email-row { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+.email-inp {
+  flex: 1; padding: 12px 16px; border: 2px solid var(--border);
+  border-radius: 9px; font-family: 'Barlow', sans-serif; font-size: 0.9rem;
+  background: var(--paper);
+}
+.email-inp:focus { outline: none; border-color: var(--trail-mid); background: white; }
+.email-send-btn {
+  padding: 12px 20px; background: var(--trail); color: white; border: none;
+  border-radius: 9px; font-family: 'Barlow', sans-serif; font-weight: 700;
+  font-size: 0.88rem; cursor: pointer; white-space: nowrap;
+}
+.email-send-btn:hover { opacity: 0.88; }
+.email-note { font-size: 0.76rem; color: var(--ink-light); margin-top: 8px; text-align: center; }
+
+/* ── BIC BUTTON ── */
+.bic-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 14px 18px; margin-top: 10px;
+  background: var(--purple-light); border: 2px solid var(--purple);
+  border-radius: 10px; font-family: 'Barlow', sans-serif; font-size: 0.88rem;
+  font-weight: 700; color: var(--purple); cursor: pointer;
+  text-decoration: none; transition: all 0.15s;
+}
+.bic-btn:hover { background: var(--purple); color: white; }
+.bic-btn .bic-icon { font-size: 1.2rem; flex-shrink: 0; }
+.bic-btn .bic-text { flex: 1; text-align: left; }
+.bic-btn .bic-text small { display: block; font-weight: 400; font-size: 0.75rem; opacity: 0.75; margin-top: 2px; }
+
+/* ── PAUSE SCREEN ── */
+.pause-screen-hero {
+  background: var(--gold-light); border: 2px solid var(--gold);
+  border-radius: 20px; padding: 52px 40px; text-align: center; margin-bottom: 22px;
+}
+.pause-screen-hero .ps-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.pause-screen-hero h2 { font-family: 'Walter Turncoat', cursive; font-size: 2rem; margin-bottom: 10px; }
+.pause-screen-hero p { font-family: 'Barlow', sans-serif; font-size: 0.92rem; color: var(--ink-mid); line-height: 1.75; max-width: 460px; margin: 0 auto 24px; }
+.checklist { text-align: left; max-width: 360px; margin: 0 auto 28px; }
+.checklist-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-family: 'Barlow', sans-serif; font-size: 0.88rem; color: var(--ink-mid);
+  padding: 8px 0; border-bottom: 1px solid var(--border); line-height: 1.5;
+}
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item .ci { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── LOGICAL CONSEQUENCES EDUCATION ── */
+.lc-tabs {
+  display: flex; gap: 0; margin-bottom: 0;
+  border-bottom: 2px solid var(--border);
+}
+.lc-tab {
+  flex: 1; padding: 11px 8px; text-align: center;
+  font-family: 'Barlow', sans-serif; font-size: 0.76rem; font-weight: 700;
+  color: var(--ink-light); cursor: pointer; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s; background: transparent; border-top: none; border-left: none; border-right: none;
+}
+.lc-tab:hover { color: var(--trail); }
+.lc-tab.active { color: var(--trail); border-bottom-color: var(--trail); }
+.lc-panel { display: none; padding: 20px 0 4px; }
+.lc-panel.show { display: block; animation: trailIn 0.3s ease; }
+
+/* VS comparison */
+.vs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.vs-col { border-radius: 10px; padding: 16px; }
+.vs-col.bad { background: #fde8e8; border: 1.5px solid #e05c5c; }
+.vs-col.good { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.vs-head { font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.vs-col.bad .vs-head { color: #b03030; }
+.vs-col.good .vs-head { color: var(--trail); }
+.vs-item { font-family: 'Barlow', sans-serif; font-size: 0.82rem; line-height: 1.5; color: var(--ink-mid); margin-bottom: 7px; display: flex; gap: 7px; align-items: flex-start; }
+.vs-item::before { content: '•'; flex-shrink: 0; font-weight: 900; }
+.vs-col.bad .vs-item::before { color: #e05c5c; }
+.vs-col.good .vs-item::before { color: var(--trail-mid); }
+
+/* Three R's */
+.three-r-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 14px 0; }
+.r-card { border-radius: 10px; padding: 16px; text-align: center; }
+.r-card:nth-child(1) { background: var(--gold-light); border: 1.5px solid var(--gold); }
+.r-card:nth-child(2) { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.r-card:nth-child(3) { background: #e8f0fb; border: 1.5px solid #5b8dd9; }
+.r-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.r-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
+.r-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+
+/* Bucket cards */
+.bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.bucket-card { border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border); background: var(--paper); }
+.bucket-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-warm); }
+.bucket-card.selected { border-color: var(--trail); background: var(--trail-light); }
+.bucket-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; color: var(--ink); }
+.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+.bucket-example { font-family: 'Barlow', sans-serif; font-size: 0.75rem; color: var(--trail); font-style: italic; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+
+/* Checklist gate */
+.check-gate { margin: 16px 0; }
+.check-gate-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; margin-bottom: 8px;
+  border: 2px solid var(--border); border-radius: 9px; background: var(--paper);
+  cursor: pointer; transition: all 0.2s; font-family: 'Barlow', sans-serif;
+  font-size: 0.84rem; color: var(--ink-mid); line-height: 1.5;
+}
+.check-gate-item.checked { border-color: var(--trail); background: var(--trail-light); color: var(--ink); }
+.check-gate-item .cg-box {
+  width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; transition: all 0.2s; margin-top: 1px;
+}
+.check-gate-item.checked .cg-box { background: var(--trail); border-color: var(--trail); color: white; }
+.gate-unlock { display: none; margin-top: 14px; }
+.gate-unlock.show { display: block; animation: trailIn 0.3s ease; }
+
+/* ── CREATIVE AI CHALLENGE ── */
+.creative-challenge {
+  display: none; margin-top: 16px;
+  background: linear-gradient(135deg, #1a2e1e 0%, #0d1c10 100%);
+  border-radius: 10px; padding: 20px; color: white; animation: trailIn 0.4s ease;
+}
+.creative-challenge.show { display: block; }
+.cc-badge { background: var(--gold); color: var(--trail-deep); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-family: 'Barlow', sans-serif; display: inline-block; margin-bottom: 10px; }
+.cc-question { font-family: 'Walter Turncoat', cursive; font-size: 1.05rem; color: white; margin-bottom: 12px; line-height: 1.4; }
+.cc-textarea {
+  width: 100%; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 8px; padding: 11px 13px; font-family: 'Barlow', sans-serif;
+  font-size: 0.87rem; color: white; resize: vertical; min-height: 80px; line-height: 1.6;
+}
+.cc-textarea::placeholder { opacity: 0.45; }
+.cc-textarea:focus { outline: none; border-color: var(--gold); }
+.cc-thinking { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.8rem; font-family: 'Barlow', sans-serif; padding: 4px 0; }
+
+/* ── SKILL BUILDING HUB ── */
+.skill-hub { margin-top: 14px; }
+.skill-domain {
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 10px; overflow: hidden;
+}
+.skill-domain-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; cursor: pointer; background: var(--paper);
+  font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.88rem;
+  transition: background 0.2s;
+}
+.skill-domain-head:hover { background: var(--paper-dark); }
+.skill-domain-head .sd-icon { font-size: 1.2rem; flex-shrink: 0; }
+.skill-domain-head .sd-chevron { margin-left: auto; font-size: 0.75rem; color: var(--ink-light); transition: transform 0.2s; }
+.skill-domain.open .sd-chevron { transform: rotate(90deg); }
+.skill-domain-body { display: none; padding: 0 16px 14px; }
+.skill-domain.open .skill-domain-body { display: block; animation: trailIn 0.25s ease; }
+.skill-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; margin: 8px 0;
+  border: 1.5px solid var(--border); border-radius: 9px; background: white;
+  cursor: pointer; transition: all 0.15s;
+}
+.skill-card:hover { border-color: var(--trail-mid); background: var(--trail-light); }
+.skill-card.selected { border-color: var(--trail); background: var(--trail); color: white; }
+.skill-card.selected .sc-name { color: white; }
+.skill-card.selected .sc-desc { color: rgba(255,255,255,0.75); }
+.sc-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+.sc-name { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.85rem; margin-bottom: 3px; color: var(--trail); }
+.sc-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+
+/* Skill micro-lesson */
+.skill-lesson {
+  display: none; margin-top: 14px;
+  background: linear-gradient(135deg, #1a2a1e 0%, #0d1810 100%);
+  border-radius: 10px; padding: 22px; color: white; animation: trailIn 0.4s ease;
+}
+.skill-lesson.show { display: block; }
+.sl-title { font-family: 'Walter Turncoat', cursive; font-size: 1.15rem; color: white; margin-bottom: 14px; }
+.sl-body { font-family: 'Barlow', sans-serif; font-size: 0.87rem; line-height: 1.8; color: rgba(255,255,255,0.88); }
+.sl-body p { margin-bottom: 11px; }
+.sl-body strong { color: #a8d5b5; }
+.sl-steps { list-style: none; margin: 12px 0; }
+.sl-steps li { display: flex; gap: 10px; margin-bottom: 10px; font-family: 'Barlow', sans-serif; font-size: 0.84rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+.sl-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: var(--trail-deep); font-family: 'Walter Turncoat', cursive; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+/* ── LOOPING PROMPT ── */
+.looping-block {
+  display: none; margin-top: 14px;
+  background: var(--trail-light); border: 2px solid var(--trail-mid);
+  border-radius: 10px; padding: 18px;
+}
+.looping-block.show { display: block; animation: trailIn 0.3s ease; }
+.lb-head { font-family: 'Walter Turncoat', cursive; font-size: 1rem; color: var(--trail); margin-bottom: 10px; }
+.lb-step { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+.lb-num { width: 22px; height: 22px; border-radius: 50%; background: var(--trail); color: white; font-family: 'Walter Turncoat', cursive; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.lb-text { font-family: 'Barlow', sans-serif; font-size: 0.83rem; color: var(--ink-mid); line-height: 1.55; }
+.lb-text strong { color: var(--trail); }
+
+/* ── WEEKLY PRACTICE PLAN ── */
+.practice-plan {
+  display: none; margin-top: 16px;
+  background: linear-gradient(135deg, #1a1e2a 0%, #0d1018 100%);
+  border-radius: 10px; padding: 22px; color: white;
+}
+.practice-plan.show { display: block; animation: trailIn 0.4s ease; }
+.pp-badge { background: var(--trail-mid); color: white; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-family: 'Barlow', sans-serif; display: inline-block; margin-bottom: 10px; }
+.pp-title { font-family: 'Walter Turncoat', cursive; font-size: 1.1rem; color: white; margin-bottom: 14px; }
+.pp-day { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+.pp-day-label { font-family: 'Barlow', sans-serif; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); min-width: 60px; flex-shrink: 0; margin-top: 2px; }
+.pp-day-text { font-family: 'Barlow', sans-serif; font-size: 0.84rem; color: rgba(255,255,255,0.85); line-height: 1.55; }
+
+/* ── FAIR SCREEN ── */
+.fair-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0;
+}
+.fair-tab {
+  flex: 1; padding: 11px 6px; text-align: center;
+  font-family: 'Barlow', sans-serif; font-size: 0.74rem; font-weight: 700;
+  color: var(--ink-light); cursor: pointer; border: none; background: transparent;
+  border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+}
+.fair-tab:hover { color: var(--trail); }
+.fair-tab.active { color: var(--trail); border-bottom-color: var(--trail); }
+.fair-panel { display: none; padding: 20px 0 6px; }
+.fair-panel.show { display: block; animation: trailIn 0.3s ease; }
+
+/* Fair vs Unfair comparison */
+.fair-vs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.fair-vs-col { border-radius: 10px; padding: 16px; }
+.fair-vs-col.myth { background: #fde8e8; border: 1.5px solid #e05c5c; }
+.fair-vs-col.truth { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.fair-vs-head { font-family: 'Barlow', sans-serif; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.fair-vs-col.myth .fair-vs-head { color: #b03030; }
+.fair-vs-col.truth .fair-vs-head { color: var(--trail); }
+.fair-vs-item { font-family: 'Barlow', sans-serif; font-size: 0.82rem; line-height: 1.5; color: var(--ink-mid); margin-bottom: 7px; display: flex; gap: 7px; align-items: flex-start; }
+.fair-vs-item::before { content: '•'; flex-shrink: 0; font-weight: 900; }
+.fair-vs-col.myth .fair-vs-item::before { color: #e05c5c; }
+.fair-vs-col.truth .fair-vs-item::before { color: var(--trail-mid); }
+
+/* Fair Process three E's */
+.three-e-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 14px 0; }
+.e-card { border-radius: 10px; padding: 18px 14px; text-align: center; }
+.e-card:nth-child(1) { background: var(--gold-light); border: 1.5px solid var(--gold); }
+.e-card:nth-child(2) { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.e-card:nth-child(3) { background: #e8f0fb; border: 1.5px solid #5b8dd9; }
+.e-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.e-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
+.e-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+.e-check { display: none; font-size: 1rem; margin-top: 8px; color: var(--trail); font-weight: 700; font-family: 'Barlow', sans-serif; font-size: 0.76rem; }
+
+/* Hope staircase self-rate */
+.hope-stair {
+  display: flex; flex-direction: column; gap: 8px; margin: 16px 0;
+}
+.hope-step {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 2px solid var(--border); border-radius: 9px; background: var(--paper);
+  cursor: pointer; transition: all 0.2s; font-family: 'Barlow', sans-serif;
+}
+.hope-step:hover { border-color: var(--trail-mid); }
+.hope-step.selected { border-color: var(--trail); background: var(--trail); color: white; }
+.hope-step.selected .hs-desc { color: rgba(255,255,255,0.75); }
+.hs-num { width: 28px; height: 28px; border-radius: 50%; background: var(--border); color: var(--ink-light); font-family: 'Walter Turncoat', cursive; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.hope-step.selected .hs-num { background: var(--gold); color: var(--trail-deep); }
+.hs-label { font-weight: 700; font-size: 0.86rem; }
+.hs-desc { font-size: 0.76rem; color: var(--ink-light); margin-top: 2px; }
+
+/* Hope triangle */
+.hope-triangle { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 14px 0; }
+.hope-pillar { border-radius: 10px; padding: 16px; text-align: center; }
+.hope-pillar:nth-child(1) { background: var(--gold-light); border: 1.5px solid var(--gold); }
+.hope-pillar:nth-child(2) { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.hope-pillar:nth-child(3) { background: #e8f0fb; border: 1.5px solid #5b8dd9; }
+.hp-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.hp-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
+.hp-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+
+/* Agency reflection */
+.agency-reflect { margin: 16px 0; }
+.ar-question { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.86rem; color: var(--ink); margin-bottom: 8px; }
+.ar-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.ar-opt {
+  padding: 8px 16px; border: 2px solid var(--border); border-radius: 20px;
+  font-family: 'Barlow', sans-serif; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; background: var(--paper); color: var(--ink-light); transition: all 0.15s;
+}
+.ar-opt:hover { border-color: var(--trail-mid); color: var(--trail); }
+.ar-opt.on { background: var(--trail); color: white; border-color: var(--trail); }
+
+/* Situation crafting */
+.sc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 14px 0; }
+.sc-card { border-radius: 10px; padding: 16px; text-align: center; }
+.sc-card:nth-child(1) { background: var(--gold-light); border: 1.5px solid var(--gold); }
+.sc-card:nth-child(2) { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.sc-card:nth-child(3) { background: #e8f0fb; border: 1.5px solid #5b8dd9; }
+.sc-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.sc-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
+.sc-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
+
+/* AI hope panel */
+.hope-ai-panel {
+  display: none; margin-top: 14px;
+  background: linear-gradient(135deg, #1a2a1e 0%, #0d1810 100%);
+  border-radius: 10px; padding: 20px; color: white; animation: trailIn 0.4s ease;
+}
+.hope-ai-panel.show { display: block; }
+.hope-ai-text { font-family: 'Barlow', sans-serif; font-size: 0.88rem; line-height: 1.8; color: rgba(255,255,255,0.9); }
+.hope-ai-text p { margin-bottom: 10px; }
+
+/* Fair gate */
+.fair-gate-unlock { display: none; margin-top: 14px; }
+.fair-gate-unlock.show { display: block; animation: trailIn 0.3s ease; }
+
 /* ── MISC ── */
 .hidden { display: none !important; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
@@ -938,7 +1276,10 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="step-pip active" id="pip-0">Welcome</div>
     <div class="step-pip" id="pip-1">Part 1</div>
     <div class="step-pip" id="pip-2">Reading</div>
+    <div class="step-pip" id="pip-2b">Consequences</div>
+    <div class="step-pip" id="pip-2c">Fair</div>
     <div class="step-pip" id="pip-3">Part 2</div>
+    <div class="step-pip" id="pip-3b">Check-In</div>
     <div class="step-pip" id="pip-4">Part 3</div>
     <div class="step-pip" id="pip-done">Done</div>
   </div>
@@ -1200,7 +1541,318 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="pause-icon">✋</div>
     <h3>Time to Check In</h3>
     <p>Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</p>
-    <button class="pause-btn" onclick="goTo(3)">Check-in done — continue to Part 2 →</button>
+    <button class="pause-btn" onclick="goTo('2b')">Check-in done — continue →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2b: LOGICAL CONSEQUENCES EDUCATION ═══ -->
+<div class="screen" id="screen-2b">
+  <div class="section-head">
+    <div class="trail-marker marker-gold">📋 Before You Choose</div>
+    <h2>What Is a <em>Logical Consequence?</em></h2>
+    <p>Before you pick what comes next, it helps to understand what makes a consequence actually work — and what makes it just a punishment. Read through each tab, then unlock the next step.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="lc-tabs">
+      <button class="lc-tab active" onclick="showLCTab('vs',this)">Punishment vs. Consequence</button>
+      <button class="lc-tab" onclick="showLCTab('3r',this)">The 3 R's</button>
+      <button class="lc-tab" onclick="showLCTab('buckets',this)">The Four Buckets</button>
+      <button class="lc-tab" onclick="showLCTab('check',this)">The Checklist</button>
+    </div>
+
+    <!-- TAB 1: VS -->
+    <div class="lc-panel show" id="lcp-vs">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">A logical consequence is not the same as a punishment. The difference isn't about how hard it feels — it's about <strong>why it exists</strong> and what it asks of you.</p>
+      <div class="vs-grid">
+        <div class="vs-col bad">
+          <div class="vs-head">❌ Punishment</div>
+          <div class="vs-item">Done <em>to</em> you — you have no say</div>
+          <div class="vs-item">Intent is to create pain or discomfort</div>
+          <div class="vs-item">You just have to sit there and take it</div>
+          <div class="vs-item">Doesn't ask you to understand the impact</div>
+          <div class="vs-item">Often leads to resentment, not growth</div>
+        </div>
+        <div class="vs-col good">
+          <div class="vs-head">✅ Logical Consequence</div>
+          <div class="vs-item">Done <em>with</em> you — you help shape it</div>
+          <div class="vs-item">Intent is to teach, repair, and help you grow</div>
+          <div class="vs-item">You actively participate in fixing what happened</div>
+          <div class="vs-item">Directly connected to the harm caused</div>
+          <div class="vs-item">Builds empathy, responsibility, and skills</div>
+        </div>
+      </div>
+      <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-top:14px">
+        💬 <strong>The key question:</strong> Does this consequence help repair the harm and help me be better — or does it just make me feel bad?
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('3r',document.querySelectorAll('.lc-tab')[1])">Next: The 3 R's →</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: 3 R's -->
+    <div class="lc-panel" id="lcp-3r">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">Every good logical consequence needs to pass this test. Ask yourself about each one you're considering.</p>
+      <div class="three-r-grid">
+        <div class="r-card">
+          <div class="r-icon">🔗</div>
+          <div class="r-title">Related</div>
+          <div class="r-desc">The consequence is directly connected to the behavior. If you broke something, you fix it. If you hurt someone, you repair it. The connection should be obvious.</div>
+        </div>
+        <div class="r-card">
+          <div class="r-icon">🤝</div>
+          <div class="r-title">Respectful</div>
+          <div class="r-desc">It's explained calmly and without shame. You're not humiliated or put down. The goal is your growth, not your embarrassment.</div>
+        </div>
+        <div class="r-card">
+          <div class="r-icon">⚖️</div>
+          <div class="r-title">Realistic</div>
+          <div class="r-desc">It's something you can actually do. It fits the situation — not too big, not too small. Someone will help you follow through on it.</div>
+        </div>
+      </div>
+      <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-top:6px">
+        🏔 <strong>Trail test:</strong> Before picking a consequence, ask — is it related to what I did? Is it respectful? Can I actually do it?
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('buckets',document.querySelectorAll('.lc-tab')[2])">Next: The Four Buckets →</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: BUCKETS -->
+    <div class="lc-panel" id="lcp-buckets">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories. Tap each one to learn more about it.</p>
+      <div class="bucket-grid">
+        <div class="bucket-card" onclick="toggleBucket(this)">
+          <div class="bucket-icon">🔧</div>
+          <div class="bucket-title">You Break It, You Fix It</div>
+          <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
+          <div class="bucket-example">Example: If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</div>
+        </div>
+        <div class="bucket-card" onclick="toggleBucket(this)">
+          <div class="bucket-icon">🎓</div>
+          <div class="bucket-title">Practice Academy</div>
+          <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
+          <div class="bucket-example">Example: If you were disruptive in class, you practice what respectful participation looks and sounds like.</div>
+        </div>
+        <div class="bucket-card" onclick="toggleBucket(this)">
+          <div class="bucket-icon">⚖️</div>
+          <div class="bucket-title">Restorative Justice</div>
+          <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
+          <div class="bucket-example">Example: If you made a mess or damaged something, you clean it up and apologize to those affected.</div>
+        </div>
+        <div class="bucket-card" onclick="toggleBucket(this)">
+          <div class="bucket-icon">⛔</div>
+          <div class="bucket-title">Loss of Privilege</div>
+          <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
+          <div class="bucket-example">Example: If you misused technology, you lose tech access until trust is rebuilt.</div>
+        </div>
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('check',document.querySelectorAll('.lc-tab')[3])">Next: The Checklist →</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: CHECKLIST GATE -->
+    <div class="lc-panel" id="lcp-check">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">Before you move on to pick your consequence, confirm you understand what makes one good. Check each box once you believe it.</p>
+      <div class="check-gate" id="lc-checklist">
+        <div class="check-gate-item" onclick="toggleCheck(this)">
+          <div class="cg-box"></div>
+          A logical consequence is directly related to the behavior — not random.
+        </div>
+        <div class="check-gate-item" onclick="toggleCheck(this)">
+          <div class="cg-box"></div>
+          It asks me to actively do something, not just passively sit through something.
+        </div>
+        <div class="check-gate-item" onclick="toggleCheck(this)">
+          <div class="cg-box"></div>
+          It's meant to help me learn and repair — not just make me feel punished.
+        </div>
+        <div class="check-gate-item" onclick="toggleCheck(this)">
+          <div class="cg-box"></div>
+          It should pass the 3 R's test: Related, Respectful, and Realistic.
+        </div>
+        <div class="check-gate-item" onclick="toggleCheck(this)">
+          <div class="cg-box"></div>
+          I understand that <em>I</em> have a say in what happens next — this is done <em>with</em> me, not <em>to</em> me.
+        </div>
+      </div>
+      <div class="gate-unlock" id="lc-unlock">
+        <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
+          ✅ You're ready. You now understand what makes a consequence actually meaningful. Let's find the right one for your situation.
+        </div>
+        <button class="pause-btn" onclick="goTo('2c')">Continue — What Is Fair? →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2c: WHAT IS FAIR? ═══ -->
+<div class="screen" id="screen-2c">
+  <div class="section-head">
+    <div class="trail-marker marker-gold">⚖️ Before You Choose</div>
+    <h2>What Does <em>Fair</em> Actually Mean?</h2>
+    <p>Most people think fair means everyone gets the same thing. Research says something different — and it changes everything about how this works.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="fair-tabs">
+      <button class="fair-tab active" onclick="showFairTab('fp',this)">Fair Process</button>
+      <button class="fair-tab" onclick="showFairTab('hope',this)">Hope is a Skill</button>
+      <button class="fair-tab" onclick="showFairTab('yours',this)">This Is Yours</button>
+    </div>
+
+    <!-- TAB 1: FAIR PROCESS -->
+    <div class="fair-panel show" id="ftp-fp">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:16px">
+        Research by Kim and Mauborgne found something surprising: <strong>most people will accept an unfavorable outcome as long as the process that reached that conclusion is fair.</strong> You don't have to love what happens next — you just need to trust how it was decided.
+      </p>
+      <div class="fair-vs">
+        <div class="fair-vs-col myth">
+          <div class="fair-vs-head">❌ What people think "fair" means</div>
+          <div class="fair-vs-item">Everyone gets the same consequence</div>
+          <div class="fair-vs-item">The student who "wins" gets less</div>
+          <div class="fair-vs-item">It's about the outcome being equal</div>
+          <div class="fair-vs-item">Fair = no consequences at all</div>
+        </div>
+        <div class="fair-vs-col truth">
+          <div class="fair-vs-head">✅ What fair actually means</div>
+          <div class="fair-vs-item">The <em>process</em> is transparent and consistent</div>
+          <div class="fair-vs-item">Your voice was heard before decisions were made</div>
+          <div class="fair-vs-item">You understand why what happened is happening</div>
+          <div class="fair-vs-item">You know exactly what comes next</div>
+        </div>
+      </div>
+      <p style="font-family:'Barlow',sans-serif;font-size:.86rem;font-weight:700;color:var(--trail);margin:14px 0 10px">Fair process has three parts. Your journal is designed around all three:</p>
+      <div class="three-e-grid">
+        <div class="e-card">
+          <div class="e-icon">🗣️</div>
+          <div class="e-title">Engagement</div>
+          <div class="e-desc">You had the chance to tell your full story — what happened, why, and what was going on underneath. Your voice was heard before anything was decided.</div>
+          <div class="e-check">✓ You did this in Part 1</div>
+        </div>
+        <div class="e-card">
+          <div class="e-icon">💡</div>
+          <div class="e-title">Explanation</div>
+          <div class="e-desc">You now understand what makes a consequence logical, what the 3 R's mean, and how the four buckets work. Nothing is random or hidden.</div>
+          <div class="e-check">✓ You learned this in the last screen</div>
+        </div>
+        <div class="e-card">
+          <div class="e-icon">🗺️</div>
+          <div class="e-title">Expectation Clarity</div>
+          <div class="e-desc">You'll know exactly what happens next, when, and what your role is. No surprises. A clear path forward — built with you, not handed to you.</div>
+          <div class="e-check">✓ You'll build this in Part 2</div>
+        </div>
+      </div>
+      <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-top:6px">
+        🏔 <strong>The trail test for fair:</strong> Were you heard? Do you understand why? Do you know what's next? If all three are yes — the process was fair, even if the outcome is hard.
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showFairTab('hope',document.querySelectorAll('.fair-tab')[1])">Next: Hope Is a Skill →</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: HOPE IS A SKILL -->
+    <div class="fair-panel" id="ftp-hope">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">
+        Hope isn't a feeling — it's a skill. The difference between <strong>hope</strong> and a <strong>wish</strong> is that hopeful people are willing to do the work. They have a destination, a map, and fuel in the engine.
+      </p>
+      <div class="hope-triangle">
+        <div class="hope-pillar">
+          <div class="hp-icon">🎯</div>
+          <div class="hp-title">Goals</div>
+          <div class="hp-desc">A destination worth working toward. Hope is about intention — what you actually believe in, not just what you say you want.</div>
+        </div>
+        <div class="hope-pillar">
+          <div class="hp-icon">🗺️</div>
+          <div class="hp-title">Pathways</div>
+          <div class="hp-desc">The map that gets you there. Hopeful people can see multiple routes to their goal — and they find new ones when obstacles come up.</div>
+        </div>
+        <div class="hope-pillar">
+          <div class="hp-icon">⚡</div>
+          <div class="hp-title">Agency</div>
+          <div class="hp-desc">The engine and the fuel. The motivation to actually walk the path. High-hope people are resource seekers — they never go at it alone.</div>
+        </div>
+      </div>
+      <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
+        💬 <strong>Willpower without pathways is a wish.</strong> Pathways without willpower go nowhere. You need both — and this journal is helping you build both right now.
+      </div>
+      <p style="font-family:'Barlow',sans-serif;font-size:.86rem;font-weight:700;color:var(--ink);margin:14px 0 8px">Where are you on the Hope Staircase right now?</p>
+      <p style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);margin-bottom:12px">Be honest — hope is situational. You might feel different in different places.</p>
+      <div class="hope-stair" id="hope-stair">
+        <div class="hope-step" onclick="selectHopeStep(this,1)">
+          <div class="hs-num">1</div>
+          <div><div class="hs-label">I can't see a way forward right now</div><div class="hs-desc">Things feel stuck. I'm not sure anything I do will make a difference.</div></div>
+        </div>
+        <div class="hope-step" onclick="selectHopeStep(this,2)">
+          <div class="hs-num">2</div>
+          <div><div class="hs-label">I want things to be better but I don't know how</div><div class="hs-desc">I have the wish, but not the map or the energy to get there yet.</div></div>
+        </div>
+        <div class="hope-step" onclick="selectHopeStep(this,3)">
+          <div class="hs-num">3</div>
+          <div><div class="hs-label">I can see a path but I need help walking it</div><div class="hs-desc">I know what needs to happen — I just need support to actually do it.</div></div>
+        </div>
+        <div class="hope-step" onclick="selectHopeStep(this,4)">
+          <div class="hs-num">4</div>
+          <div><div class="hs-label">I'm ready to do the work</div><div class="hs-desc">I have a goal, I can see the path, and I'm motivated to follow through.</div></div>
+        </div>
+      </div>
+      <div class="hope-ai-panel" id="hope-ai-panel">
+        <div class="ai-thinking" id="hope-ai-thinking"><div class="spin"></div>Generating your hope reflection…</div>
+        <div class="hope-ai-text hidden" id="hope-ai-text"></div>
+      </div>
+      <div style="text-align:right;margin-top:14px" id="hope-next-btn" style="display:none">
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showFairTab('yours',document.querySelectorAll('.fair-tab')[2])">Next: This Is Yours →</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: THIS IS YOURS -->
+    <div class="fair-panel" id="ftp-yours">
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">
+        Geoffrey Cohen calls this <strong>Situation Crafting</strong>. What you're about to do isn't a random punishment — it was designed with three things in mind.
+      </p>
+      <div class="sc-grid">
+        <div class="sc-card">
+          <div class="sc-icon">🎯</div>
+          <div class="sc-title">Tailoring</div>
+          <div class="sc-desc">The right message for you — based on what you shared, what happened, and what you need to grow.</div>
+        </div>
+        <div class="sc-card">
+          <div class="sc-icon">👤</div>
+          <div class="sc-title">Targeting</div>
+          <div class="sc-desc">Designed for the right person. This isn't a one-size-fits-all consequence. It's built for your specific situation.</div>
+        </div>
+        <div class="sc-card">
+          <div class="sc-icon">⏱️</div>
+          <div class="sc-title">Timeliness</div>
+          <div class="sc-desc">Happening at the right time — now, while the experience is fresh and the brain is ready to learn.</div>
+        </div>
+      </div>
+      <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
+        ⚖️ <strong>The Social Discipline Window:</strong> The most effective interventions apply both pressure <em>and</em> support at the same time — done <em>with</em> you, not <em>to</em> you or <em>for</em> you. That's what this journal is.
+      </div>
+      <div style="background:rgba(201,168,76,0.1);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
+        💡 <strong>Lending Hope:</strong> An adult is going to be part of what happens next. Research shows we only accept hope from people we actually trust. The adult walking through this with you is choosing to be on your side — not just enforcing rules.
+      </div>
+      <div class="agency-reflect">
+        <div class="ar-question">Right now, what feels most true for you?</div>
+        <div class="ar-options">
+          <button class="ar-opt" onclick="selectAgency(this,'ready')">I'm ready to own this</button>
+          <button class="ar-opt" onclick="selectAgency(this,'trying')">I'm trying but it's hard</button>
+          <button class="ar-opt" onclick="selectAgency(this,'unsure')">I'm not sure yet</button>
+          <button class="ar-opt" onclick="selectAgency(this,'resistant')">I don't really want to</button>
+        </div>
+        <div id="agency-response" class="hidden">
+          <textarea id="q-fair-reflect" rows="3" placeholder="Write what's going through your mind right now — even if it's complicated…"></textarea>
+        </div>
+      </div>
+      <div class="fair-gate-unlock" id="fair-unlock">
+        <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
+          ✅ The process is fair. You understand it. Now it's yours to shape.
+        </div>
+        <button class="pause-btn" onclick="goTo(3)">Continue to Part 2 — Making Things Right →</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1293,8 +1945,16 @@ input[type="range"]::-webkit-slider-thumb {
     <!-- FEATURE 2: CONSEQUENCE NUDGE -->
     <div class="consequence-nudge" id="consequence-nudge">
       <div class="cn-header"><div class="cn-badge">✦ Reflection</div></div>
-      <div class="cn-thinking" id="cn-thinking"><div class="spin"></div>Thinking about your choices…</div>
+      <div class="cc-thinking" id="cn-thinking"><div class="spin"></div>Thinking about your choices…</div>
       <div class="cn-text hidden" id="cn-text"></div>
+    </div>
+
+    <!-- CREATIVE AI CHALLENGE -->
+    <div class="creative-challenge" id="creative-challenge">
+      <div class="cc-badge">🎨 Creative Challenge</div>
+      <div class="cc-thinking" id="cc-thinking"><div class="spin"></div>Generating your creative challenge…</div>
+      <div class="cc-question hidden" id="cc-question"></div>
+      <textarea class="cc-textarea hidden" id="cc-answer" rows="4" placeholder="Think outside the box — describe your idea here…"></textarea>
     </div>
   </div>
 
@@ -1318,11 +1978,26 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="val-msg" id="e-diff">Write a real strategy — what will you actually do differently?</div>
   </div>
 
-  <div class="pause-block">
-    <div class="pause-icon">✋</div>
-    <h3>Time to Check In</h3>
-    <p>Raise your hand and let the adult in the room know you're ready to review your repair plan together before moving to Part 3.</p>
-    <button class="pause-btn" onclick="goTo(4)">Check-in done — continue to Part 3 →</button>
+  <div class="nav-row" style="margin-top:28px">
+    <div></div>
+    <button class="btn-next" onclick="if(validatePart2())goTo('3b')">I've finished Part 2 →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3b: PAUSE BETWEEN PARTS 2 AND 3 ═══ -->
+<div class="screen" id="screen-3b">
+  <div class="pause-screen-hero">
+    <div class="ps-icon">✋</div>
+    <h2>Time to Check In</h2>
+    <p>Before moving to Part 3, raise your hand and let the adult in the room know you've finished Part 2. They need to review your repair plan with you before you continue.</p>
+    <div class="checklist">
+      <div class="checklist-item"><span class="ci">📋</span>Your adult will review who you said was hurt and what you think needs to happen</div>
+      <div class="checklist-item"><span class="ci">🔢</span>They'll look at the consequence ideas you ranked and your best idea</div>
+      <div class="checklist-item"><span class="ci">🗣️</span>You'll have a short conversation about whether the plan is realistic</div>
+      <div class="checklist-item"><span class="ci">✅</span>Once they agree, you'll move to Part 3 together</div>
+    </div>
+    <p style="font-size:0.82rem;color:var(--gold-dark);font-weight:600">Do not click the button below until you have had this conversation.</p>
+    <button class="pause-btn" onclick="goTo(4)" style="margin-top:14px">Conference done — continue to Part 3 →</button>
   </div>
 </div>
 
@@ -1365,6 +2040,37 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="val-msg" id="e-traitwhy">Explain the connection — why does this trait relate to what happened?</div>
   </div>
 
+  <!-- SKILL BUILDING HUB -->
+  <div id="skill-hub-card" class="jcard hidden">
+    <div class="jcard-label">🧠 Build the Skill</div>
+    <div class="jcard-sub">Before you create your demonstration, explore one strategy connected to the skill you're working on. Pick the domain that feels most relevant, then choose a strategy to learn about.</div>
+    <div class="skill-hub" id="skill-hub">
+      <!-- Built dynamically based on trait selected -->
+    </div>
+    <div class="skill-lesson" id="skill-lesson">
+      <div class="ai-thinking" id="skill-lesson-thinking"><div class="spin"></div>Building your strategy briefing…</div>
+      <div class="sl-title hidden" id="sl-title"></div>
+      <div class="sl-body hidden" id="sl-body"></div>
+    </div>
+  </div>
+
+  <!-- LOOPING PROMPT — shows after CPS synthesis, surfaces here in Part 3 context -->
+  <div id="looping-card" class="jcard hidden">
+    <div class="jcard-label">🔄 Perspective Getting — The Looping Technique</div>
+    <div class="jcard-sub">When you're ready to have a conversation with the person affected, this technique helps you actually hear them — not just wait for your turn to talk.</div>
+    <div class="looping-block show">
+      <div class="lb-head">How to Loop</div>
+      <div class="lb-step"><div class="lb-num">1</div><div class="lb-text"><strong>Ask questions</strong> — "What's going on? Can you tell me more? How were you feeling when this happened?"</div></div>
+      <div class="lb-step"><div class="lb-num">2</div><div class="lb-text"><strong>Repeat back</strong> in your own words — "It sounds like you're saying… Let me see if I've got this right…"</div></div>
+      <div class="lb-step"><div class="lb-num">3</div><div class="lb-text"><strong>Ask if you got it right</strong> — "Did I miss anything? Is that what you meant?" If not, go back to step 1.</div></div>
+      <div class="lb-step"><div class="lb-num">4</div><div class="lb-text"><strong>Determine next step together</strong> — Do they want to be heard, helped, or supported? Follow their lead.</div></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="jcard-label" style="margin-bottom:8px">How will you use this in your situation?</div>
+      <textarea id="q-looping" rows="3" placeholder="In my situation, I could use looping by… The first thing I'd ask is…"></textarea>
+    </div>
+  </div>
+
   <div id="creative-card" class="jcard hidden">
     <div class="jcard-label">How Will You Demonstrate This Trait?</div>
     <div class="jcard-sub">Choose one creative format. You must complete your creation before leaving today.</div>
@@ -1400,32 +2106,93 @@ input[type="range"]::-webkit-slider-thumb {
 
 <!-- ═══ SCREEN DONE ═══ -->
 <div class="screen" id="screen-done">
+
+  <!-- STUDENT SIDE — always visible -->
   <div class="done-hero">
     <span class="d-icon">🏔️</span>
     <h2>Journal Complete</h2>
-    <p>You've reached the top of this part of the trail. What you did here takes honesty and courage. An adult will follow up with you soon to walk through your plan together.</p>
+    <p>You've reached the top of this part of the trail. What you did here takes honesty and courage.</p>
     <div class="done-detail">
       ✅ Your journal has been recorded anonymously.<br>
-      🤝 Next step: A follow-up conversation with an office team member.<br>
       📋 Keep working on your creative product if you haven't finished it yet.<br>
       🏕 Someone will connect with you soon to walk through your plan together.
     </div>
   </div>
+
+  <!-- STUDENT READING LIST — visible to student -->
   <div class="ai-journal" id="ai-final-thinking">
-    <div class="ai-thinking"><div class="spin"></div>Generating staff summary and your reading list…</div>
+    <div class="ai-thinking"><div class="spin"></div>Generating your reading list and practice plan…</div>
   </div>
-  <div id="ai-final-content" class="hidden">
-    <div class="staff-wrap" id="staff-wrap">
-      <div class="staff-hd">🔐 Staff Summary — For Adult Use Only</div>
-      <div id="staff-body"></div>
-      <div id="cps-script-block"></div>
+  <div id="student-reading-wrap" class="hidden">
+    <div class="practice-plan" id="practice-plan">
+      <div class="pp-badge">🗓 This Week's Practice Plan</div>
+      <div class="pp-title" id="pp-title">Your Plan</div>
+      <div id="pp-days"></div>
     </div>
-    <div class="reading-panel">
+    <div class="reading-panel" style="margin-top:16px">
       <div class="ai-badge-row"><div class="ai-badge">📚 Your Reading List</div></div>
       <p>While you wait for your follow-up, here are some topics worth exploring — chosen based on what you shared today.</p>
       <ul class="read-list" id="read-list"></ul>
     </div>
   </div>
+
+  <!-- HAND OFF PROMPT -->
+  <div class="jcard" style="text-align:center;margin-top:28px;background:var(--gold-light);border:2px solid var(--gold)">
+    <div style="font-size:1.8rem;margin-bottom:10px">🤝</div>
+    <div class="jcard-label" style="justify-content:center;color:var(--gold-dark)">For the Adult in the Room</div>
+    <p style="font-family:'Barlow',sans-serif;font-size:0.9rem;color:var(--ink-mid);line-height:1.7;margin-bottom:0">
+      Show this page to your adult and ask them to enter the staff password below to access your plan summary.
+    </p>
+  </div>
+
+  <!-- PASSWORD GATE -->
+  <div class="pw-gate" id="pw-gate">
+    <div class="pg-icon">🔐</div>
+    <h3>Staff Access</h3>
+    <p>Enter the staff password to unlock this student's plan summary and send it to your email.</p>
+    <div class="pw-input-row">
+      <input type="password" class="pw-input" id="pw-input" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
+      <button class="pw-btn" onclick="checkPW()">Unlock</button>
+    </div>
+    <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
+  </div>
+
+  <!-- EMAIL FORM — shown after correct password -->
+  <div class="email-form" id="email-form">
+    <div class="jcard" style="background:var(--trail-light);border:2px solid var(--trail-mid)">
+      <div class="jcard-label" style="color:var(--trail)">🔓 Staff Access Unlocked</div>
+      <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:16px">
+        Enter your email address and the full plan summary will be sent to you as a formatted email. Nothing is displayed on screen — the student does not see the summary.
+      </p>
+      <div class="email-row">
+        <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
+        <button class="email-send-btn" onclick="sendSummaryEmail()">Send Summary →</button>
+      </div>
+      <div class="email-note" id="email-sent-note" style="display:none;color:var(--trail);font-weight:700">✓ Email client opened — complete sending from your email app.</div>
+      <div class="email-note">This opens your default email app with the summary pre-filled. Review and send.</div>
+
+      <!-- BIC INTEGRATION -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div class="jcard-label" style="color:var(--trail);margin-bottom:10px">🔗 Send to Behavior Intervention Center</div>
+        <p style="font-family:'Barlow',sans-serif;font-size:0.84rem;color:var(--ink-mid);line-height:1.6;margin-bottom:12px">
+          Import this student's reflection directly into the BIC to generate a full behavior intervention plan — pre-filled with what they shared today.
+        </p>
+        <a id="bic-link" class="bic-btn" href="#" target="_blank">
+          <span class="bic-icon">🧠</span>
+          <span class="bic-text">
+            Open in Behavior Intervention Center
+            <small>Pre-fills incident summary, emotions, LRG trait, and repair plan</small>
+          </span>
+          →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden staff data storage (populated by AI, read by email/BIC functions) -->
+  <div id="staff-data" style="display:none"></div>
+  <div id="cps-script-block" style="display:none"></div>
+
 </div>
 
 </main>
@@ -1445,6 +2212,10 @@ const S = {
   yn: null,
   trait: null, creative: null,
   ranked: [],
+  priorCount: 0, priorReflections: [],
+  hopeLevel: null, agencyChoice: null,
+  selectedSkill: null,
+  S_RESULT: null,
 };
 
 // ─── BANNED WORDS (for name field) ────────────────────────────────────────
@@ -1944,6 +2715,233 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ─── LOGICAL CONSEQUENCES EDUCATION ─────────────────────────────────────
+function showLCTab(name, tabEl) {
+  document.querySelectorAll('.lc-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.lc-panel').forEach(p => p.classList.remove('show'));
+  if (tabEl) tabEl.classList.add('active');
+  document.getElementById('lcp-' + name).classList.add('show');
+}
+
+function toggleBucket(el) { el.classList.toggle('selected'); }
+
+let lcChecked = 0;
+function toggleCheck(el) {
+  const box = el.querySelector('.cg-box');
+  const wasChecked = el.classList.contains('checked');
+  el.classList.toggle('checked');
+  box.textContent = wasChecked ? '' : '✓';
+  lcChecked += wasChecked ? -1 : 1;
+  document.getElementById('lc-unlock').classList.toggle('show', lcChecked >= 5);
+}
+
+// ─── CREATIVE CHALLENGE ───────────────────────────────────────────────────
+let creativeChallengeTimer;
+function triggerCreativeChallenge(ranked, whatHappened, hurtPeople) {
+  const challenge = document.getElementById('creative-challenge');
+  challenge.classList.add('show');
+  clearTimeout(creativeChallengeTimer);
+  creativeChallengeTimer = setTimeout(async () => {
+    const result = await callEdge('creative_challenge', {
+      ranked, whatHappened, hurtPeople,
+      trait: S.trait,
+    });
+    document.getElementById('cc-thinking').classList.add('hidden');
+    const q = document.getElementById('cc-question');
+    const a = document.getElementById('cc-answer');
+    q.classList.remove('hidden');
+    a.classList.remove('hidden');
+    if (result?.challenge) {
+      q.textContent = result.challenge;
+    } else {
+      q.textContent = "Your top choice is a great start. Now push further — what's the most creative, specific, and meaningful version of that you could create? Think about what would genuinely surprise the person affected.";
+    }
+  }, 2200);
+}
+
+// ─── SKILL BUILDING HUB ───────────────────────────────────────────────────
+const SKILL_DOMAINS = {
+  'Self-Awareness': {
+    icon: '🪞',
+    desc: 'Understanding your emotions, thoughts, and behaviors and how they affect others.',
+    skills: [
+      { icon: '⚡', name: 'The Meta-Moment', desc: 'Pause before you react. Ask: What would my best self do right now?', strategy: 'meta_moment' },
+      { icon: '🏷️', name: 'Emotional Granularity', desc: 'Name your emotion precisely — not just "angry" but "frustrated" or "humiliated." The more specific, the more you can manage it.', strategy: 'granularity' },
+      { icon: '🔍', name: 'Trigger Mapping', desc: 'Identify what sets you off — the people, places, and situations that tend to activate your downstairs brain.', strategy: 'triggers' },
+    ]
+  },
+  'Self-Management': {
+    icon: '🧘',
+    desc: 'Regulating your emotions and behaviors, especially under stress.',
+    skills: [
+      { icon: '🌬️', name: 'Mindful Breathing (7-11)', desc: 'Breathe in for 7 counts, out for 11. This activates your parasympathetic nervous system — the brake on your stress response.', strategy: 'breathing' },
+      { icon: '🔄', name: 'Cognitive Reframing (PAIR)', desc: 'Pause → Acknowledge → Investigate → Reframe. Find a new way to see the situation before you react.', strategy: 'reframe' },
+      { icon: '🎯', name: 'Implementation Intention', desc: 'Plan your next move specifically: "When X happens, I will do Y." Specific plans are far more likely to happen.', strategy: 'implementation' },
+      { icon: '👆', name: 'Attention Shifting', desc: 'Redirect your attention away from the trigger. Look up, drink water, physically move — these shift your nervous system state.', strategy: 'attention' },
+    ]
+  },
+  'Perspective Getting': {
+    icon: '👥',
+    desc: 'Genuinely understanding another person\'s experience — not just tolerating it.',
+    skills: [
+      { icon: '🔁', name: 'Looping', desc: 'Ask, Repeat Back, Check, Determine Next Step. This is how you actually hear someone instead of just waiting to respond.', strategy: 'looping' },
+      { icon: '🗣️', name: 'Affective Statements', desc: 'Tell someone how their actions affected you using "I" language — without blame, just honest impact.', strategy: 'affective' },
+      { icon: '❓', name: 'Restorative Questions', desc: 'Use specific questions to understand impact: "Who was affected? How? What needs to happen to make this right?"', strategy: 'restorative_q' },
+    ]
+  },
+  'Regulation': {
+    icon: '⚖️',
+    desc: 'Getting your nervous system back to a place where you can think clearly and act intentionally.',
+    skills: [
+      { icon: '💧', name: 'Water (Ruby Payne)', desc: 'Drink a glass of water. Water helps metabolize cortisol — when your shoulders relax, it\'s working.', strategy: 'water' },
+      { icon: '👁️', name: 'Look Up', desc: 'Look at the ceiling for a moment. This creates a momentary pause that makes it harder to access runaway emotions.', strategy: 'look_up' },
+      { icon: '📅', name: 'Forward Story', desc: 'Describe what you want to do, be, and have at 25. Then identify the obstacles. This activates long-term thinking over short-term reaction.', strategy: 'forward_story' },
+      { icon: '❤️', name: 'Pat Heart & Stomach', desc: 'Left hand on heart, right on stomach, rub both. Increases serotonin — your body\'s calming chemical — through direct massage.', strategy: 'pat' },
+    ]
+  }
+};
+
+function buildSkillHub(trait) {
+  const hub = document.getElementById('skill-hub');
+  hub.innerHTML = '';
+  // Determine which domains are most relevant to the trait
+  const domainOrder = getDomainOrder(trait);
+  domainOrder.forEach(domainName => {
+    const domain = SKILL_DOMAINS[domainName];
+    if (!domain) return;
+    const div = document.createElement('div');
+    div.className = 'skill-domain';
+    div.innerHTML = `
+      <div class="skill-domain-head" onclick="toggleDomain(this.parentElement)">
+        <span class="sd-icon">${domain.icon}</span>
+        <span><strong>${domainName}</strong><br><span style="font-weight:400;font-size:.76rem;color:var(--ink-light)">${domain.desc}</span></span>
+        <span class="sd-chevron">▶</span>
+      </div>
+      <div class="skill-domain-body">
+        ${domain.skills.map(skill => `
+          <div class="skill-card" onclick="selectSkill('${domainName}','${skill.strategy}',this)">
+            <span class="sc-icon">${skill.icon}</span>
+            <div><div class="sc-name">${skill.name}</div><div class="sc-desc">${skill.desc}</div></div>
+          </div>
+        `).join('')}
+      </div>`;
+    hub.appendChild(div);
+  });
+}
+
+function getDomainOrder(trait) {
+  // Map traits to most relevant domains
+  const map = {
+    'Communication & Empathy': ['Perspective Getting','Self-Awareness','Regulation','Self-Management'],
+    'Honesty, Integrity, & Responsibility': ['Self-Awareness','Self-Management','Perspective Getting','Regulation'],
+    'Healthy Living, Wellness, & Self-Awareness': ['Self-Awareness','Regulation','Self-Management','Perspective Getting'],
+    'Critical Thinking & Problem Solving': ['Self-Management','Self-Awareness','Perspective Getting','Regulation'],
+    'Adaptability & Flexibility': ['Regulation','Self-Management','Perspective Getting','Self-Awareness'],
+    'Resilience & Grit': ['Regulation','Self-Management','Self-Awareness','Perspective Getting'],
+    'Collaborative & Teamwork': ['Perspective Getting','Self-Awareness','Regulation','Self-Management'],
+    'Civics, Leadership, & Service': ['Perspective Getting','Self-Management','Self-Awareness','Regulation'],
+  };
+  return map[trait] || ['Self-Awareness','Self-Management','Perspective Getting','Regulation'];
+}
+
+function toggleDomain(el) { el.classList.toggle('open'); }
+
+let selectedSkillStrategy = null;
+async function selectSkill(domainName, strategy, cardEl) {
+  document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  selectedSkillStrategy = strategy;
+  S.selectedSkill = { domain: domainName, strategy };
+
+  // Show and populate the lesson
+  const lesson = document.getElementById('skill-lesson');
+  lesson.classList.add('show');
+  document.getElementById('skill-lesson-thinking').classList.remove('hidden');
+  document.getElementById('sl-title').classList.add('hidden');
+  document.getElementById('sl-body').classList.add('hidden');
+
+  const p1 = getPart1();
+  const result = await callEdge('skill_lesson', {
+    domain: domainName, strategy,
+    whatHappened: p1.whatHappened,
+    why: p1.why,
+    trait: S.trait,
+    emotions: S.eduring.map(e=>e.name),
+  });
+
+  document.getElementById('skill-lesson-thinking').classList.add('hidden');
+  const titleEl = document.getElementById('sl-title');
+  const bodyEl = document.getElementById('sl-body');
+  titleEl.classList.remove('hidden');
+  bodyEl.classList.remove('hidden');
+
+  if (result?.title && result?.steps) {
+    titleEl.textContent = result.title;
+    bodyEl.innerHTML = (result.intro ? `<p>${result.intro}</p>` : '') +
+      '<ul class="sl-steps">' +
+      result.steps.map((step, i) => `<li><span class="sl-step-num">${i+1}</span>${step}</li>`).join('') +
+      '</ul>' +
+      (result.application ? `<p><strong>In your situation:</strong> ${result.application}</p>` : '');
+  } else {
+    titleEl.textContent = 'How to Use This Strategy';
+    bodyEl.innerHTML = '<p>This strategy is a powerful tool for managing what you\'re experiencing. Talk to the adult in the room about how to practice it today.</p>';
+  }
+}
+
+// ─── FAIR SCREEN ─────────────────────────────────────────────────────────
+function showFairTab(name, tabEl) {
+  document.querySelectorAll('.fair-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.fair-panel').forEach(p => p.classList.remove('show'));
+  if (tabEl) tabEl.classList.add('active');
+  document.getElementById('ftp-' + name).classList.add('show');
+}
+
+// Hope Staircase selection → triggers AI response
+let hopeLevel = null;
+let hopeAIFired = false;
+async function selectHopeStep(el, level) {
+  document.querySelectorAll('.hope-step').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  hopeLevel = level;
+  S.hopeLevel = level;
+
+  // Show next button regardless
+  const nextBtn = document.getElementById('hope-next-btn');
+  if (nextBtn) nextBtn.style.display = 'block';
+
+  if (hopeAIFired) return;
+  hopeAIFired = true;
+
+  const panel = document.getElementById('hope-ai-panel');
+  panel.classList.add('show');
+
+  const p1 = getPart1();
+  const result = await callEdge('hope_reflection', {
+    hopeLevel: level,
+    whatHappened: p1.whatHappened,
+    emotions: S.eduring.map(e => e.name),
+    initial: S.initial,
+  });
+
+  document.getElementById('hope-ai-thinking').classList.add('hidden');
+  const textEl = document.getElementById('hope-ai-text');
+  textEl.classList.remove('hidden');
+  if (result?.reflection) {
+    textEl.innerHTML = result.reflection.split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
+  } else {
+    textEl.innerHTML = '<p>Where you are right now is exactly where you\'re supposed to be for this moment. The fact that you\'re here, going through this process, is the first step on the staircase back up.</p>';
+  }
+}
+
+// Agency selection → show reflection prompt + unlock continue button
+function selectAgency(btn, val) {
+  document.querySelectorAll('.ar-opt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  S.agencyChoice = val;
+  document.getElementById('agency-response').classList.remove('hidden');
+  document.getElementById('fair-unlock').classList.add('show');
+}
+
 buildZoneGrids();
 
 function setYN(v) {
@@ -2045,7 +3043,9 @@ function pickTrait(btn) {
   document.getElementById('trait-spec-list').innerHTML = items.map(i =>
     `<label><input type="checkbox" class="tspec" value="${i}"> ${i}</label>`
   ).join('');
-  ['trait-spec-card','trait-why-card','creative-card','submit-card'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+  ['trait-spec-card','trait-why-card','skill-hub-card','looping-card','creative-card','submit-card']
+    .forEach(id => document.getElementById(id).classList.remove('hidden'));
+  buildSkillHub(S.trait);
 }
 
 function pickCreative(btn) {
@@ -2057,14 +3057,16 @@ function pickCreative(btn) {
 
 // ─── SCREEN NAV ──────────────────────────────────────────────────────────
 const PROGRESS = {0:0,1:20,2:45,3:65,4:85,done:100};
-const PIPS = ['pip-0','pip-1','pip-2','pip-3','pip-4','pip-done'];
-const PIP_SCREENS = [0,1,2,3,4,'done'];
+const PIPS = ['pip-0','pip-1','pip-2','pip-2b','pip-2c','pip-3','pip-3b','pip-4','pip-done'];
+const PIP_SCREENS = [0,1,2,'2b','2c',3,'3b',4,'done'];
+const SCREEN_PROGRESS = {0:0,1:14,2:28,'2b':40,'2c':52,3:62,'3b':72,4:84,done:100};
 
 function goTo(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(n === 'done' ? 'screen-done' : 'screen-' + n).classList.add('active');
+  const id = (n === 'done' || n === '3b') ? 'screen-' + n : 'screen-' + n;
+  document.getElementById(id).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
-  document.getElementById('progress-fill').style.width = (PROGRESS[n] || 0) + '%';
+  document.getElementById('progress-fill').style.width = (SCREEN_PROGRESS[n] || 0) + '%';
   const ai = PIP_SCREENS.indexOf(n);
   PIP_SCREENS.forEach((_,i) => {
     const el = document.getElementById(PIPS[i]); if (!el) return;
@@ -2072,7 +3074,7 @@ function goTo(n) {
     if (i < ai) el.classList.add('done');
     if (i === ai) el.classList.add('active');
   });
-  document.getElementById('qmeter').classList.toggle('show', n >= 1 && n !== 'done');
+  document.getElementById('qmeter').classList.toggle('show', typeof n === 'number' && n >= 1 && n !== 'done');
 }
 
 // ─── DATA COLLECTORS ─────────────────────────────────────────────────────
@@ -2098,13 +3100,21 @@ function getPart2() {
     makeRight: gv('q-makeright'),
     selectedConsequences: S.ranked.length ? S.ranked : Array.from(document.querySelectorAll('.cc:checked')).map(c=>c.value),
     bestIdea: gv('q-bestidea'), plan: gv('q-plan'), different: gv('q-diff'),
+    creativeChallenge: gv('cc-answer'),
+    loopingPlan: gv('q-looping'),
   };
 }
 function getPart3() {
   return {
     trait: S.trait,
     traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c=>c.value),
-    traitWhy: gv('q-traitwhy'), creativeFormat: S.creative, creativePlan: gv('q-creative'),
+    traitWhy: gv('q-traitwhy'),
+    selectedSkill: S.selectedSkill || null,
+    loopingPlan: gv('q-looping'),
+    creativeFormat: S.creative, creativePlan: gv('q-creative'),
+    hopeLevel: S.hopeLevel || null,
+    agencyChoice: S.agencyChoice || null,
+    fairReflect: gv('q-fair-reflect'),
   };
 }
 
@@ -2173,60 +3183,133 @@ async function doPart1() {
   }
 }
 
-// ─── FULL SUBMIT ─────────────────────────────────────────────────────────
+// ─── STAFF PASSWORD ───────────────────────────────────────────────────────
+const STAFF_PW = 'togetherweclimb';
+
+function checkPW() {
+  const val = document.getElementById('pw-input').value;
+  if (val === STAFF_PW || (IS_PREVIEW && val === 'preview')) {
+    document.getElementById('pw-gate').style.display = 'none';
+    document.getElementById('email-form').classList.add('show');
+    buildBICLink();
+  } else {
+    const err = document.getElementById('pw-error');
+    err.style.display = 'block';
+    doShake(document.getElementById('pw-input'));
+    document.getElementById('pw-input').value = '';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+// ─── EMAIL SUMMARY ────────────────────────────────────────────────────────
+let S_RESULT = null; // stores the AI result for email/BIC use
+
+function buildEmailBody(result, p1, p2, p3) {
+  const lines = [
+    'CAMP MOUNTAINEER — TRAIL JOURNAL STAFF SUMMARY',
+    'Generated: ' + new Date().toLocaleString(),
+    'Student Initial: ' + S.initial,
+    '',
+    '=== INCIDENT SUMMARY ===',
+    result.summary || '—',
+    '',
+    'Insight Level: ' + (result.insightLevel || '—'),
+    result.insightReason || '',
+    '',
+    '=== WHAT HAPPENED ===',
+    'Situation: ' + (p1.whatHappened || '—'),
+    'Why: ' + (p1.why || '—'),
+    'Thinking at the time: ' + (p1.thinking || '—'),
+    'Emotions during (' + (p1.intensityDuring || '—') + '/5): ' + (p1.emotionsDuring || []).join(', '),
+    'Emotions now (' + (p1.intensityNow || '—') + '/5): ' + (p1.emotionsNow || []).join(', '),
+    'CPS — What was going on before: ' + (p1.cpsUnsolvedProblem || '—'),
+    'CPS — What they cared about: ' + (p1.cpsMyConcern || '—'),
+    'CPS — What the other person cared about: ' + (p1.cpsTheirConcern || '—'),
+    '',
+    '=== MAKING THINGS RIGHT ===',
+    'People hurt: ' + (p2.hurtPeople || []).join(', '),
+    'What student thinks should happen: ' + (p2.makeRight || '—'),
+    'Consequence choices ranked: ' + (p2.selectedConsequences || []).join(' → '),
+    'Best idea: ' + (p2.bestIdea || '—'),
+    'Plan: ' + (p2.plan || '—'),
+    'Will do differently: ' + (p2.different || '—'),
+    '',
+    '=== GROWTH PLAN ===',
+    'LRG Trait: ' + (p3.trait || '—'),
+    'Specific areas: ' + (p3.traitSpecifics || []).join(', '),
+    'Why this trait: ' + (p3.traitWhy || '—'),
+    'Creative format: ' + (p3.creativeFormat || '—'),
+    'Creative plan: ' + (p3.creativePlan || '—'),
+    '',
+    '=== RECOMMENDED CONSEQUENCES ===',
+    ...(result.recommendedConsequences || []).map(c => c.type + ': ' + c.description + '\n  Rationale: ' + c.rationale),
+    '',
+    '=== REPAIR PLAN ===',
+    result.repairPlan || '—',
+    '',
+    '=== STUDENT GOAL ===',
+    result.studentGoal || '—',
+    '',
+    '=== RESTORATIVE QUESTIONS FOR CONFERENCE ===',
+    ...(result.restorativeQuestions || []).map((q, i) => (i+1) + '. ' + q),
+    '',
+    '=== CPS CONFERENCE SCRIPT ===',
+    ...(result.cpsScript || []).map(l => l.speaker + ': "' + l.text + '"'),
+    '',
+    '=== FOLLOW-UP FLAGS ===',
+    ...(result.followUpFlags || []).map(f => '⚠️ ' + f),
+    '',
+    '=== STUDENT READING LIST ===',
+    ...(result.studentReadingList || []).map(r => '• ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n  ' + r.whyRelevant),
+  ];
+  return lines.join('\n');
+}
+
+function sendSummaryEmail() {
+  const email = document.getElementById('staff-email').value.trim();
+  if (!email || !email.includes('@')) {
+    doShake(document.getElementById('staff-email')); return;
+  }
+  if (!S_RESULT) { alert('Summary not ready yet — please wait a moment.'); return; }
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  const body = buildEmailBody(S_RESULT, p1, p2, p3);
+  const subject = encodeURIComponent('Trail Journal Summary — Student ' + S.initial + ' — ' + new Date().toLocaleDateString());
+  const bodyEncoded = encodeURIComponent(body);
+  const mailto = `mailto:${email}?subject=${subject}&body=${bodyEncoded}`;
+  window.location.href = mailto;
+  document.getElementById('email-sent-note').style.display = 'block';
+}
+
+// ─── BIC INTEGRATION ─────────────────────────────────────────────────────
+function buildBICLink() {
+  if (!S_RESULT) return;
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  const params = new URLSearchParams({
+    import: '1',
+    initial: S.initial,
+    situation: (p1.whatHappened || '').slice(0, 300),
+    why: (p1.why || '').slice(0, 200),
+    emotions: (p1.emotionsDuring || []).join(','),
+    trait: p3.trait || '',
+    repairPlan: (S_RESULT.repairPlan || '').slice(0, 300),
+    goal: (S_RESULT.studentGoal || '').slice(0, 200),
+    insightLevel: S_RESULT.insightLevel || '',
+    consequence: (S_RESULT.recommendedConsequences || []).map(c => c.description).join(' | ').slice(0, 300),
+  });
+  document.getElementById('bic-link').href =
+    'https://behaviorinterventioncenter.com?' + params.toString();
+}
 async function doSubmit() {
   if (!validatePart3()) return;
   goTo('done');
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
-  await saveRow({session_id: S.sessionId, initial: S.initial, part1_json: p1, part2_json: p2, part3_json: p3, status: 'submitted'});
-  const result = await callEdge('summary', {initial: S.initial, part1: p1, part2: p2, part3: p3});
-  document.getElementById('ai-final-thinking').classList.add('hidden');
-  document.getElementById('ai-final-content').classList.remove('hidden');
 
-  if (result) {
-    const ic = {Low:'flag',Medium:'warn',High:'good'}[result.insightLevel] || '';
-    const ib = {Low:'ins-low',Medium:'ins-med',High:'ins-high'}[result.insightLevel] || 'ins-med';
-    document.getElementById('staff-body').innerHTML =
-      `<div class="staff-sec"><h4>Incident Summary</h4><div class="staff-item">${result.summary||'—'}</div></div>` +
-      `<div class="staff-sec"><h4>Student Insight Level</h4><div class="staff-item ${ic}"><span class="ins-badge ${ib}">${result.insightLevel||'—'}</span><br>${result.insightReason||''}</div></div>` +
-      `<div class="staff-sec"><h4>Recommended Consequences</h4>` +
-        (result.recommendedConsequences||[]).map(c=>`<div class="staff-item"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:.78rem;color:var(--ink-light)">${c.rationale||''}</em></div>`).join('') +
-      `</div>` +
-      `<div class="staff-sec"><h4>Repair Plan</h4><div class="staff-item">${result.repairPlan||'—'}</div></div>` +
-      (result.restorativeQuestions ? `<div class="staff-sec"><h4>Restorative Questions for Conference</h4>${result.restorativeQuestions.map(q=>`<div class="staff-item">💬 ${q}</div>`).join('')}</div>` : '') +
-      ((result.followUpFlags||[]).length ? `<div class="staff-sec"><h4>⚠️ Follow-Up Flags</h4>${result.followUpFlags.map(f=>`<div class="staff-item flag">${f}</div>`).join('')}</div>` : '');
-
-    if (result.cpsScript) {
-      document.getElementById('cps-script-block').innerHTML =
-        `<div class="cps-script-block"><h4>💬 Conference Script — CPS Framework</h4>` +
-        result.cpsScript.map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}</span><span class="script-txt">"${l.text}"</span></div>`).join('') +
-        `</div>`;
-    }
-
-    document.getElementById('read-list').innerHTML =
-      (result.studentReadingList||[]).map(r =>
-        `<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`
-      ).join('');
-  } else {
-    document.getElementById('staff-body').innerHTML = '<div class="staff-item flag">AI summary could not be generated. Please proceed with manual follow-up.</div>';
-  }
-}
-</script>
-</body>
-</html>
-<script>
-// PATCH: Replace doSubmit with full version including features 5, 7, 9
-(function() {
-const _orig = window.doSubmit;
-window.doSubmit = async function() {
-  if (!validatePart3()) return;
-  goTo('done');
-  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
     part1_json: p1, part2_json: p2, part3_json: p3,
     prior_count: S.priorCount || 0, status: 'submitted'
   });
+
   const result = await callEdge('summary', {
     initial: S.initial, part1: p1, part2: p2, part3: p3,
     sessionId: S.sessionId,
@@ -2237,10 +3320,14 @@ window.doSubmit = async function() {
       created_at: r.created_at
     })),
   });
+
+  // Hide thinking indicator
   document.getElementById('ai-final-thinking').classList.add('hidden');
-  document.getElementById('ai-final-content').classList.remove('hidden');
+
   if (result) {
-    // Feature 5: save goal + insight level
+    S_RESULT = result; // store for email/BIC
+
+    // Feature 5: save goal + insight level to Supabase
     if (result.studentGoal || result.insightLevel) {
       fetch(SUPABASE_URL + '/rest/v1/reflections?session_id=eq.' + S.sessionId, {
         method: 'PATCH',
@@ -2248,43 +3335,48 @@ window.doSubmit = async function() {
         body: JSON.stringify({ goal: result.studentGoal||null, insight_level: result.insightLevel||null })
       });
     }
+
     // Feature 9: Clash bridge
     if (result.insightLevel === 'High') awardClashPoints(S.initial, S.sessionId, 'High');
 
-    const ic = {Low:'flag',Medium:'warn',High:'good'}[result.insightLevel]||'';
-    const ib = {Low:'ins-low',Medium:'ins-med',High:'ins-high'}[result.insightLevel]||'ins-med';
-    document.getElementById('staff-body').innerHTML =
-      `<div class="staff-sec"><h4>Incident Summary</h4><div class="staff-item">${result.summary||'—'}</div></div>` +
-      ((S.priorCount||0) > 0 ? `<div class="staff-sec"><h4>⚠️ Returning Student</h4><div class="staff-item warn">This student has completed ${S.priorCount} prior reflection(s). Last insight: ${(S.priorReflections||[])[0]?.insight_level||'unknown'}. Last trait: ${(S.priorReflections||[])[0]?.part3_json?.trait||'unknown'}.</div></div>` : '') +
-      `<div class="staff-sec"><h4>Student Insight Level</h4><div class="staff-item ${ic}"><span class="ins-badge ${ib}">${result.insightLevel||'—'}</span><br>${result.insightReason||''}</div></div>` +
-      `<div class="staff-sec"><h4>Recommended Consequences</h4>${(result.recommendedConsequences||[]).map(c=>`<div class="staff-item"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:.78rem;color:var(--ink-light)">${c.rationale||''}</em></div>`).join('')}</div>` +
-      `<div class="staff-sec"><h4>Repair Plan</h4><div class="staff-item">${result.repairPlan||'—'}</div></div>` +
-      (result.studentGoal ? `<div class="staff-sec"><h4>🎯 Student Goal</h4><div class="staff-item good">${result.studentGoal}</div></div>` : '') +
-      (result.restorativeQuestions ? `<div class="staff-sec"><h4>Restorative Questions</h4>${result.restorativeQuestions.map(q=>`<div class="staff-item">💬 ${q}</div>`).join('')}</div>` : '') +
-      (result.insightLevel==='High' ? `<div class="staff-sec"><h4>🏆 Clash of Classes</h4><div class="staff-item good">High insight flagged — review in Clash admin to award squad point.</div></div>` : '') +
-      ((result.followUpFlags||[]).length ? `<div class="staff-sec"><h4>⚠️ Follow-Up Flags</h4>${result.followUpFlags.map(f=>`<div class="staff-item flag">${f}</div>`).join('')}</div>` : '');
+    // Student reading list + practice plan — visible to student
+    const readingWrap = document.getElementById('student-reading-wrap');
+    if (readingWrap) {
+      readingWrap.classList.remove('hidden');
 
-    if (result.cpsScript) {
-      document.getElementById('cps-script-block').innerHTML =
-        `<div class="cps-script-block"><h4>💬 Conference Script</h4>` +
-        result.cpsScript.map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}</span><span class="script-txt">"${l.text}"</span></div>`).join('') + `</div>`;
-    }
-    if (result.studentGoal) {
-      document.getElementById('read-list').insertAdjacentHTML('beforebegin',
-        `<div style="background:rgba(201,168,76,.12);border-radius:9px;padding:14px 16px;margin-bottom:16px;border-left:3px solid var(--gold)">
-          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-family:'Barlow',sans-serif">🎯 Your Goal Before Your Next Check-In</div>
+      // Practice plan
+      if (result.practicePlan) {
+        const pp = document.getElementById('practice-plan');
+        pp.classList.add('show');
+        document.getElementById('pp-title').textContent = result.practicePlan.title || 'Your Weekly Practice Plan';
+        document.getElementById('pp-days').innerHTML = (result.practicePlan.days || []).map(d =>
+          `<div class="pp-day"><div class="pp-day-label">${d.day}</div><div class="pp-day-text">${d.task}</div></div>`
+        ).join('');
+      }
+
+      let readingHTML = '';
+      if (result.studentGoal) {
+        readingHTML += `<div style="background:rgba(201,168,76,.12);border-radius:9px;padding:14px 16px;margin-bottom:14px;border-left:3px solid var(--gold)">
+          <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:6px;font-family:'Barlow',sans-serif">🎯 Your Goal Before Your Next Check-In</div>
           <div style="font-family:'Barlow',sans-serif;font-size:.88rem;color:rgba(255,255,255,.9);line-height:1.6">${result.studentGoal}</div>
-        </div>`);
+        </div>`;
+      }
+      document.getElementById('read-list').insertAdjacentHTML('beforebegin', readingHTML);
+      document.getElementById('read-list').innerHTML =
+        (result.studentReadingList||[]).map(r =>
+          `<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`
+        ).join('');
     }
-    document.getElementById('read-list').innerHTML =
-      (result.studentReadingList||[]).map(r=>`<li><strong>${r.title}</strong>${r.topic?' <em>— '+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`).join('');
-  } else {
-    document.getElementById('staff-body').innerHTML = '<div class="staff-item flag">AI summary could not be generated. Please proceed with manual follow-up.</div>';
-  }
-};
-})();
 
-// Feature 2: Consequence nudge — fires after rank zone settles
+  } else {
+    S_RESULT = null;
+    // If AI fails, still show the password gate — adult can see what was saved
+    document.getElementById('ai-final-thinking').innerHTML =
+      '<div style="font-family:Barlow,sans-serif;font-size:.84rem;color:rgba(255,255,255,.6);padding:10px 0">Reading list could not be generated. Please proceed with the follow-up conversation.</div>';
+  }
+}
+
+// Feature 2: Consequence nudge + Creative challenge
 let nudgeTimer;
 const origBuildRank = window.buildRankZone;
 window.buildRankZone = function(items) {
@@ -2305,6 +3397,13 @@ window.buildRankZone = function(items) {
     const textEl = document.getElementById('cn-text');
     textEl.classList.remove('hidden');
     textEl.textContent = result?.nudge || 'Think about which of these choices is most directly connected to the people you named as being affected.';
+
+    // Trigger creative challenge after nudge
+    setTimeout(() => {
+      triggerCreativeChallenge(S.ranked, p1.whatHappened, p2.hurtPeople);
+    }, 800);
   }, 1800);
 };
 </script>
+</body>
+</html>
