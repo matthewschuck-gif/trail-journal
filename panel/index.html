@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailback Panel · Camp Mountaineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:wght@400;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:   #1a2e1f;
+  --trail:    #2c4a35;
+  --trail-mid:#3d6b4f;
+  --trail-lt: #e8f2ec;
+  --gold:     #c9a84c;
+  --gold-lt:  #fdf5df;
+  --gold-dk:  #8a6820;
+  --ink:      #1c1a14;
+  --ink-mid:  #4a4438;
+  --ink-lt:   #8a8070;
+  --paper:    #faf6ef;
+  --paper-dk: #f0e8d8;
+  --border:   #d8ceb8;
+  --red:      #b03030;
+  --red-lt:   #fde8e8;
+  --sky:      #3a6ea8;
+  --sky-lt:   #e8f0fb;
+  --purple:   #5c3d8f;
+  --purple-lt:#f0ebf8;
+  --radius:   12px;
+  --shadow:   0 4px 24px rgba(44,74,53,.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--forest);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 2px solid var(--gold);
+}
+.hdr-emblem { font-size: 1.6rem; }
+.hdr-titles h1 {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.2rem; color: white; line-height: 1;
+}
+.hdr-titles span {
+  font-size: 0.68rem; color: rgba(255,255,255,.5);
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+}
+.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.hdr-badge {
+  background: var(--gold); color: var(--forest);
+  font-size: .65rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+}
+.hdr-session {
+  font-size: .72rem; color: rgba(255,255,255,.45);
+  font-family: 'Barlow Condensed', sans-serif; letter-spacing: .04em;
+}
+
+/* ── PASSWORD GATE ── */
+.pw-gate-full {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--forest);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.pw-gate-full.hidden { display: none; }
+.pw-gate-box {
+  background: rgba(255,255,255,.04); border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 18px; padding: 44px 40px; max-width: 420px; width: 100%;
+  text-align: center;
+}
+.pw-gate-icon { font-size: 2.8rem; margin-bottom: 18px; }
+.pw-gate-box h2 {
+  font-family: 'Walter Turncoat', cursive; font-size: 1.7rem;
+  color: white; margin-bottom: 8px;
+}
+.pw-gate-box p {
+  font-family: 'Barlow', sans-serif; font-size: .86rem;
+  color: rgba(255,255,255,.5); line-height: 1.65; margin-bottom: 28px;
+}
+.pw-gate-input {
+  width: 100%; background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.15); border-radius: 9px;
+  padding: 13px 16px; font-family: 'Barlow', sans-serif; font-size: .95rem;
+  color: white; text-align: center; letter-spacing: .1em; margin-bottom: 12px;
+  transition: border-color .15s;
+}
+.pw-gate-input:focus { outline: none; border-color: var(--gold); }
+.pw-gate-input::placeholder { color: rgba(255,255,255,.25); letter-spacing: .04em; }
+.pw-gate-btn {
+  width: 100%; background: var(--gold); color: var(--forest); border: none;
+  border-radius: 9px; padding: 13px; font-family: 'Barlow', sans-serif;
+  font-weight: 800; font-size: .95rem; cursor: pointer; transition: opacity .15s;
+}
+.pw-gate-btn:hover { opacity: .88; }
+.pw-gate-error {
+  font-family: 'Barlow', sans-serif; font-size: .78rem;
+  color: #f87171; margin-top: 10px; min-height: 20px;
+}
+.pw-gate-sub {
+  font-family: 'Barlow', sans-serif; font-size: .72rem;
+  color: rgba(255,255,255,.25); margin-top: 18px;
+}
+.progress-bar {
+  height: 4px; background: var(--border); position: relative; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--trail-mid));
+  transition: width .5s ease;
+}
+.steps-bar {
+  display: flex; background: var(--forest); overflow-x: auto;
+  scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.steps-bar::-webkit-scrollbar { display: none; }
+.step-pip {
+  padding: 9px 14px; font-size: .65rem; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+  color: rgba(255,255,255,.3); border-bottom: 2px solid transparent;
+  cursor: default; transition: all .2s; flex-shrink: 0;
+}
+.step-pip.done  { color: rgba(255,255,255,.5); border-bottom-color: var(--trail-mid); }
+.step-pip.active{ color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── MAIN LAYOUT ── */
+main { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+
+/* ── SCREENS ── */
+.screen { display: none; animation: fadeUp .35s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION HEADS ── */
+.screen-hero {
+  background: linear-gradient(135deg, var(--forest) 0%, #0d1c10 100%);
+  border-radius: 16px; padding: 32px 28px; margin-bottom: 22px;
+  color: white; position: relative; overflow: hidden;
+}
+.screen-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.screen-hero .sh-badge {
+  font-size: .62rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px; display: block;
+}
+.screen-hero h2 {
+  font-family: 'Walter Turncoat', cursive;
+  font-size: 1.8rem; color: white; margin-bottom: 8px; line-height: 1.2;
+}
+.screen-hero p {
+  font-size: .87rem; color: rgba(255,255,255,.7); line-height: 1.7;
+  max-width: 520px;
+}
+.screen-hero .sh-step {
+  position: absolute; right: 24px; top: 24px;
+  font-family: 'Walter Turncoat', cursive; font-size: 2.4rem;
+  color: rgba(255,255,255,.1); line-height: 1;
+}
+
+/* ── CARDS ── */
+.card {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 22px 20px; margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card-label {
+  font-size: .68rem; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--trail); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 7px;
+}
+.card-sub {
+  font-size: .84rem; color: var(--ink-mid); line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+/* ── FORM ELEMENTS ── */
+textarea, input[type="text"], input[type="date"], select {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 9px;
+  font-family: 'Barlow', sans-serif; font-size: .88rem;
+  color: var(--ink); background: var(--paper);
+  resize: vertical; line-height: 1.6; transition: border-color .15s;
+}
+textarea:focus, input:focus, select:focus {
+  outline: none; border-color: var(--trail-mid); background: white;
+}
+textarea { min-height: 90px; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block; font-size: .72rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-lt); margin-bottom: 6px;
+}
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── NORMS CHECK ── */
+.norm-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 9px;
+  margin-bottom: 8px; cursor: pointer; transition: all .15s; background: var(--paper);
+}
+.norm-item:hover { border-color: var(--trail-mid); }
+.norm-item.checked { border-color: var(--trail); background: var(--trail-lt); }
+.norm-check {
+  width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; transition: all .15s; margin-top: 1px;
+}
+.norm-item.checked .norm-check { background: var(--trail); border-color: var(--trail); color: white; }
+.norm-text { font-size: .87rem; color: var(--ink-mid); line-height: 1.55; }
+
+/* ── RESTORATIVE QUESTION ROW ── */
+.rq-row {
+  border: 1.5px solid var(--border); border-radius: 10px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.rq-head {
+  background: var(--paper-dk); padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.rq-panelist {
+  font-size: .72rem; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--trail); flex: 1;
+}
+.rq-toggle { font-size: .75rem; color: var(--ink-lt); transition: transform .2s; }
+.rq-row.open .rq-toggle { transform: rotate(90deg); }
+.rq-body { display: none; padding: 14px; }
+.rq-row.open .rq-body { display: block; }
+.rq-hint {
+  font-size: .76rem; color: var(--ink-lt); margin-bottom: 10px;
+  line-height: 1.55; font-style: italic;
+}
+
+/* ── AI PANEL ── */
+.ai-block {
+  background: linear-gradient(135deg, #1a2e1f 0%, #0d1810 100%);
+  border-radius: 10px; padding: 18px; margin-top: 12px;
+  color: white; animation: fadeUp .35s ease;
+}
+.ai-block.hidden { display: none; }
+.ai-badge {
+  font-size: .6rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  display: block;
+}
+.ai-body { font-size: .86rem; line-height: 1.75; color: rgba(255,255,255,.88); }
+.ai-body p { margin-bottom: 8px; }
+.ai-body strong { color: #a8d5b5; }
+.ai-thinking {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; color: rgba(255,255,255,.4);
+}
+.spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.15);
+  border-top-color: var(--gold); animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── IMPACT STATEMENT ROWS ── */
+.impact-row {
+  border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 14px; margin-bottom: 10px; background: var(--paper);
+}
+.impact-row-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.impact-from { flex: 1; }
+.impact-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-lt); font-size: .75rem; padding: 3px 8px;
+  border-radius: 6px; transition: all .15s;
+}
+.impact-remove:hover { color: var(--red); background: var(--red-lt); }
+#add-impact-btn {
+  background: none; border: 1.5px dashed var(--border); border-radius: 9px;
+  padding: 11px; width: 100%; cursor: pointer; font-size: .82rem;
+  color: var(--ink-lt); font-family: 'Barlow', sans-serif; transition: all .15s;
+}
+#add-impact-btn:hover { border-color: var(--trail-mid); color: var(--trail); }
+
+/* ── DELIBERATION COMPASS ── */
+.delib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.delib-card { border-radius: 10px; padding: 18px; }
+.delib-card:nth-child(1) { background: var(--red-lt); border: 1.5px solid #e05c5c; }
+.delib-card:nth-child(2) { background: var(--gold-lt); border: 1.5px solid var(--gold); }
+.delib-card:nth-child(3) { background: var(--trail-lt); border: 1.5px solid var(--trail-mid); grid-column: 1/-1; }
+.delib-head {
+  font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.delib-card:nth-child(1) .delib-head { color: var(--red); }
+.delib-card:nth-child(2) .delib-head { color: var(--gold-dk); }
+.delib-card:nth-child(3) .delib-head { color: var(--trail); }
+@media (max-width: 560px) { .delib-grid { grid-template-columns: 1fr; } .delib-card:nth-child(3) { grid-column: 1; } }
+
+/* ── RECOMMENDATION MENU ── */
+.rec-category { margin-bottom: 16px; }
+.rec-cat-head {
+  font-size: .72rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-lt); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.rec-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+.rec-chip {
+  padding: 7px 13px; border: 1.5px solid var(--border); border-radius: 20px;
+  font-size: .79rem; font-weight: 600; cursor: pointer;
+  background: var(--paper); color: var(--ink-mid); transition: all .15s;
+}
+.rec-chip:hover { border-color: var(--trail-mid); color: var(--trail); }
+.rec-chip.on { background: var(--trail); color: white; border-color: var(--trail); }
+.selected-recs { margin-top: 14px; }
+.sel-rec-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 9px;
+  margin-bottom: 8px; background: var(--paper); animation: fadeUp .25s ease;
+}
+.sel-rec-label { font-size: .82rem; font-weight: 700; color: var(--trail); flex: 1; }
+.sel-rec-remove {
+  background: none; border: none; cursor: pointer; color: var(--ink-lt);
+  font-size: .75rem; transition: color .15s;
+}
+.sel-rec-remove:hover { color: var(--red); }
+
+/* ── FOLLOW-UP TIMELINE ── */
+.followup-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px;
+  margin-bottom: 8px; background: var(--paper);
+}
+.fu-label {
+  font-size: .7rem; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--gold-dk); min-width: 72px;
+}
+.fu-date { flex: 1; padding: 7px 10px; font-size: .84rem; }
+.fu-person { flex: 1.5; padding: 7px 10px; font-size: .84rem; }
+
+/* ── TRAIL JOURNAL IMPORT ── */
+.import-banner {
+  background: var(--gold-lt); border: 2px solid var(--gold);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.import-icon { font-size: 1.5rem; flex-shrink: 0; }
+.import-text { flex: 1; font-size: .86rem; color: var(--ink-mid); line-height: 1.65; }
+.import-text strong { color: var(--gold-dk); }
+.import-btn {
+  background: var(--gold); color: var(--forest); border: none;
+  border-radius: 7px; padding: 8px 14px; font-size: .78rem; font-weight: 800;
+  cursor: pointer; font-family: 'Barlow', sans-serif; white-space: nowrap;
+  transition: opacity .15s; margin-top: 6px; display: inline-block;
+}
+.import-btn:hover { opacity: .85; }
+
+/* ── SUMMARY CARD (FINAL SCREEN) ── */
+.summary-section { margin-bottom: 20px; }
+.summary-section h4 {
+  font-size: .68rem; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--trail); margin-bottom: 8px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.summary-item {
+  font-size: .86rem; color: var(--ink-mid); line-height: 1.65;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.summary-item:last-child { border-bottom: none; }
+.summary-item strong { color: var(--ink); }
+.ins-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 20px;
+  font-size: .72rem; font-weight: 800;
+}
+.ins-High   { background: var(--trail-lt); color: var(--trail); }
+.ins-Medium { background: var(--gold-lt); color: var(--gold-dk); }
+.ins-Low    { background: var(--red-lt); color: var(--red); }
+
+/* ── BUTTONS ── */
+.btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
+.btn-primary {
+  background: var(--trail); color: white; border: none; border-radius: 9px;
+  padding: 13px 24px; font-family: 'Barlow', sans-serif; font-weight: 800;
+  font-size: .9rem; cursor: pointer; transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .88; }
+.btn-secondary {
+  background: none; border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 11px 20px; font-family: 'Barlow', sans-serif; font-weight: 700;
+  font-size: .84rem; color: var(--ink-lt); cursor: pointer; transition: all .15s;
+}
+.btn-secondary:hover { border-color: var(--trail-mid); color: var(--trail); }
+.btn-gold {
+  background: var(--gold); color: var(--forest); border: none; border-radius: 9px;
+  padding: 13px 24px; font-family: 'Barlow', sans-serif; font-weight: 800;
+  font-size: .9rem; cursor: pointer; transition: opacity .15s;
+}
+.btn-gold:hover { opacity: .88; }
+.btn-danger {
+  background: var(--red); color: white; border: none; border-radius: 9px;
+  padding: 9px 18px; font-family: 'Barlow', sans-serif; font-weight: 800;
+  font-size: .82rem; cursor: pointer; transition: opacity .15s;
+}
+
+/* ── PRIVATE DELIBERATION OVERLAY ── */
+.delib-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,20,12,.92); z-index: 200;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.delib-overlay.show { display: flex; animation: fadeIn .3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.delib-modal {
+  background: var(--forest); border: 1.5px solid var(--trail-mid);
+  border-radius: 18px; padding: 32px 28px; max-width: 640px; width: 100%;
+  color: white; animation: fadeUp .35s ease;
+}
+.delib-modal h3 {
+  font-family: 'Walter Turncoat', cursive; font-size: 1.5rem; color: white;
+  margin-bottom: 6px;
+}
+.delib-modal .dm-sub {
+  font-size: .8rem; color: rgba(255,255,255,.5); margin-bottom: 22px;
+}
+.dm-field { margin-bottom: 16px; }
+.dm-field label {
+  display: block; font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 6px;
+}
+.dm-field textarea {
+  background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15);
+  color: white;
+}
+.dm-field textarea:focus { background: rgba(255,255,255,.12); border-color: var(--gold); }
+.dm-field textarea::placeholder { color: rgba(255,255,255,.25); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--forest); color: white; border: 1px solid var(--trail-mid);
+  border-radius: 9px; padding: 11px 20px; font-size: .84rem; font-weight: 600;
+  z-index: 300; opacity: 0; transition: opacity .3s; pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ── MISC ── */
+.tag {
+  display: inline-block; padding: 3px 9px; border-radius: 20px;
+  font-size: .68rem; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; margin-right: 4px; margin-bottom: 4px;
+}
+.tag-repair    { background: #fde8e8; color: #b03030; }
+.tag-reconnect { background: var(--gold-lt); color: var(--gold-dk); }
+.tag-reflect   { background: var(--trail-lt); color: var(--trail); }
+.tag-reengage  { background: var(--sky-lt); color: var(--sky); }
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.callout {
+  border-radius: 9px; padding: 13px 15px;
+  font-size: .84rem; color: var(--ink-mid); line-height: 1.65;
+}
+.callout-gold   { background: var(--gold-lt); border-left: 3px solid var(--gold); }
+.callout-green  { background: var(--trail-lt); border-left: 3px solid var(--trail-mid); }
+.callout-red    { background: var(--red-lt); border-left: 3px solid var(--red); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-gate-full" id="pw-gate-full">
+  <div class="pw-gate-box">
+    <div class="pw-gate-icon">⛺</div>
+    <h2>Trailback Panel</h2>
+    <p>This tool is for trained panel members and staff only. Enter the staff password to access the session.</p>
+    <input type="password" class="pw-gate-input" id="pw-gate-input"
+      placeholder="Staff password"
+      onkeydown="if(event.key==='Enter')checkGatePW()">
+    <button class="pw-gate-btn" onclick="checkGatePW()">Enter Panel →</button>
+    <div class="pw-gate-error" id="pw-gate-error"></div>
+    <div class="pw-gate-sub">trailjournal.org/panel · Camp Mountaineer · EMS</div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="hdr-emblem">⛺</div>
+  <div class="hdr-titles">
+    <h1>Trailback Panel</h1>
+    <span>Camp Mountaineer · EMS</span>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-badge" id="hdr-badge">Panel</span>
+    <span class="hdr-session" id="hdr-session"></span>
+  </div>
+</header>
+
+<div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+<div class="steps-bar">
+  <div class="step-pip active" id="pip-0">Setup</div>
+  <div class="step-pip" id="pip-1">Norms</div>
+  <div class="step-pip" id="pip-2">Student</div>
+  <div class="step-pip" id="pip-3">Inquiry</div>
+  <div class="step-pip" id="pip-4">Impact</div>
+  <div class="step-pip" id="pip-5">Deliberate</div>
+  <div class="step-pip" id="pip-6">Recommend</div>
+  <div class="step-pip" id="pip-7">Follow-Up</div>
+  <div class="step-pip" id="pip-8">Record</div>
+</div>
+
+<main>
+
+<!-- ═══ SCREEN 0: CASE SETUP ═══ -->
+<div class="screen active" id="screen-0">
+  <div class="screen-hero">
+    <span class="sh-step">01</span>
+    <span class="sh-badge">Case Setup</span>
+    <h2>New Panel Session</h2>
+    <p>Enter the case details before the session begins. If the student completed a Trail Journal, you can import their reflection automatically.</p>
+  </div>
+
+  <!-- Trail Journal import -->
+  <div class="import-banner" id="tj-import-banner">
+    <div class="import-icon">🗺️</div>
+    <div class="import-text">
+      <strong>Trail Journal Available</strong><br>
+      If this student completed a Trail Journal reflection, enter their session ID to pre-fill the case details with their own words.
+      <br>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <input type="text" id="tj-import-id" placeholder="Trail Journal Session ID" style="max-width:280px;padding:8px 12px;font-size:.82rem">
+        <button class="import-btn" onclick="importTrailJournal()">Import →</button>
+      </div>
+      <div id="import-status" style="font-size:.76rem;margin-top:6px;color:var(--gold-dk)"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📋 Case Details</div>
+    <div class="two-col">
+      <div class="field">
+        <label>Student Initial</label>
+        <input type="text" id="s-initial" placeholder="First initial only" maxlength="1">
+      </div>
+      <div class="field">
+        <label>Panel Date</label>
+        <input type="date" id="s-date">
+      </div>
+    </div>
+    <div class="field">
+      <label>Referring Staff Member</label>
+      <input type="text" id="s-staff" placeholder="Who referred this case">
+    </div>
+    <div class="field">
+      <label>Incident Summary <span style="color:var(--ink-lt);font-weight:400;text-transform:none;letter-spacing:0">(neutral — what happened, not why)</span></label>
+      <textarea id="s-incident" rows="3" placeholder="Brief factual overview of the incident(s) that led to this referral…"></textarea>
+    </div>
+    <div class="field">
+      <label>Behavior Pattern / Prior Interventions</label>
+      <textarea id="s-pattern" rows="2" placeholder="What has been tried before? How many times has this behavior occurred?"></textarea>
+    </div>
+    <div class="field">
+      <label>Clash of Classes Squad (optional)</label>
+      <select id="s-squad">
+        <option value="">Not known / not participating</option>
+        <option value="Gold">Gold</option>
+        <option value="Grey">Grey</option>
+        <option value="Black">Black</option>
+        <option value="Purple">Purple</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="tj-imported-preview" class="hidden">
+    <div class="callout callout-gold" style="margin-bottom:14px">
+      ✅ <strong>Trail Journal imported.</strong> The student's reflection has been loaded into the session. The panel can review it during the inquiry phase.
+    </div>
+    <div class="card" id="tj-preview-card">
+      <div class="card-label">🗺️ Trail Journal Summary</div>
+      <div id="tj-preview-body" style="font-size:.84rem;color:var(--ink-mid);line-height:1.7"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <div></div>
+    <button class="btn-primary" onclick="startSession()">Begin Session →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 1: PANEL NORMS ═══ -->
+<div class="screen" id="screen-1">
+  <div class="screen-hero">
+    <span class="sh-step">02</span>
+    <span class="sh-badge">Opening</span>
+    <h2>Panel Norms</h2>
+    <p>Every session opens with these commitments. Read each one aloud as a panel and have each member confirm before proceeding.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🤝 Panel Commitments — Check Each One</div>
+    <div id="norms-list">
+      <div class="norm-item" onclick="toggleNorm(this)">
+        <div class="norm-check"></div>
+        <div class="norm-text"><strong>Confidentiality.</strong> Nothing discussed in this room leaves this room. What we hear here, stays here.</div>
+      </div>
+      <div class="norm-item" onclick="toggleNorm(this)">
+        <div class="norm-check"></div>
+        <div class="norm-text"><strong>Curiosity, not interrogation.</strong> Our questions are meant to help the student process — not to put them on trial.</div>
+      </div>
+      <div class="norm-item" onclick="toggleNorm(this)">
+        <div class="norm-check"></div>
+        <div class="norm-text"><strong>Empathy before judgment.</strong> We seek to understand before we recommend.</div>
+      </div>
+      <div class="norm-item" onclick="toggleNorm(this)">
+        <div class="norm-check"></div>
+        <div class="norm-text"><strong>Fairness and connection.</strong> Our recommendations must be related to the harm, respectful in tone, and realistic to complete.</div>
+      </div>
+      <div class="norm-item" onclick="toggleNorm(this)">
+        <div class="norm-check"></div>
+        <div class="norm-text"><strong>Bias check.</strong> If any panel member has a direct connection to this case, they will step back and an alternate will serve.</div>
+      </div>
+    </div>
+    <div id="norms-status" style="font-size:.8rem;color:var(--ink-lt);margin-top:12px;font-style:italic">Check all norms to continue.</div>
+  </div>
+
+  <div class="card" style="background:var(--paper)">
+    <div class="card-label">👥 Panel Members Present Today</div>
+    <div id="panelists-list">
+      <!-- Built dynamically -->
+    </div>
+    <button onclick="addPanelist()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:9px;width:100%;cursor:pointer;font-size:.8rem;color:var(--ink-lt);font-family:'Barlow',sans-serif;margin-top:4px" id="add-panelist-btn">+ Add panelist</button>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(0)">← Back</button>
+    <button class="btn-primary" id="norms-next-btn" disabled onclick="goTo(2)" style="opacity:.4;cursor:default">Panel Ready →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2: STUDENT REFLECTION ═══ -->
+<div class="screen" id="screen-2">
+  <div class="screen-hero">
+    <span class="sh-step">03</span>
+    <span class="sh-badge">Student Reflection</span>
+    <h2>Student Presentation</h2>
+    <p>The student shares their perspective. Take notes as they speak — use their own words where possible. The panel listens without interrupting.</p>
+  </div>
+
+  <div class="callout callout-gold" style="margin-bottom:16px">
+    💬 <strong>Prompt the student:</strong> "Take your time. There are no wrong answers here — we just want to understand what happened from your point of view."
+  </div>
+
+  <div id="tj-context-block" class="hidden">
+    <div class="callout callout-green" style="margin-bottom:14px">
+      🗺️ <strong>Trail Journal context available.</strong> This student completed a Trail Journal before this session. Their reflection has been loaded — you can use it to prompt deeper conversation.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🗣️ What the Student Shares</div>
+
+    <div class="field">
+      <label>What happened — in their own words</label>
+      <textarea id="r-what" rows="3" placeholder="Record what the student says happened…"></textarea>
+    </div>
+    <div class="field">
+      <label>Who was affected — and how</label>
+      <textarea id="r-who" rows="3" placeholder="Who did they name? What impact did they acknowledge?"></textarea>
+    </div>
+    <div class="field">
+      <label>What they have thought about since</label>
+      <textarea id="r-thought" rows="3" placeholder="What have they reflected on since the incident?"></textarea>
+    </div>
+    <div class="field">
+      <label>What they need right now</label>
+      <textarea id="r-needs" rows="3" placeholder="What support, resources, or help do they say they need?"></textarea>
+    </div>
+  </div>
+
+  <!-- AI context card - shows if TJ imported -->
+  <div id="tj-reflection-context" class="hidden">
+    <div class="card" style="border-color:var(--gold)">
+      <div class="card-label">🗺️ From Their Trail Journal — Use as Prompts</div>
+      <div id="tj-context-body" style="font-size:.84rem;color:var(--ink-mid);line-height:1.7"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(1)">← Back</button>
+    <button class="btn-primary" onclick="goTo(3)">Continue to Panel Inquiry →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 3: PANEL INQUIRY ═══ -->
+<div class="screen" id="screen-3">
+  <div class="screen-hero">
+    <span class="sh-step">04</span>
+    <span class="sh-badge">Panel Inquiry</span>
+    <h2>Restorative Questions</h2>
+    <p>Each panelist asks one restorative question. Record what the student says. The AI will suggest follow-up probes after each response.</p>
+  </div>
+
+  <div class="callout callout-gold" style="margin-bottom:16px">
+    💬 <strong>Panelist reminder:</strong> Your goal is curiosity — help the student process, not defend. Ask one question at a time and wait for a full response before asking another.
+  </div>
+
+  <div id="inquiry-rows">
+    <!-- Built dynamically from panelists -->
+  </div>
+
+  <!-- AI Inquiry Debrief -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-label">🤖 AI — Inquiry Analysis</div>
+    <div class="card-sub">After the student has answered all panel questions, generate an AI analysis of what the inquiry revealed.</div>
+    <button class="btn-secondary" onclick="runInquiryAI()" id="inquiry-ai-btn" style="margin-bottom:12px">Generate Inquiry Analysis</button>
+    <div id="inquiry-ai-block" class="ai-block hidden">
+      <div class="ai-thinking" id="inquiry-ai-thinking"><div class="spin"></div>Analyzing inquiry responses…</div>
+      <div class="ai-body hidden" id="inquiry-ai-body"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(2)">← Back</button>
+    <button class="btn-primary" onclick="goTo(4)">Continue to Impact →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 4: IMPACT SHARING ═══ -->
+<div class="screen" id="screen-4">
+  <div class="screen-hero">
+    <span class="sh-step">05</span>
+    <span class="sh-badge">Impact Sharing</span>
+    <h2>Perspectives & Impact</h2>
+    <p>Any affected parties — staff, other students, the school community — can share their perspective here. This can be read aloud or entered as a written statement. The student is not present for this portion.</p>
+  </div>
+
+  <div class="callout callout-red" style="margin-bottom:16px">
+    🚪 <strong>Student steps out.</strong> Ask the student to wait outside while perspectives are shared. They will be brought back in when this portion is complete.
+  </div>
+
+  <div id="impact-rows">
+    <div class="impact-row" id="impact-row-0">
+      <div class="impact-row-head">
+        <div class="impact-from">
+          <input type="text" placeholder="Who this is from (role, not name)" style="margin-bottom:6px">
+        </div>
+        <button class="impact-remove" onclick="removeImpactRow(this)">✕ Remove</button>
+      </div>
+      <textarea rows="3" placeholder="What they want the panel to know about how this affected them or the community…"></textarea>
+    </div>
+  </div>
+  <button id="add-impact-btn" onclick="addImpactRow()">+ Add another perspective</button>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-label">💬 Note for the Record</div>
+    <div class="card-sub">Any additional context about the broader community impact that wasn't captured above.</div>
+    <textarea id="impact-notes" rows="2" placeholder="Optional community impact notes…"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(3)">← Back</button>
+    <button class="btn-primary" onclick="goTo(5)">Proceed to Deliberation →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 5: DELIBERATION ═══ -->
+<div class="screen" id="screen-5">
+  <div class="screen-hero">
+    <span class="sh-step">06</span>
+    <span class="sh-badge">Deliberation</span>
+    <h2>Panel Discussion</h2>
+    <p>The student steps out. The panel deliberates privately using three guiding questions. The AI will then draft a recommendation based on everything shared today.</p>
+  </div>
+
+  <div class="callout callout-red" style="margin-bottom:16px">
+    🔒 <strong>Private deliberation.</strong> The student is not present. Everything discussed here is confidential panel deliberation.
+  </div>
+
+  <div class="delib-grid">
+    <div class="delib-card">
+      <div class="delib-head">⚡ What harm was done?</div>
+      <textarea id="d-harm" rows="4" placeholder="What specifically was harmed — relationships, trust, space, the community?"></textarea>
+    </div>
+    <div class="delib-card">
+      <div class="delib-head">🎯 What does the student need?</div>
+      <textarea id="d-student-needs" rows="4" placeholder="What support, skill, or understanding would help this student succeed?"></textarea>
+    </div>
+    <div class="delib-card">
+      <div class="delib-head">🤝 What do others need to feel restored?</div>
+      <textarea id="d-community-needs" rows="3" placeholder="What does the harmed party or the community need to feel the harm was addressed?"></textarea>
+    </div>
+  </div>
+
+  <!-- AI Draft Recommendation -->
+  <div class="card">
+    <div class="card-label">🤖 AI — Draft Recommendation</div>
+    <div class="card-sub">Generate an AI draft recommendation based on the student's reflection, the panel inquiry, impact statements, and deliberation notes. Use as a starting point — the panel has final say.</div>
+    <button class="btn-secondary" onclick="runDelibAI()" id="delib-ai-btn" style="margin-bottom:12px">Generate Draft Recommendation</button>
+    <div id="delib-ai-block" class="ai-block hidden">
+      <div class="ai-thinking" id="delib-ai-thinking"><div class="spin"></div>Synthesizing everything and drafting recommendation…</div>
+      <div class="ai-body hidden" id="delib-ai-body"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(4)">← Back</button>
+    <button class="btn-primary" onclick="goTo(6)">Build Final Recommendation →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 6: RECOMMENDATION ═══ -->
+<div class="screen" id="screen-6">
+  <div class="screen-hero">
+    <span class="sh-step">07</span>
+    <span class="sh-badge">Recommendation</span>
+    <h2>Restorative Recommendation</h2>
+    <p>Select actions from the menu below. These are what the panel recommends to the AP. The student comes back in to hear the final recommendation together.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🗂️ Restorative Recommendations Menu</div>
+    <div class="card-sub">Select as many as apply. The panel's recommendation is based on what will repair harm, build skill, and reconnect the student to the community.</div>
+
+    <div class="rec-category">
+      <div class="rec-cat-head"><span class="tag tag-repair">Repair</span> Fix, restore, replace</div>
+      <div class="rec-chips">
+        <div class="rec-chip" onclick="toggleRec(this,'Repair','Clean up or restore the physical space affected')">Clean/Restore Space</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Repair','Replace or reimburse damaged property')">Replace Property</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Repair','Written apology to affected party')">Written Apology</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Repair','Verbal apology facilitated by a trusted adult')">Verbal Apology</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Repair','Act of service directly connected to the harm')">Service Act</div>
+      </div>
+    </div>
+
+    <div class="rec-category">
+      <div class="rec-cat-head"><span class="tag tag-reconnect">Reconnect</span> Restore relationships</div>
+      <div class="rec-chips">
+        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Facilitated conversation between student and affected party')">Facilitated Conversation</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Restorative circle with those affected')">Restorative Circle</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Written letter of accountability to the community')">Community Letter</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Collaborative Problem Solving meeting with adult support')">CPS Meeting</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Peer mentoring — student receives mentoring from a trained peer')">Peer Mentoring</div>
+      </div>
+    </div>
+
+    <div class="rec-category">
+      <div class="rec-cat-head"><span class="tag tag-reflect">Reflect</span> Deepen understanding</div>
+      <div class="rec-chips">
+        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Trail Journal extended reflection (Camp Mountaineer)')">Camp Mountaineer</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Reflection project — art, presentation, or written work')">Reflection Project</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Detention reflection using structured sheet')">Detention Reflection</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reflect','PASS Group focused on the relevant LRG trait')">PASS Group</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Behavior and safety contract')">Behavior Contract</div>
+      </div>
+    </div>
+
+    <div class="rec-category">
+      <div class="rec-cat-head"><span class="tag tag-reengage">Re-engage</span> Build responsibility</div>
+      <div class="rec-chips">
+        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','School job or community responsibility connected to the harm')">School Job</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Lunchbassadors program')">Lunchbassadors</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Extracurricular responsibility assigned')">Extracurricular</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Skill-building sessions — social-emotional or regulation')">Skill-Building Sessions</div>
+        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Behavior Intervention Center coaching plan')">BIC Coaching Plan</div>
+      </div>
+    </div>
+
+    <div class="selected-recs" id="selected-recs">
+      <div style="font-size:.8rem;color:var(--ink-lt);font-style:italic" id="no-recs-msg">No recommendations selected yet.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📝 Panel Recommendation Narrative</div>
+    <div class="card-sub">Write the full recommendation in your own words — this goes to the AP and becomes the official panel record.</div>
+    <textarea id="rec-narrative" rows="5" placeholder="The Trailback Panel recommends…"></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📐 LRG Trait for Growth Plan</div>
+    <div class="card-sub">Which LRG trait does this student most need to develop based on what the panel heard today?</div>
+    <select id="rec-trait">
+      <option value="">Select trait…</option>
+      <option>Communication & Empathy</option>
+      <option>Honesty, Integrity, & Responsibility</option>
+      <option>Critical Thinking & Problem Solving</option>
+      <option>Healthy Living, Wellness, & Self-Awareness</option>
+      <option>Adaptability & Flexibility</option>
+      <option>Resilience & Grit</option>
+      <option>Collaborative & Teamwork</option>
+      <option>Continual Learning & Growth Mindset</option>
+      <option>Creativity & Innovation</option>
+      <option>Civics, Leadership, & Service</option>
+    </select>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(5)">← Back</button>
+    <button class="btn-primary" onclick="goTo(7)">Set Follow-Up Plan →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 7: FOLLOW-UP ═══ -->
+<div class="screen" id="screen-7">
+  <div class="screen-hero">
+    <span class="sh-step">08</span>
+    <span class="sh-badge">Follow-Up</span>
+    <h2>Follow-Up Plan</h2>
+    <p>Assign a check-in person and set the four follow-up dates. Every panel case gets checked in at 2 days, 1 week, 2 weeks, and 1 month.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">👤 Check-In Person</div>
+    <div class="card-sub">Assign one staff member to be the student's ongoing contact. This person follows up, tracks completion, and supports — not just checks a box.</div>
+    <input type="text" id="fu-person" placeholder="Name and role of check-in person">
+  </div>
+
+  <div class="card">
+    <div class="card-label">📅 Check-In Dates</div>
+    <div class="followup-row">
+      <div class="fu-label">2 Days</div>
+      <input type="date" class="fu-date" id="fu-2days">
+    </div>
+    <div class="followup-row">
+      <div class="fu-label">1 Week</div>
+      <input type="date" class="fu-date" id="fu-1week">
+    </div>
+    <div class="followup-row">
+      <div class="fu-label">2 Weeks</div>
+      <input type="date" class="fu-date" id="fu-2weeks">
+    </div>
+    <div class="followup-row">
+      <div class="fu-label">1 Month</div>
+      <input type="date" class="fu-date" id="fu-1month">
+    </div>
+    <button class="btn-secondary" onclick="autoFillDates()" style="margin-top:10px;font-size:.78rem">Auto-fill from today</button>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📋 Completion Criteria</div>
+    <div class="card-sub">What does the panel define as successful completion of the recommendation?</div>
+    <textarea id="fu-criteria" rows="3" placeholder="What does success look like? How will the check-in person know the restorative actions are done?"></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-label">⚠️ If Not Completed</div>
+    <div class="card-sub">What happens if the student does not complete the restorative actions?</div>
+    <textarea id="fu-fallback" rows="2" placeholder="If restorative actions are not completed by [date], the case will revert to…" value="If restorative actions are not completed by the agreed date, the case will revert to traditional disciplinary consequences through the AP."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(6)">← Back</button>
+    <button class="btn-gold" onclick="submitAndRecord()">Submit Panel Record →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 8: PANEL RECORD ═══ -->
+<div class="screen" id="screen-8">
+  <div class="screen-hero" style="background:linear-gradient(135deg,#1a3a22 0%,#0d2010 100%)">
+    <span class="sh-step">✓</span>
+    <span class="sh-badge">Complete</span>
+    <h2>Panel Record Saved</h2>
+    <p>The session has been recorded. The recommendation is ready to share with the student and submit to the AP.</p>
+  </div>
+
+  <div id="record-summary">
+    <!-- Built dynamically -->
+  </div>
+
+  <div class="card" style="background:var(--gold-lt);border-color:var(--gold)">
+    <div class="card-label" style="color:var(--gold-dk)">📤 Next Steps</div>
+    <div style="font-size:.86rem;color:var(--ink-mid);line-height:1.8">
+      <div style="margin-bottom:8px">1. <strong>Bring the student back in</strong> — share the recommendation narrative with them directly.</div>
+      <div style="margin-bottom:8px">2. <strong>AP reviews and approves</strong> — the record has been submitted to the panel records.</div>
+      <div style="margin-bottom:8px">3. <strong>Check-in person notified</strong> — assign them today.</div>
+      <div>4. <strong>First check-in: <span id="first-checkin"></span></strong></div>
+    </div>
+  </div>
+
+  <!-- BIC integration -->
+  <div id="bic-panel" class="card" style="border-color:var(--purple)">
+    <div class="card-label" style="color:var(--purple)">🧠 Open in Behavior Intervention Center</div>
+    <div class="card-sub">Import this panel recommendation directly into the BIC to generate a coaching plan — pre-filled with the incident summary, LRG trait, recommended consequence, and follow-up timeline.</div>
+    <a id="bic-link" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--purple);color:white;padding:11px 18px;border-radius:9px;font-weight:800;font-size:.86rem;text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      🧠 Open in BIC →
+    </a>
+  </div>
+
+  <!-- New case -->
+  <div class="btn-row" style="margin-top:28px">
+    <button class="btn-secondary" onclick="location.reload()">Start New Case</button>
+    <button class="btn-secondary" onclick="window.print()">🖨️ Print Record</button>
+  </div>
+</div>
+
+</main>
+
+<!-- DELIBERATION OVERLAY (private) -->
+<div class="delib-overlay" id="delib-overlay">
+  <div class="delib-modal">
+    <h3>🔒 Private Deliberation</h3>
+    <p class="dm-sub">Student is not present. These notes are for panel use only.</p>
+    <div class="dm-field">
+      <label>What harm was done?</label>
+      <textarea id="do-harm" rows="3" placeholder="Specific harms — relationships, trust, space, community…"></textarea>
+    </div>
+    <div class="dm-field">
+      <label>What does the student need to succeed?</label>
+      <textarea id="do-student" rows="3" placeholder="Skills, support, understanding…"></textarea>
+    </div>
+    <div class="dm-field">
+      <label>What do others need to feel restored?</label>
+      <textarea id="do-community" rows="3" placeholder="What the harmed party or community needs…"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn-secondary" onclick="closeDelib()">Close</button>
+      <button class="btn-primary" onclick="saveDelib()">Save & Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── GATE PASSWORD ─────────────────────────────────────────────────────────
+const PANEL_PW = 'togetherweclimb';
+
+function checkGatePW() {
+  const val = document.getElementById('pw-gate-input').value;
+  const err = document.getElementById('pw-gate-error');
+  if (val === PANEL_PW) {
+    document.getElementById('pw-gate-full').classList.add('hidden');
+    sessionStorage.setItem('panel-auth', '1');
+  } else {
+    err.textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-gate-input').value = '';
+    setTimeout(() => err.textContent = '', 3000);
+  }
+}
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem('panel-auth') === '1') {
+  document.getElementById('pw-gate-full').classList.add('hidden');
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const SUPA_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
+const EDGE_FN   = `${SUPA_URL}/functions/v1/ai-proxy`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+const P = {
+  sessionId: genUUID(),
+  date: null, initial: null, staff: null,
+  incident: null, pattern: null, squad: null,
+  tjId: null, tjData: null,
+  panelists: [],
+  normsChecked: 0,
+  rWhat: null, rWho: null, rThought: null, rNeeds: null,
+  inquiryNotes: [],
+  impactStatements: [],
+  deliberation: { harm: null, studentNeeds: null, communityNeeds: null },
+  selectedRecs: [],
+  recNarrative: null, lrgTrait: null,
+  followupPerson: null,
+  followupDates: {},
+  criteria: null, fallback: null,
+  aiRec: null,
+};
+
+const SCREEN_PROGRESS = {0:0,1:12,2:24,3:36,4:48,5:60,6:72,7:84,8:100};
+const PIPS = ['pip-0','pip-1','pip-2','pip-3','pip-4','pip-5','pip-6','pip-7','pip-8'];
+
+function genUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0;
+    return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('prog-fill').style.width = (SCREEN_PROGRESS[n]||0) + '%';
+  PIPS.forEach((id,i) => {
+    const el = document.getElementById(id); if (!el) return;
+    el.className = 'step-pip';
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── SESSION START ─────────────────────────────────────────────────────────
+function startSession() {
+  const initial = document.getElementById('s-initial').value.trim().toUpperCase();
+  if (!initial) { toast('Enter the student initial before starting.'); return; }
+  P.initial = initial;
+  P.date = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
+  P.staff = document.getElementById('s-staff').value.trim();
+  P.incident = document.getElementById('s-incident').value.trim();
+  P.pattern = document.getElementById('s-pattern').value.trim();
+  P.squad = document.getElementById('s-squad').value;
+  document.getElementById('hdr-session').textContent = 'Student ' + initial + ' · ' + new Date(P.date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if (P.squad) document.getElementById('hdr-badge').textContent = P.squad + ' Squad';
+  buildPanelistRows();
+  goTo(1);
+}
+
+// ── NORMS ─────────────────────────────────────────────────────────────────
+let normsCount = 0;
+function toggleNorm(el) {
+  const wasChecked = el.classList.contains('checked');
+  el.classList.toggle('checked');
+  el.querySelector('.norm-check').textContent = wasChecked ? '' : '✓';
+  normsCount += wasChecked ? -1 : 1;
+  const btn = document.getElementById('norms-next-btn');
+  const ready = normsCount >= 5;
+  btn.disabled = !ready;
+  btn.style.opacity = ready ? '1' : '.4';
+  btn.style.cursor = ready ? 'pointer' : 'default';
+  document.getElementById('norms-status').textContent = ready
+    ? '✅ All norms confirmed — panel is ready to begin.'
+    : `${normsCount}/5 norms confirmed.`;
+}
+
+// ── PANELISTS ─────────────────────────────────────────────────────────────
+function buildPanelistRows() {
+  // Default panelist slots
+  P.panelists = [
+    { role: 'AP (Facilitator)', name: '' },
+    { role: 'Dean of Student Success', name: '' },
+    { role: 'Student Panelist 1', name: '' },
+    { role: 'Student Panelist 2', name: '' },
+    { role: 'Student Panelist 3', name: '' },
+  ];
+  renderPanelists();
+}
+
+function renderPanelists() {
+  const container = document.getElementById('panelists-list');
+  container.innerHTML = P.panelists.map((p,i) => `
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input type="text" value="${p.name}" placeholder="${p.role}" style="flex:1" oninput="P.panelists[${i}].name=this.value;buildInquiryRows()">
+      <button onclick="removePanelist(${i})" style="background:none;border:none;cursor:pointer;color:var(--ink-lt);padding:4px 8px;font-size:.8rem">✕</button>
+    </div>
+  `).join('');
+  buildInquiryRows();
+}
+
+function addPanelist() {
+  P.panelists.push({ role: 'Panel Member', name: '' });
+  renderPanelists();
+}
+
+function removePanelist(i) {
+  P.panelists.splice(i,1);
+  renderPanelists();
+}
+
+function buildInquiryRows() {
+  const container = document.getElementById('inquiry-rows');
+  const panelists = P.panelists.filter(p => p.name.trim());
+  if (!panelists.length) {
+    container.innerHTML = '<div class="callout callout-gold">Enter panelist names in the Norms screen first.</div>';
+    return;
+  }
+  container.innerHTML = panelists.map((p,i) => `
+    <div class="rq-row" id="rq-${i}">
+      <div class="rq-head" onclick="toggleRQ('rq-${i}')">
+        <div class="rq-panelist">${p.name || p.role}</div>
+        <div class="rq-toggle">▶</div>
+      </div>
+      <div class="rq-body">
+        <div class="rq-hint">Suggested starters: "What were you thinking at the time?" · "Who was affected and how?" · "What have you thought about since?" · "What do you need now?"</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Question asked</label>
+          <input type="text" placeholder="Type the question this panelist will ask…" id="rq-q-${i}">
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Student's response</label>
+          <textarea rows="3" placeholder="Record what the student said…" id="rq-r-${i}"></textarea>
+        </div>
+        <div class="field">
+          <label>Panel notes / follow-up probes used</label>
+          <textarea rows="2" placeholder="Any follow-up questions or notable observations…" id="rq-n-${i}"></textarea>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleRQ(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ── IMPACT ROWS ───────────────────────────────────────────────────────────
+let impactCount = 1;
+function addImpactRow() {
+  const row = document.createElement('div');
+  row.className = 'impact-row';
+  row.id = 'impact-row-' + impactCount++;
+  row.innerHTML = `
+    <div class="impact-row-head">
+      <div class="impact-from"><input type="text" placeholder="Who this is from (role, not name)" style="margin-bottom:6px"></div>
+      <button class="impact-remove" onclick="removeImpactRow(this)">✕ Remove</button>
+    </div>
+    <textarea rows="3" placeholder="What they want the panel to know…"></textarea>
+  `;
+  document.getElementById('impact-rows').appendChild(row);
+}
+
+function removeImpactRow(btn) {
+  btn.closest('.impact-row').remove();
+}
+
+// ── TRAIL JOURNAL IMPORT ──────────────────────────────────────────────────
+async function importTrailJournal() {
+  const id = document.getElementById('tj-import-id').value.trim();
+  if (!id) return;
+  document.getElementById('import-status').textContent = 'Looking up session…';
+  try {
+    const res = await fetch(
+      `${SUPA_URL}/rest/v1/reflections?session_id=eq.${id}&select=*`,
+      { headers: { apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON } }
+    );
+    const rows = await res.json();
+    if (!rows || !rows[0]) {
+      document.getElementById('import-status').textContent = '⚠️ Session ID not found.';
+      return;
+    }
+    const r = rows[0];
+    P.tjId = id;
+    P.tjData = r;
+    const p1 = r.part1_json || {};
+    const p2 = r.part2_json || {};
+    const p3 = r.part3_json || {};
+
+    // Pre-fill case setup fields
+    if (r.initial && !document.getElementById('s-initial').value)
+      document.getElementById('s-initial').value = r.initial;
+
+    // Build preview
+    document.getElementById('tj-preview-body').innerHTML = `
+      <div class="summary-item"><strong>What happened:</strong> ${p1.whatHappened||'—'}</div>
+      <div class="summary-item"><strong>Why:</strong> ${p1.why||'—'}</div>
+      <div class="summary-item"><strong>Emotions during:</strong> ${(p1.emotionsDuring||[]).join(', ')||'—'}</div>
+      <div class="summary-item"><strong>CPS — before this:</strong> ${p1.cpsUnsolvedProblem||'—'}</div>
+      <div class="summary-item"><strong>CPS — their concern:</strong> ${p1.cpsTheirConcern||'—'}</div>
+      <div class="summary-item"><strong>People hurt:</strong> ${(p2.hurtPeople||[]).join(', ')||'—'}</div>
+      <div class="summary-item"><strong>Plan:</strong> ${p2.plan||'—'}</div>
+      <div class="summary-item"><strong>LRG Trait:</strong> ${p3.trait||'—'} · Insight: <span class="ins-badge ins-${r.insight_level||'Medium'}">${r.insight_level||'—'}</span></div>
+    `;
+    document.getElementById('tj-imported-preview').classList.remove('hidden');
+
+    // Inject into student reflection screen
+    document.getElementById('tj-context-block').classList.remove('hidden');
+    document.getElementById('tj-reflection-context').classList.remove('hidden');
+    document.getElementById('tj-context-body').innerHTML = `
+      <div class="summary-item"><strong>In their words — what happened:</strong> ${p1.whatHappened||'—'}</div>
+      <div class="summary-item"><strong>Why they did it:</strong> ${p1.why||'—'}</div>
+      <div class="summary-item"><strong>What they were thinking:</strong> ${p1.thinking||'—'}</div>
+      <div class="summary-item"><strong>What they cared about:</strong> ${p1.cpsMyConcern||'—'}</div>
+      <div class="summary-item"><strong>What the other person cared about:</strong> ${p1.cpsTheirConcern||'—'}</div>
+      <div class="summary-item"><strong>Plan from journal:</strong> ${p2.plan||'—'}</div>
+      <div class="summary-item"><strong>Goal set:</strong> ${r.goal||'—'}</div>
+    `;
+
+    // Pre-select LRG trait if available
+    if (p3.trait) {
+      const sel = document.getElementById('rec-trait');
+      for (let opt of sel.options) { if (opt.value === p3.trait) { sel.value = p3.trait; break; } }
+    }
+
+    document.getElementById('import-status').textContent = '✅ Trail Journal imported successfully.';
+    toast('Trail Journal imported!');
+  } catch(e) {
+    document.getElementById('import-status').textContent = '⚠️ Could not load session. Check the ID and try again.';
+  }
+}
+
+// ── AI CALLS ──────────────────────────────────────────────────────────────
+async function callEdge(type, payload) {
+  try {
+    const res = await fetch(EDGE_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON },
+      body: JSON.stringify({ type, payload }),
+    });
+    const data = await res.json();
+    return data;
+  } catch(e) { console.error('Edge fn error:', e); return null; }
+}
+
+async function runInquiryAI() {
+  const block = document.getElementById('inquiry-ai-block');
+  block.classList.remove('hidden');
+  document.getElementById('inquiry-ai-thinking').classList.remove('hidden');
+  document.getElementById('inquiry-ai-body').classList.add('hidden');
+
+  const panelists = P.panelists.filter(p => p.name.trim());
+  const inquiryData = panelists.map((p,i) => ({
+    panelist: p.name,
+    question: document.getElementById('rq-q-'+i)?.value || '',
+    response: document.getElementById('rq-r-'+i)?.value || '',
+  })).filter(x => x.question || x.response);
+
+  const result = await callEdge('panel_inquiry_analysis', {
+    initial: P.initial,
+    incident: P.incident,
+    studentReflection: {
+      whatHappened: document.getElementById('r-what')?.value,
+      whoAffected: document.getElementById('r-who')?.value,
+      thoughtSince: document.getElementById('r-thought')?.value,
+      whatNeeds: document.getElementById('r-needs')?.value,
+    },
+    inquiryNotes: inquiryData,
+    tjData: P.tjData ? {
+      insightLevel: P.tjData.insight_level,
+      trait: P.tjData.part3_json?.trait,
+    } : null,
+  });
+
+  document.getElementById('inquiry-ai-thinking').classList.add('hidden');
+  const body = document.getElementById('inquiry-ai-body');
+  body.classList.remove('hidden');
+  if (result?.analysis) {
+    body.innerHTML = result.analysis.split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
+  } else {
+    body.innerHTML = '<p>Analysis not available — proceed with panel deliberation.</p>';
+  }
+}
+
+async function runDelibAI() {
+  const block = document.getElementById('delib-ai-block');
+  block.classList.remove('hidden');
+  document.getElementById('delib-ai-thinking').classList.remove('hidden');
+  document.getElementById('delib-ai-body').classList.add('hidden');
+
+  const impactRows = document.querySelectorAll('#impact-rows .impact-row');
+  const impacts = Array.from(impactRows).map(row => ({
+    from: row.querySelector('input')?.value || '',
+    statement: row.querySelector('textarea')?.value || '',
+  })).filter(x => x.statement);
+
+  const result = await callEdge('panel_recommendation_draft', {
+    initial: P.initial,
+    incident: P.incident,
+    pattern: P.pattern,
+    studentReflection: {
+      whatHappened: document.getElementById('r-what')?.value,
+      whoAffected: document.getElementById('r-who')?.value,
+      thoughtSince: document.getElementById('r-thought')?.value,
+      whatNeeds: document.getElementById('r-needs')?.value,
+    },
+    deliberation: {
+      harm: document.getElementById('d-harm')?.value,
+      studentNeeds: document.getElementById('d-student-needs')?.value,
+      communityNeeds: document.getElementById('d-community-needs')?.value,
+    },
+    impactStatements: impacts,
+    tjData: P.tjData ? {
+      insightLevel: P.tjData.insight_level,
+      trait: P.tjData.part3_json?.trait,
+      goal: P.tjData.goal,
+    } : null,
+  });
+
+  P.aiRec = result;
+  document.getElementById('delib-ai-thinking').classList.add('hidden');
+  const body = document.getElementById('delib-ai-body');
+  body.classList.remove('hidden');
+
+  if (result?.recommendation) {
+    body.innerHTML = `
+      <p><strong>${result.recommendation}</strong></p>
+      ${result.rationale ? `<p style="margin-top:8px;opacity:.8">${result.rationale}</p>` : ''}
+      ${result.suggestedCategories?.length ? `<p style="margin-top:10px;font-size:.78rem;opacity:.6">Suggested categories: ${result.suggestedCategories.join(', ')}</p>` : ''}
+    `;
+    // Pre-fill narrative
+    if (result.recommendation && !document.getElementById('rec-narrative').value) {
+      document.getElementById('rec-narrative').value = result.recommendation;
+    }
+  } else {
+    body.innerHTML = '<p>Could not generate draft. Complete the deliberation notes and try again.</p>';
+  }
+}
+
+// ── RECOMMENDATIONS ───────────────────────────────────────────────────────
+function toggleRec(chip, category, action) {
+  const wasOn = chip.classList.contains('on');
+  chip.classList.toggle('on');
+  if (!wasOn) {
+    P.selectedRecs.push({ category, action });
+  } else {
+    const idx = P.selectedRecs.findIndex(r => r.action === action);
+    if (idx > -1) P.selectedRecs.splice(idx, 1);
+  }
+  renderSelectedRecs();
+}
+
+function renderSelectedRecs() {
+  const container = document.getElementById('selected-recs');
+  const msg = document.getElementById('no-recs-msg');
+  if (!P.selectedRecs.length) {
+    msg.style.display = 'block';
+    container.querySelectorAll('.sel-rec-row').forEach(r => r.remove());
+    return;
+  }
+  msg.style.display = 'none';
+  // Rebuild
+  container.querySelectorAll('.sel-rec-row').forEach(r => r.remove());
+  P.selectedRecs.forEach((rec, i) => {
+    const div = document.createElement('div');
+    div.className = 'sel-rec-row';
+    div.innerHTML = `
+      <div>
+        <div class="sel-rec-label">${rec.action}</div>
+        <div style="font-size:.72rem;color:var(--ink-lt)">${rec.category}</div>
+      </div>
+      <button class="sel-rec-remove" onclick="removeRec(${i})">✕</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function removeRec(i) {
+  const action = P.selectedRecs[i]?.action;
+  P.selectedRecs.splice(i, 1);
+  // Uncheck chip
+  document.querySelectorAll('.rec-chip').forEach(chip => {
+    if (chip.textContent.trim() && action && chip.getAttribute('onclick')?.includes(action.slice(0,20))) {
+      chip.classList.remove('on');
+    }
+  });
+  renderSelectedRecs();
+}
+
+// ── FOLLOW-UP DATES ───────────────────────────────────────────────────────
+function autoFillDates() {
+  const base = new Date();
+  const fmt = d => d.toISOString().split('T')[0];
+  const add = (d, days) => { const n = new Date(d); n.setDate(n.getDate()+days); return n; };
+  document.getElementById('fu-2days').value  = fmt(add(base, 2));
+  document.getElementById('fu-1week').value  = fmt(add(base, 7));
+  document.getElementById('fu-2weeks').value = fmt(add(base, 14));
+  document.getElementById('fu-1month').value = fmt(add(base, 30));
+}
+
+// ── SUBMIT AND RECORD ─────────────────────────────────────────────────────
+async function submitAndRecord() {
+  const panelists = P.panelists.filter(p => p.name.trim());
+  const inquiryNotes = panelists.map((p,i) => ({
+    panelist: p.name,
+    question: document.getElementById('rq-q-'+i)?.value || '',
+    response: document.getElementById('rq-r-'+i)?.value || '',
+    notes: document.getElementById('rq-n-'+i)?.value || '',
+  }));
+
+  const impactRows = document.querySelectorAll('#impact-rows .impact-row');
+  const impacts = Array.from(impactRows).map(row => ({
+    from: row.querySelector('input')?.value || '',
+    statement: row.querySelector('textarea')?.value || '',
+  }));
+
+  const record = {
+    session_id: P.sessionId,
+    panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
+    student_initial: P.initial,
+    referring_staff: document.getElementById('s-staff').value,
+    incident_summary: document.getElementById('s-incident').value,
+    behavior_pattern: document.getElementById('s-pattern').value,
+    trail_journal_id: P.tjId || null,
+    student_what_happened: document.getElementById('r-what').value,
+    student_who_affected: document.getElementById('r-who').value,
+    student_thought_since: document.getElementById('r-thought').value,
+    student_what_needs: document.getElementById('r-needs').value,
+    panel_questions: inquiryNotes,
+    impact_statements: impacts,
+    deliberation_harm: document.getElementById('d-harm').value,
+    deliberation_student_needs: document.getElementById('d-student-needs').value,
+    deliberation_community_needs: document.getElementById('d-community-needs').value,
+    recommendation_categories: P.selectedRecs,
+    recommendation_narrative: document.getElementById('rec-narrative').value,
+    lrg_trait: document.getElementById('rec-trait').value,
+    followup_person: document.getElementById('fu-person').value,
+    followup_dates: {
+      two_days:  document.getElementById('fu-2days').value,
+      one_week:  document.getElementById('fu-1week').value,
+      two_weeks: document.getElementById('fu-2weeks').value,
+      one_month: document.getElementById('fu-1month').value,
+    },
+    fu_criteria: document.getElementById('fu-criteria').value,
+    status: 'complete',
+    clash_squad: document.getElementById('s-squad').value || null,
+    ai_recommendation: P.aiRec,
+  };
+
+  // Save to Supabase
+  try {
+    await fetch(`${SUPA_URL}/rest/v1/panel_sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(record),
+    });
+    toast('✓ Panel record saved');
+  } catch(e) {
+    console.error('Save error:', e);
+  }
+
+  // Build summary screen
+  buildRecordSummary(record);
+
+  // Build BIC link
+  buildBICLink(record);
+
+  goTo(8);
+}
+
+function buildRecordSummary(r) {
+  const summary = document.getElementById('record-summary');
+  const recs = (r.recommendation_categories||[]).map(rc =>
+    `<div class="summary-item"><strong>${rc.category}:</strong> ${rc.action}</div>`
+  ).join('');
+
+  summary.innerHTML = `
+    <div class="card">
+      <div class="summary-section">
+        <h4>Case</h4>
+        <div class="summary-item"><strong>Student:</strong> ${r.student_initial} · ${r.panel_date} · ${r.clash_squad ? r.clash_squad + ' Squad' : 'Squad not recorded'}</div>
+        <div class="summary-item"><strong>Referred by:</strong> ${r.referring_staff||'—'}</div>
+        <div class="summary-item"><strong>Incident:</strong> ${r.incident_summary||'—'}</div>
+        ${r.trail_journal_id ? `<div class="summary-item"><strong>Trail Journal imported:</strong> Yes (${r.trail_journal_id})</div>` : ''}
+      </div>
+      <div class="summary-section">
+        <h4>Panel Recommendation</h4>
+        ${recs || '<div class="summary-item">No specific actions selected.</div>'}
+        <div class="summary-item" style="margin-top:10px">${r.recommendation_narrative||'—'}</div>
+      </div>
+      <div class="summary-section">
+        <h4>Growth Focus</h4>
+        <div class="summary-item"><strong>LRG Trait:</strong> ${r.lrg_trait||'—'}</div>
+      </div>
+      <div class="summary-section">
+        <h4>Follow-Up</h4>
+        <div class="summary-item"><strong>Check-in person:</strong> ${r.followup_person||'—'}</div>
+        <div class="summary-item"><strong>2 days:</strong> ${r.followup_dates?.two_days||'—'}</div>
+        <div class="summary-item"><strong>1 week:</strong> ${r.followup_dates?.one_week||'—'}</div>
+        <div class="summary-item"><strong>2 weeks:</strong> ${r.followup_dates?.two_weeks||'—'}</div>
+        <div class="summary-item"><strong>1 month:</strong> ${r.followup_dates?.one_month||'—'}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('first-checkin').textContent = r.followup_dates?.two_days || 'not set';
+}
+
+function buildBICLink(r) {
+  const params = new URLSearchParams({
+    import: '1',
+    source: 'trailback_panel',
+    initial: r.student_initial || '',
+    situation: (r.incident_summary || '').slice(0,300),
+    harm: (r.deliberation_harm || '').slice(0,200),
+    studentNeeds: (r.deliberation_student_needs || '').slice(0,200),
+    trait: r.lrg_trait || '',
+    recommendation: (r.recommendation_narrative || '').slice(0,300),
+    followupPerson: r.followup_person || '',
+    followupDate: r.followup_dates?.two_days || '',
+    panelSessionId: P.sessionId,
+  });
+  document.getElementById('bic-link').href =
+    'https://behaviorinterventioncenter.com?' + params.toString();
+}
+
+// ── DELIBERATION OVERLAY ──────────────────────────────────────────────────
+function closeDelib() { document.getElementById('delib-overlay').classList.remove('show'); }
+function saveDelib() {
+  document.getElementById('d-harm').value = document.getElementById('do-harm').value;
+  document.getElementById('d-student-needs').value = document.getElementById('do-student').value;
+  document.getElementById('d-community-needs').value = document.getElementById('do-community').value;
+  closeDelib();
+  toast('Deliberation notes saved');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date
+  document.getElementById('s-date').value = new Date().toISOString().split('T')[0];
+
+  // Check for Trail Journal import via URL param
+  const params = new URLSearchParams(window.location.search);
+  const tjId = params.get('tj');
+  if (tjId) {
+    document.getElementById('tj-import-id').value = tjId;
+    importTrailJournal();
+  }
+});
+</script>
+
+</body>
+</html>
