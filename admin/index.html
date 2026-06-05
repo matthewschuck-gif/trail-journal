@@ -193,6 +193,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si">📈</span>Pattern Analysis</button>
       <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si">🏔️</span>Your Side of the Trail</button>
       <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
+      <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si">📊</span>Export to Sheets</button>
     </div>
     <div class="sb-footer">
       <div style="margin-bottom:10px">
@@ -859,6 +860,101 @@ Required structure:
       </div>
     </div>
 
+    <!-- EXPORT TO SHEETS -->
+    <div class="page" id="page-export">
+      <div class="page-hd">
+        <h2>Export to Sheets</h2>
+        <p>Download reflection data as a CSV file that opens directly in Google Sheets or Excel. Choose what to include and your date range.</p>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="ed-panel" style="margin-bottom:16px">
+        <div class="ed-sec"><h4>Date Range</h4>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">From</label>
+              <input type="date" class="ed-inp" id="exp-from" style="width:160px">
+            </div>
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">To</label>
+              <input type="date" class="ed-inp" id="exp-to" style="width:160px">
+            </div>
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">Insight Level</label>
+              <select class="ed-inp" id="exp-insight" style="width:140px">
+                <option value="">All</option>
+                <option value="High">High only</option>
+                <option value="Medium">Medium only</option>
+                <option value="Low">Low only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN SELECTOR -->
+        <div class="ed-sec" style="margin-top:16px"><h4>Columns to Include</h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px">
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="date" checked> Submission Date</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial" checked> Student Initial</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="insight" checked> Insight Level</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait" checked> LRG Trait</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait_specifics" checked> Trait Specifics</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="what_happened" checked> What Happened</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="why" checked> Why They Did It</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="emotions_during"> Emotions During</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="intensity_during"> Intensity During</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="emotions_now"> Emotions Now</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="emotion_change"> Emotion Changed</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cps_problem"> CPS — Before This</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cps_my_concern"> CPS — My Concern</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cps_their_concern"> CPS — Their Concern</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="people_hurt"> People Hurt</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="consequences"> Consequences Ranked</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="plan"> Repair Plan</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="different"> Will Do Differently</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="creative_format"> Creative Format</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="goal" checked> Student Goal</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="hope_level"> Hope Level</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="agency"> Agency Choice</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="prior_count"> Prior Reflections</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="clash_awarded"> CoC Point Awarded</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="panel_done" checked> Panel Completed</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="panel_rec"> Panel Recommendation</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="panel_trait"> Panel LRG Trait</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="panel_checkin"> Panel Check-in Date</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="panel_person"> Panel Check-in Person</label>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:10px">
+            <button onclick="document.querySelectorAll('.exp-col').forEach(c=>c.checked=true)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.75rem;color:var(--muted)">Select All</button>
+            <button onclick="document.querySelectorAll('.exp-col').forEach(c=>c.checked=false)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.75rem;color:var(--muted)">Clear All</button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:12px;align-items:center">
+          <button class="save-btn" onclick="runExport()" id="exp-btn">⬇ Export CSV</button>
+          <div id="exp-status" style="font-size:.82rem;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <!-- PREVIEW TABLE -->
+      <div id="exp-preview" style="display:none">
+        <div class="ed-sec">
+          <h4>Preview <span id="exp-count" style="font-weight:400;color:var(--muted)"></span></h4>
+          <div style="overflow-x:auto;margin-top:10px">
+            <table id="exp-table" style="width:100%;border-collapse:collapse;font-size:.75rem;font-family:'Barlow',sans-serif">
+              <thead id="exp-thead" style="background:var(--navy3)"></thead>
+              <tbody id="exp-tbody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="save-btn" onclick="downloadCSV()" id="exp-dl-btn">⬇ Download CSV</button>
+            <button class="save-btn" style="background:var(--navy3);border:1px solid var(--border)" onclick="copyCSV()">Copy to Clipboard</button>
+            <div class="save-ok" id="sok-csv" style="display:none">✓ Copied</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1112,6 +1208,28 @@ async function saveWidgets() {
   showOk('sok-widgets');
 }
 
+.exp-col-label {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Barlow', sans-serif; font-size: .82rem; color: var(--text);
+  padding: 6px 10px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--navy3);
+  transition: background 0.15s;
+}
+.exp-col-label:hover { background: var(--navy2); }
+.exp-col-label input { accent-color: var(--gold); flex-shrink: 0; }
+#exp-table th {
+  text-align: left; padding: 8px 12px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+#exp-table td {
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  font-size: .78rem; color: var(--text); max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#exp-table tr:hover td { background: var(--navy3); }
+
 function showOk(id) {
   const el = document.getElementById(id);
   el.style.display = 'block';
@@ -1336,6 +1454,141 @@ async function awardPoint(sessionId, btn) {
   btn.closest('tr').querySelector('td:nth-child(5)').innerHTML = '<span style="color:var(--green)">✓ Awarded</span>';
   btn.closest('td').innerHTML = '';
 }
+
+// ── EXPORT TO SHEETS ──────────────────────────────────────────────────────
+let exportRows = [];
+let exportHeaders = [];
+
+// Column definitions — key, label, extractor function
+const EXPORT_COLS = {
+  date:           { label: 'Date',                  fn: r => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
+  initial:        { label: 'Initial',               fn: r => r.initial || '' },
+  insight:        { label: 'Insight Level',         fn: r => r.insight_level || '' },
+  trait:          { label: 'LRG Trait',             fn: r => r.part3_json?.trait || '' },
+  trait_specifics:{ label: 'Trait Specifics',       fn: r => (r.part3_json?.traitSpecifics || []).join('; ') },
+  what_happened:  { label: 'What Happened',         fn: r => r.part1_json?.whatHappened || '' },
+  why:            { label: 'Why They Did It',       fn: r => r.part1_json?.why || '' },
+  emotions_during:{ label: 'Emotions During',       fn: r => (r.part1_json?.emotionsDuring || []).join('; ') },
+  intensity_during:{ label: 'Intensity During',     fn: r => r.part1_json?.intensityDuring || '' },
+  emotions_now:   { label: 'Emotions Now',          fn: r => (r.part1_json?.emotionsNow || []).join('; ') },
+  emotion_change: { label: 'Emotion Changed',       fn: r => r.part1_json?.emotionChange || '' },
+  cps_problem:    { label: 'CPS – Before This',     fn: r => r.part1_json?.cpsUnsolvedProblem || '' },
+  cps_my_concern: { label: 'CPS – My Concern',      fn: r => r.part1_json?.cpsMyConcern || '' },
+  cps_their_concern:{ label: 'CPS – Their Concern', fn: r => r.part1_json?.cpsTheirConcern || '' },
+  people_hurt:    { label: 'People Hurt',           fn: r => (r.part2_json?.hurtPeople || []).join('; ') },
+  consequences:   { label: 'Consequences Ranked',   fn: r => (r.part2_json?.selectedConsequences || []).join(' → ') },
+  plan:           { label: 'Plan',                  fn: r => r.part2_json?.plan || '' },
+  different:      { label: 'Will Do Differently',   fn: r => r.part2_json?.different || '' },
+  creative_format:{ label: 'Creative Format',       fn: r => r.part3_json?.creativeFormat || '' },
+  goal:           { label: 'Student Goal',          fn: r => r.goal || '' },
+  hope_level:     { label: 'Hope Level (1-4)',      fn: r => r.part3_json?.hopeLevel || '' },
+  agency:         { label: 'Agency Choice',         fn: r => r.part3_json?.agencyChoice || '' },
+  prior_count:    { label: 'Prior Reflections',     fn: r => r.prior_count || 0 },
+  clash_awarded:  { label: 'CoC Point Awarded',     fn: r => r.clash_points_awarded ? 'Yes' : 'No' },
+  panel_done:     { label: 'Panel Completed',        fn: r => r.panel_completed ? 'Yes' : 'No' },
+  panel_rec:      { label: 'Panel Recommendation',   fn: r => r.panel_recommendation || '' },
+  panel_trait:    { label: 'Panel LRG Trait',        fn: r => r.panel_lrg_trait || '' },
+  panel_checkin:  { label: 'Panel Check-in Date',    fn: r => r.panel_checkin_date || '' },
+  panel_person:   { label: 'Panel Check-in Person',  fn: r => r.panel_checkin_person || '' },
+};
+
+function getSelectedCols() {
+  return Array.from(document.querySelectorAll('.exp-col:checked')).map(c => c.value);
+}
+
+async function runExport() {
+  const btn = document.getElementById('exp-btn');
+  const status = document.getElementById('exp-status');
+  btn.textContent = 'Loading…'; btn.disabled = true;
+  status.textContent = '';
+
+  // Build query
+  let query = 'reflections?select=*&order=created_at.desc&limit=1000';
+  const from = document.getElementById('exp-from').value;
+  const to = document.getElementById('exp-to').value;
+  const insight = document.getElementById('exp-insight').value;
+  if (from) query += `&created_at=gte.${from}T00:00:00`;
+  if (to)   query += `&created_at=lte.${to}T23:59:59`;
+  if (insight) query += `&insight_level=eq.${insight}`;
+
+  const data = await sb(query);
+  btn.textContent = '⬇ Export CSV'; btn.disabled = false;
+
+  if (!data || !data.length) {
+    status.textContent = 'No submissions found for those filters.';
+    return;
+  }
+
+  const cols = getSelectedCols();
+  if (!cols.length) { status.textContent = 'Select at least one column.'; return; }
+
+  exportRows = data;
+  exportHeaders = cols;
+
+  // Build preview table
+  const thead = document.getElementById('exp-thead');
+  const tbody = document.getElementById('exp-tbody');
+  thead.innerHTML = '<tr>' + cols.map(c => `<th>${EXPORT_COLS[c]?.label || c}</th>`).join('') + '</tr>';
+
+  // Show up to 10 rows in preview
+  const preview = data.slice(0, 10);
+  tbody.innerHTML = preview.map(row =>
+    '<tr>' + cols.map(c => {
+      const val = EXPORT_COLS[c]?.fn(row) || '';
+      return `<td title="${String(val).replace(/"/g,'&quot;')}">${val}</td>`;
+    }).join('') + '</tr>'
+  ).join('');
+
+  document.getElementById('exp-count').textContent = `— ${data.length} row${data.length !== 1 ? 's' : ''} (showing first 10)`;
+  document.getElementById('exp-preview').style.display = 'block';
+  status.textContent = `✓ ${data.length} submission${data.length !== 1 ? 's' : ''} loaded.`;
+}
+
+function buildCSV() {
+  const cols = exportHeaders;
+  const header = cols.map(c => `"${EXPORT_COLS[c]?.label || c}"`).join(',');
+  const rows = exportRows.map(row =>
+    cols.map(c => {
+      const val = String(EXPORT_COLS[c]?.fn(row) ?? '').replace(/"/g, '""');
+      return `"${val}"`;
+    }).join(',')
+  );
+  return [header, ...rows].join('\n');
+}
+
+function downloadCSV() {
+  const csv = buildCSV();
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'}).replace(/\//g,'-');
+  a.href = url; a.download = `trail-journal-export-${date}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function copyCSV() {
+  navigator.clipboard.writeText(buildCSV()).then(() => {
+    const ok = document.getElementById('sok-csv');
+    ok.style.display = 'block';
+    setTimeout(() => ok.style.display = 'none', 2500);
+  });
+}
+
+// Add export to showPage
+const _origShowPageExport = window.showPage;
+window.showPage = function(name) {
+  _origShowPageExport(name);
+  if (name === 'export') {
+    // Set default date range — last 30 days
+    const now = new Date();
+    const from = new Date(now - 30*24*60*60*1000);
+    if (!document.getElementById('exp-to').value) {
+      document.getElementById('exp-to').value = now.toISOString().split('T')[0];
+      document.getElementById('exp-from').value = from.toISOString().split('T')[0];
+    }
+  }
+};
 </script>
 </body>
 </html>
