@@ -438,14 +438,14 @@ input[type="range"]::-webkit-slider-thumb {
   opacity: 0.55; margin-bottom: 8px; font-family: 'Barlow', sans-serif;
 }
 .cps-ta {
-  width: 100%; background: rgba(255,255,255,0.14);
-  border: 1.5px solid rgba(255,255,255,0.28);
+  width: 100%; background: white;
+  border: 1.5px solid rgba(255,255,255,0.5);
   border-radius: 7px; padding: 8px 10px;
-  font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: white;
+  font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: var(--ink);
   resize: none; line-height: 1.5; min-height: 70px;
 }
-.cps-ta::placeholder { opacity: 0.42; }
-.cps-ta:focus { outline: none; border-color: var(--gold); }
+.cps-ta::placeholder { color: var(--ink-light); opacity: 0.7; }
+.cps-ta:focus { outline: none; border-color: var(--gold); background: white; color: var(--ink); }
 
 /* ── TRAIL MAP ── */
 .trail-map-outer { margin: 16px 0 8px; }
@@ -1312,7 +1312,109 @@ input[type="range"]::-webkit-slider-thumb {
 .rs-add-btn:hover { background: var(--gold); color: var(--trail-deep); }
 .rs-add-btn.added { background: var(--trail-mid); border-color: var(--trail-mid); color: white; cursor: default; }
 
-/* ── SQUAD SELECTOR ── */
+/* ── SQUAD THEMES ── */
+/* Applied to <body> when squad is selected */
+body.squad-gold {
+  --trail: #8a5a00;
+  --trail-mid: #b07820;
+  --trail-light: #fef5d8;
+  --trail-deep: #5a3a00;
+  --gold: #c9a84c;
+  --gold-light: #fef5d8;
+  --paper: #fffcf0;
+  --squad-accent: #c9a84c;
+  --squad-accent-text: #5a3a00;
+  --squad-name: 'Gold';
+}
+body.squad-black {
+  --trail: #2a2a2a;
+  --trail-mid: #444;
+  --trail-light: #f0f0f0;
+  --trail-deep: #111;
+  --gold: #888;
+  --gold-light: #f2f2f2;
+  --paper: #fafafa;
+  --squad-accent: #333;
+  --squad-accent-text: white;
+  --squad-name: 'Black';
+}
+body.squad-grey {
+  --trail: #4a5568;
+  --trail-mid: #6b7280;
+  --trail-light: #eef0f3;
+  --trail-deep: #2d3748;
+  --gold: #718096;
+  --gold-light: #eef0f3;
+  --paper: #f8f9fa;
+  --squad-accent: #4a5568;
+  --squad-accent-text: white;
+  --squad-name: 'Grey';
+}
+body.squad-purple {
+  --trail: #5c3d8f;
+  --trail-mid: #7c5db5;
+  --trail-light: #f0ebf8;
+  --trail-deep: #3a2060;
+  --gold: #9f7aea;
+  --gold-light: #f0ebf8;
+  --paper: #faf8ff;
+  --squad-accent: #5c3d8f;
+  --squad-accent-text: white;
+  --squad-name: 'Purple';
+}
+/* Squad badge shown in header after selection */
+.squad-badge-hdr {
+  display: none; align-items: center; gap: 5px;
+  font-family: 'Barlow', sans-serif; font-size: 0.68rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px; margin-left: 8px;
+}
+.squad-badge-hdr.show { display: flex; }
+
+/* Leaderboard on done screen */
+.coc-leaderboard {
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.coc-lb-title {
+  font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--trail);
+  margin-bottom: 12px;
+}
+.coc-lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; margin-bottom: 6px;
+  font-family: 'Barlow', sans-serif; transition: all 0.3s;
+}
+.coc-lb-row.highlight {
+  box-shadow: 0 0 0 2px var(--trail-mid);
+  transform: scale(1.01);
+}
+.coc-lb-rank {
+  font-family: 'Walter Turncoat', cursive; font-size: 1rem;
+  width: 24px; text-align: center; flex-shrink: 0;
+}
+.coc-lb-squad { font-weight: 700; font-size: 0.85rem; flex: 1; }
+.coc-lb-pts {
+  font-family: 'Walter Turncoat', cursive; font-size: 1rem;
+  font-weight: 700;
+}
+.coc-lb-pts small {
+  font-family: 'Barlow', sans-serif; font-size: 0.65rem;
+  font-weight: 400; opacity: 0.7; margin-left: 2px;
+}
+.coc-lb-new {
+  font-family: 'Barlow', sans-serif; font-size: 0.65rem; font-weight: 800;
+  background: var(--trail); color: white; padding: 2px 7px;
+  border-radius: 20px; animation: popIn 0.5s ease;
+}
+.coc-freudenfreude {
+  margin-top: 12px; padding: 12px 14px;
+  background: var(--trail-light); border: 1.5px solid var(--trail-mid);
+  border-radius: 9px; font-family: 'Barlow', sans-serif;
+  font-size: 0.82rem; color: var(--trail); line-height: 1.6;
+  animation: trailIn 0.5s ease;
+}
+.coc-freudenfreude strong { color: var(--trail-deep); }
 .squad-picker {
   display: flex; gap: 10px; justify-content: center;
   flex-wrap: wrap; margin: 18px 0 8px;
@@ -1365,7 +1467,10 @@ input[type="range"]::-webkit-slider-thumb {
       <h1>Trail Journal</h1>
       <span>Camp Mountaineer</span>
     </div>
-    <div class="header-initial" id="hdr-initial"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+      <div class="squad-badge-hdr" id="squad-badge-hdr"></div>
+      <div class="header-initial" id="hdr-initial"></div>
+    </div>
   </div>
 </header>
 
@@ -2313,13 +2418,13 @@ input[type="range"]::-webkit-slider-thumb {
       <!-- Content shown once AI is done -->
       <div id="staff-ready" style="display:none">
 
-        <!-- PDF EMAIL SEND -->
+        <!-- EMAIL SEND -->
         <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:14px">
-          Enter your email and the full plan summary will be sent as a <strong>PDF directly to your inbox</strong> — no email app required.
+          Enter your email address and the full plan summary will open in your email app ready to send.
         </p>
         <div class="email-row" style="margin-bottom:6px">
           <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
-          <button class="email-send-btn" id="send-btn" onclick="sendSummaryPDF()">Send PDF →</button>
+          <button class="email-send-btn" id="send-btn" onclick="sendSummaryPDF()">Send Summary →</button>
         </div>
         <div id="email-status" style="font-family:'Barlow',sans-serif;font-size:.78rem;margin-top:6px;min-height:20px;color:var(--trail)"></div>
 
@@ -2348,6 +2453,13 @@ input[type="range"]::-webkit-slider-thumb {
             <span class="bic-icon">🧠</span>
             <span class="bic-text">Open in Behavior Intervention Center<small>Pre-fills incident summary, emotions, LRG trait, and repair plan</small></span>→
           </a>
+        </div>
+
+        <!-- CLASH OF CLASSES LEADERBOARD -->
+        <div class="coc-leaderboard" id="coc-leaderboard">
+          <div class="coc-lb-title">🏆 Clash of Classes — Live Standings</div>
+          <div id="coc-lb-rows" style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light)">Loading standings…</div>
+          <div id="coc-freudenfreude" class="coc-freudenfreude" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -2620,12 +2732,22 @@ async function awardClashPoints(initial, sessionId, insightLevel) {
     };
 
     // 3. Patch the JSONB — append event, increment nextId, add activity log entry
+    // Freudenfreude ticker entry — community visible, no student details
+    const freudenEntry = {
+      ts: Date.now(),
+      type: 'trail_journal',
+      squad: squad,
+      message: `A Mountaineer found their way back to the trail — growth point for ${S.squad}`,
+      pts: 1,
+    };
+
     const updatedValue = {
       ...coc,
       nextId: newId + 1,
       events: [...(coc.events || []), newEvent],
       history: [...(coc.history || []), { pts, name: newEvent.name, time: new Date().toISOString(), type: 'trail_journal' }],
       activityLog: [...(coc.activityLog || []), newActivity],
+      freudenLog: [...(coc.freudenLog || []), freudenEntry],
     };
 
     await fetch(
@@ -2664,6 +2786,27 @@ function selectSquad(name, btn) {
   S.squad = name;
   document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+
+  // Apply squad theme to body
+  document.body.className = document.body.className
+    .replace(/squad-\w+/g, '').trim();
+  document.body.classList.add('squad-' + name.toLowerCase());
+
+  // Update header badge
+  const badge = document.getElementById('squad-badge-hdr');
+  if (badge) {
+    const colors = {
+      Black:  { bg:'#1a1a1a', text:'#ccc',   icon:'⚫' },
+      Gold:   { bg:'#c9a84c', text:'#5a3a00', icon:'🟡' },
+      Grey:   { bg:'#6b7280', text:'white',   icon:'⚪' },
+      Purple: { bg:'#5c3d8f', text:'white',   icon:'🟣' },
+    };
+    const c = colors[name] || { bg:'#2c4a35', text:'white', icon:'🏔️' };
+    badge.style.background = c.bg;
+    badge.style.color = c.text;
+    badge.textContent = c.icon + ' ' + name;
+    badge.classList.add('show');
+  }
 }
 
 // (Clash bridge handled above — Supabase version)
@@ -3552,7 +3695,26 @@ async function doPart1() {
   }
 }
 
-// ─── STAFF PASSWORD ───────────────────────────────────────────────────────
+// ─── EMAIL SUMMARY ────────────────────────────────────────────────────────
+function sendSummaryPDF() {
+  const email = document.getElementById('staff-email').value.trim();
+  if (!email || !email.includes('@')) {
+    doShake(document.getElementById('staff-email'));
+    setEmailStatus('Please enter a valid email address.', 'var(--red)');
+    return;
+  }
+  if (!S_RESULT) {
+    setEmailStatus('Summary is still generating — please wait a moment.', 'orange');
+    return;
+  }
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  const body = buildEmailBody(S_RESULT, p1, p2, p3);
+  const date = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const subject = encodeURIComponent(`Trail Journal Summary — ${S.initial}${S.squad ? ' (' + S.squad + ')' : ''} — ${date}`);
+  const bodyEncoded = encodeURIComponent(body);
+  window.location.href = `mailto:${email}?subject=${subject}&body=${bodyEncoded}`;
+  setEmailStatus('✓ Email client opened — complete sending from your email app.', 'var(--trail)');
+}
 const STAFF_PW = 'togetherweclimb';
 
 function checkPW() {
@@ -3561,12 +3723,11 @@ function checkPW() {
     document.getElementById('pw-gate').style.display = 'none';
     document.getElementById('email-form').classList.add('show');
     buildBICLink();
-    // If AI already done, show content immediately; otherwise loading spinner shows
+    loadCoCLeaderboard(); // load live standings
     if (S_RESULT) {
       document.getElementById('staff-loading').style.display = 'none';
       document.getElementById('staff-ready').style.display = 'block';
     }
-    // Store that pw was entered so doSubmit can reveal staff-ready when AI finishes
     S._staffUnlocked = true;
   } else {
     const err = document.getElementById('pw-error');
@@ -3574,6 +3735,98 @@ function checkPW() {
     doShake(document.getElementById('pw-input'));
     document.getElementById('pw-input').value = '';
     setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+// ─── COC LEADERBOARD ──────────────────────────────────────────────────────
+async function loadCoCLeaderboard() {
+  try {
+    const res = await fetch(
+      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
+      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
+    );
+    const rows = await res.json();
+    if (!rows || !rows[0]) return;
+    const coc = rows[0].value;
+
+    // Calculate squad totals from events array
+    const squads = ['GOLD', 'GREY', 'BLACK', 'PURPLE'];
+    const totals = { GOLD: 0, GREY: 0, BLACK: 0, PURPLE: 0 };
+    (coc.events || []).forEach(evt => {
+      if (!evt.pts) return;
+      squads.forEach(sq => {
+        totals[sq] = (totals[sq] || 0) + (evt.pts[sq] || 0);
+      });
+    });
+
+    // Sort squads by points
+    const sorted = squads
+      .map(sq => ({ squad: sq, pts: totals[sq] || 0 }))
+      .sort((a, b) => b.pts - a.pts);
+
+    // Rank medals
+    const medals = ['🥇', '🥈', '🥉', '4️⃣'];
+    const squadColors = {
+      GOLD: '#c9a84c', GREY: '#6b7280',
+      BLACK: '#1a1a1a', PURPLE: '#5c3d8f'
+    };
+    const squadBg = {
+      GOLD: '#fef5d8', GREY: '#eef0f3',
+      BLACK: '#f2f2f2', PURPLE: '#f0ebf8'
+    };
+
+    const isHighInsight = S_RESULT?.insightLevel === 'High';
+    const studentSquad = S.squad?.toUpperCase();
+
+    const rowsHTML = sorted.map((s, i) => {
+      const isStudent = s.squad === studentSquad;
+      const justEarned = isStudent && isHighInsight;
+      return `<div class="coc-lb-row ${isStudent ? 'highlight' : ''}"
+        style="background:${squadBg[s.squad] || '#f5f5f5'}">
+        <span class="coc-lb-rank">${medals[i] || (i+1)}</span>
+        <span class="coc-lb-squad" style="color:${squadColors[s.squad] || '#333'}">${s.squad}</span>
+        <span class="coc-lb-pts" style="color:${squadColors[s.squad] || '#333'}">
+          ${s.pts}<small>pts</small>
+        </span>
+        ${justEarned ? '<span class="coc-lb-new">+1 just now</span>' : ''}
+      </div>`;
+    }).join('');
+
+    document.getElementById('coc-lb-rows').innerHTML = rowsHTML;
+
+    // Freudenfreude moment — show if student earned a point
+    if (isHighInsight && studentSquad) {
+      const rank = sorted.findIndex(s => s.squad === studentSquad) + 1;
+      const rankWord = ['first','second','third','fourth'][rank - 1] || `${rank}th`;
+      const frd = document.getElementById('coc-freudenfreude');
+      frd.style.display = 'block';
+      frd.innerHTML = `🫶 <strong>Freudenfreude moment:</strong> This student's reflection just earned +1 point for ${studentSquad} Squad — putting them in ${rankWord} place. That's real community growth worth celebrating.`;
+    }
+
+    // Show recent Freudenfreude log entries (last 5, all types)
+    const freudenLog = (coc.freudenLog || [])
+      .slice(-5).reverse();
+    if (freudenLog.length) {
+      const tickerEl = document.getElementById('coc-freudenfreude');
+      const existing = tickerEl.innerHTML;
+      const tickerHTML = freudenLog.map(entry => {
+        const icon = entry.type === 'trailback_panel' ? '🏔️' : '🌱';
+        const color = { GOLD:'#c9a84c', GREY:'#9ca3af', BLACK:'#ccc', PURPLE:'#9f7aea' }[entry.squad] || 'var(--trail-mid)';
+        return `<div style="font-size:.78rem;color:var(--ink-mid);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5">
+          ${icon} <span style="color:${color};font-weight:700">${entry.message}</span>
+        </div>`;
+      }).join('');
+      tickerEl.style.display = 'block';
+      if (!existing) {
+        tickerEl.innerHTML = `<div style="font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--trail);margin-bottom:8px">🌱 Recent Community Growth</div>${tickerHTML}`;
+      } else {
+        tickerEl.innerHTML += `<div style="margin-top:10px;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--trail)">🌱 Recent Growth Moments</div>${tickerHTML}`;
+      }
+    }
+
+  } catch(e) {
+    document.getElementById('coc-lb-rows').textContent = 'Could not load standings.';
+    console.error('CoC leaderboard error:', e);
   }
 }
 
@@ -3738,223 +3991,12 @@ function buildEmailBody(result, p1, p2, p3) {
   return lines.join('\n');
 }
 
-async function sendSummaryPDF() {
-  const email = document.getElementById('staff-email').value.trim();
-  if (!email || !email.includes('@')) {
-    doShake(document.getElementById('staff-email'));
-    setEmailStatus('Please enter a valid email address.', 'red');
-    return;
-  }
-  if (!S_RESULT) {
-    setEmailStatus('Summary is still generating — please wait a moment.', 'orange');
-    return;
-  }
-
-  const btn = document.getElementById('send-btn');
-  btn.textContent = 'Generating PDF…';
-  btn.disabled = true;
-  setEmailStatus('Building your PDF…', 'var(--trail)');
-
-  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
-  const body = buildEmailBody(S_RESULT, p1, p2, p3);
-
-  // Build a clean printable HTML document
-  const printHTML = buildPrintHTML(S_RESULT, p1, p2, p3, body);
-
-  // Open in a new window and trigger print-to-PDF
-  const win = window.open('', '_blank', 'width=800,height=900');
-  if (!win) {
-    // Popup blocked — fall back to download
-    const blob = new Blob([printHTML], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'trail-journal-summary.html';
-    a.click();
-    setEmailStatus('PDF file downloaded — open it and use File → Print → Save as PDF, then email to ' + email, 'var(--trail)');
-    btn.textContent = 'Send PDF →';
-    btn.disabled = false;
-    return;
-  }
-
-  win.document.write(printHTML);
-  win.document.close();
-
-  // Give it a moment to render then trigger print
-  setTimeout(() => {
-    win.focus();
-    win.print();
-    setEmailStatus('✓ Use "Save as PDF" in the print dialog, then email to ' + email, 'var(--trail)');
-    btn.textContent = 'Send PDF →';
-    btn.disabled = false;
-    document.getElementById('email-sent-note') && (document.getElementById('email-sent-note').style.display = 'block');
-  }, 600);
-}
-
+// (sendSummaryPDF and setEmailStatus defined above with EmailJS)
 function setEmailStatus(msg, color) {
   const el = document.getElementById('email-status');
   if (el) { el.textContent = msg; el.style.color = color || 'var(--trail)'; }
 }
 
-function buildPrintHTML(result, p1, p2, p3, plainText) {
-  const trait = p3.trait || '—';
-  const squad = S.squad ? ` · ${S.squad} Squad` : '';
-  const date = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Trail Journal Summary — ${S.initial} — ${date}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Georgia', serif; font-size: 11pt; line-height: 1.65; color: #1a1a14; background: white; padding: 0; }
-  .page { max-width: 720px; margin: 0 auto; padding: 48px 52px; }
-  .header { border-bottom: 3px solid #2c4a35; padding-bottom: 18px; margin-bottom: 28px; }
-  .header h1 { font-size: 20pt; color: #2c4a35; margin-bottom: 4px; }
-  .header .meta { font-size: 9pt; color: #7a7060; font-family: Arial, sans-serif; }
-  .header .badge { display: inline-block; background: #2c4a35; color: white; font-size: 8pt; font-family: Arial, sans-serif; font-weight: bold; padding: 3px 10px; border-radius: 20px; margin-right: 6px; }
-  .section { margin-bottom: 22px; page-break-inside: avoid; }
-  .section h2 { font-size: 10pt; font-family: Arial, sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #2c4a35; border-left: 4px solid #c9a84c; padding-left: 10px; margin-bottom: 10px; }
-  .section p, .section li { font-size: 10.5pt; color: #2a2820; line-height: 1.7; margin-bottom: 6px; }
-  .section ul { padding-left: 18px; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .callout { background: #f0f7f0; border: 1px solid #2c4a35; border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
-  .callout.gold { background: #fdf5df; border-color: #c9a84c; }
-  .callout.flag { background: #fde8e8; border-color: #b03030; }
-  .label { font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8070; margin-bottom: 4px; }
-  .script-line { display: flex; gap: 10px; margin-bottom: 8px; font-size: 10pt; }
-  .script-spk { font-weight: bold; color: #2c4a35; min-width: 50px; flex-shrink: 0; font-family: Arial, sans-serif; font-size: 9pt; }
-  .resource-box { background: #f8f5ef; border: 1px solid #d8ceb8; border-radius: 6px; padding: 14px 16px; margin-top: 8px; }
-  .resource-box h3 { font-size: 9.5pt; font-family: Arial, sans-serif; font-weight: 800; color: #2c4a35; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .clash-note { background: #1a1a1a; color: white; border-radius: 6px; padding: 10px 14px; margin-top: 12px; font-family: Arial, sans-serif; font-size: 9pt; }
-  .divider { border: none; border-top: 1px solid #d8ceb8; margin: 20px 0; }
-  .practice-day { display: flex; gap: 12px; margin-bottom: 8px; }
-  .pd-label { font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 800; color: #c9a84c; min-width: 64px; flex-shrink: 0; padding-top: 2px; }
-  .insight-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-family: Arial, sans-serif; font-size: 9pt; font-weight: 800; }
-  .ins-High { background: #e8f2ec; color: #2c4a35; }
-  .ins-Medium { background: #fdf5df; color: #8a6820; }
-  .ins-Low { background: #fde8e8; color: #b03030; }
-  @media print {
-    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    .page { padding: 28px 36px; }
-    .section { page-break-inside: avoid; }
-  }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <h1>Trail Journal — Staff Summary</h1>
-    <div class="meta">
-      <span class="badge">Student Initial: ${S.initial}${squad}</span>
-      <span class="badge ins-${result.insightLevel || 'Medium'}">Insight: ${result.insightLevel || '—'}</span>
-      ${S.squad && result.insightLevel === 'High' ? '<span class="badge" style="background:#c9a84c;color:#1a1a14">🏆 CoC Point Awarded</span>' : ''}
-      &nbsp; ${date}
-    </div>
-  </div>
-
-  <div class="two-col">
-    <div class="section">
-      <h2>Incident Summary</h2>
-      <p>${result.summary || '—'}</p>
-      ${result.hopeNote ? `<div class="callout gold"><div class="label">Hope &amp; Agency</div>${result.hopeNote}</div>` : ''}
-    </div>
-    <div class="section">
-      <h2>Insight Level</h2>
-      <span class="insight-badge ins-${result.insightLevel || 'Medium'}">${result.insightLevel || '—'}</span>
-      <p style="margin-top:8px">${result.insightReason || '—'}</p>
-    </div>
-  </div>
-
-  <hr class="divider">
-
-  <div class="section">
-    <h2>What Happened</h2>
-    <div class="label">Situation</div><p>${p1.whatHappened || '—'}</p>
-    <div class="label">Why</div><p>${p1.why || '—'}</p>
-    <div class="label">Emotions During (${p1.intensityDuring}/5)</div><p>${(p1.emotionsDuring||[]).join(', ') || '—'}</p>
-    <div class="label">Emotions Now (${p1.intensityNow}/5)</div><p>${(p1.emotionsNow||[]).join(', ') || '—'}</p>
-  </div>
-
-  <div class="section">
-    <h2>Crossing Paths</h2>
-    <div class="label">Before this happened</div><p>${p1.cpsUnsolvedProblem || '—'}</p>
-    <div class="label">What they cared about</div><p>${p1.cpsMyConcern || '—'}</p>
-    <div class="label">What the other person cared about</div><p>${p1.cpsTheirConcern || '—'}</p>
-  </div>
-
-  <hr class="divider">
-
-  <div class="section">
-    <h2>Making Things Right</h2>
-    <div class="label">People hurt</div><p>${(p2.hurtPeople||[]).join(', ') || '—'}</p>
-    <div class="label">What student thinks should happen</div><p>${p2.makeRight || '—'}</p>
-    <div class="label">Consequences ranked</div><p>${(p2.selectedConsequences||[]).join(' → ') || '—'}</p>
-    <div class="label">Plan</div><p>${p2.plan || '—'}</p>
-    <div class="label">Will do differently</div><p>${p2.different || '—'}</p>
-  </div>
-
-  <div class="section">
-    <h2>Recommended Consequences</h2>
-    ${(result.recommendedConsequences||[]).map(c=>`<div class="callout"><strong>${c.type}:</strong> ${c.description}<br><em style="font-size:9.5pt;color:#7a7060">${c.rationale||''}</em></div>`).join('')}
-  </div>
-
-  <div class="section">
-    <h2>Repair Plan</h2>
-    <div class="callout">${result.repairPlan || '—'}</div>
-  </div>
-
-  <hr class="divider">
-
-  <div class="section">
-    <h2>Growth Plan — ${trait}</h2>
-    <div class="label">Specific areas</div><p>${(p3.traitSpecifics||[]).join(', ') || '—'}</p>
-    <div class="label">Why this trait</div><p>${p3.traitWhy || '—'}</p>
-    <div class="label">Student goal</div>
-    <div class="callout gold"><strong>${result.studentGoal || '—'}</strong></div>
-  </div>
-
-  ${result.practicePlan ? `<div class="section">
-    <h2>Weekly Practice Plan</h2>
-    ${(result.practicePlan.days||[]).map(d=>`<div class="practice-day"><div class="pd-label">${d.day}</div><div>${d.task}</div></div>`).join('')}
-  </div>` : ''}
-
-  <hr class="divider">
-
-  <div class="section">
-    <h2>Restorative Questions</h2>
-    <ul>${(result.restorativeQuestions||[]).map(q=>`<li>${q}</li>`).join('')}</ul>
-  </div>
-
-  <div class="section">
-    <h2>CPS Conference Script</h2>
-    ${(result.cpsScript||[]).map(l=>`<div class="script-line"><span class="script-spk">${l.speaker}:</span><span>"${l.text}"</span></div>`).join('')}
-  </div>
-
-  ${(result.followUpFlags||[]).length ? `<div class="section">
-    <h2>Follow-Up Flags</h2>
-    ${result.followUpFlags.map(f=>`<div class="callout flag">⚠️ ${f}</div>`).join('')}
-  </div>` : ''}
-
-  <hr class="divider">
-
-  <div class="section">
-    <h2>Reading List</h2>
-    <ul>${(result.studentReadingList||[]).map(r=>`<li><strong>${r.title}</strong>${r.topic?' — <em>'+r.topic+'</em>':''}<br>${r.whyRelevant||''}</li>`).join('')}</ul>
-  </div>
-
-  <div class="section resource-box">
-    <h3>LRG Resource Bank — ${trait}</h3>
-    <pre style="font-family:inherit;font-size:9.5pt;white-space:pre-wrap;line-height:1.7">${plainText.split('LRG Resource Bank')[1] || ''}</pre>
-  </div>
-
-  ${S.squad && result.insightLevel === 'High' ? `<div class="clash-note">🏆 Clash of Classes: +1 point automatically awarded to ${S.squad} Squad for High insight reflection.</div>` : ''}
-
-</div>
-</body>
-</html>`;
-}
 
 // ─── BIC INTEGRATION ─────────────────────────────────────────────────────
 function buildBICLink() {
