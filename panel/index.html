@@ -1485,6 +1485,17 @@ async function submitAndRecord() {
     statement: row.querySelector('textarea')?.value || '',
   }));
 
+  const squad = document.getElementById('s-squad').value || null;
+  const recNarrative = document.getElementById('rec-narrative').value;
+  const lrgTrait = document.getElementById('rec-trait').value;
+  const followupPerson = document.getElementById('fu-person').value;
+  const followupDates = {
+    two_days:  document.getElementById('fu-2days').value,
+    one_week:  document.getElementById('fu-1week').value,
+    two_weeks: document.getElementById('fu-2weeks').value,
+    one_month: document.getElementById('fu-1month').value,
+  };
+
   const record = {
     session_id: P.sessionId,
     panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
@@ -1503,24 +1514,22 @@ async function submitAndRecord() {
     deliberation_student_needs: document.getElementById('d-student-needs').value,
     deliberation_community_needs: document.getElementById('d-community-needs').value,
     recommendation_categories: P.selectedRecs,
-    recommendation_narrative: document.getElementById('rec-narrative').value,
-    lrg_trait: document.getElementById('rec-trait').value,
-    followup_person: document.getElementById('fu-person').value,
-    followup_dates: {
-      two_days:  document.getElementById('fu-2days').value,
-      one_week:  document.getElementById('fu-1week').value,
-      two_weeks: document.getElementById('fu-2weeks').value,
-      one_month: document.getElementById('fu-1month').value,
-    },
+    recommendation_narrative: recNarrative,
+    lrg_trait: lrgTrait,
+    followup_person: followupPerson,
+    followup_dates: followupDates,
     fu_criteria: document.getElementById('fu-criteria').value,
     status: 'complete',
-    clash_squad: document.getElementById('s-squad').value || null,
+    clash_squad: squad,
     ai_recommendation: P.aiRec,
   };
 
-  // Save to Supabase
-  try {
-    await fetch(`${SUPA_URL}/rest/v1/panel_sessions`, {
+  // Run all three saves in parallel — none block the UI
+  const saves = [];
+
+  // 1. Save panel session to Supabase
+  saves.push(
+    fetch(`${SUPA_URL}/rest/v1/panel_sessions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1528,19 +1537,112 @@ async function submitAndRecord() {
         Prefer: 'return=minimal',
       },
       body: JSON.stringify(record),
-    });
-    toast('✓ Panel record saved');
-  } catch(e) {
-    console.error('Save error:', e);
+    }).then(() => toast('✓ Panel record saved'))
+     .catch(e => console.error('Panel save error:', e))
+  );
+
+  // 2. Back-write to Trail Journal reflection if imported
+  if (P.tjId) {
+    saves.push(
+      fetch(`${SUPA_URL}/rest/v1/reflections?session_id=eq.${P.tjId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON,
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          panel_completed: true,
+          panel_session_id: P.sessionId,
+          panel_recommendation: recNarrative.slice(0, 500),
+          panel_lrg_trait: lrgTrait,
+          panel_checkin_person: followupPerson,
+          panel_checkin_date: followupDates.two_days || null,
+          panel_completed_at: new Date().toISOString(),
+        }),
+      }).then(() => console.log('✓ Trail Journal back-write complete'))
+       .catch(e => console.error('TJ back-write error:', e))
+    );
   }
 
-  // Build summary screen
+  // 3. Award CoC growth point if squad is known
+  if (squad) {
+    saves.push(awardPanelCoCPoint(squad, record));
+  }
+
+  await Promise.allSettled(saves);
+
   buildRecordSummary(record);
-
-  // Build BIC link
   buildBICLink(record);
-
   goTo(8);
+}
+
+// ── COC PANEL POINT ───────────────────────────────────────────────────────
+const COC_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
+const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
+
+async function awardPanelCoCPoint(squad, record) {
+  try {
+    const sq = squad.toUpperCase();
+    const res = await fetch(
+      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
+      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
+    );
+    const rows = await res.json();
+    if (!rows?.[0]) return;
+    const coc = rows[0].value;
+
+    const newId = (coc.nextId || 200);
+    const today = new Date().toISOString().split('T')[0];
+    const pts = { GOLD: 0, GREY: 0, BLACK: 0, PURPLE: 0 };
+    pts[sq] = 2; // Panel completion = 2 pts (deeper accountability than single reflection)
+
+    const newEvent = {
+      id: newId,
+      name: `Trailback Panel Restoration — ${sq} (+2 pts)`,
+      note: `Panel session completed for ${record.student_initial} — restorative process finished`,
+      type: 'trailback_panel',
+      date: today,
+      pts,
+    };
+
+    const newActivity = {
+      ts: Date.now(),
+      time: new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }),
+      action: `🏔️ Trailback Panel completed: +2 restoration points to ${sq}`,
+    };
+
+    // Freudenfreude ticker entry — community-visible, no student details
+    const freudenEntry = {
+      ts: Date.now(),
+      type: 'trailback_panel',
+      squad: sq,
+      message: `A Mountaineer completed a Trailback Panel — restoration point for ${squad}`,
+      pts: 2,
+    };
+
+    const updated = {
+      ...coc,
+      nextId: newId + 1,
+      events: [...(coc.events || []), newEvent],
+      activityLog: [...(coc.activityLog || []), newActivity],
+      freudenLog: [...(coc.freudenLog || []), freudenEntry],
+    };
+
+    await fetch(`${COC_URL}/rest/v1/app_data?key=eq.coc`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ value: updated }),
+    });
+
+    console.log(`✓ CoC panel point awarded to ${sq}`);
+  } catch(e) {
+    console.error('CoC panel point error:', e);
+  }
 }
 
 function buildRecordSummary(r) {
