@@ -157,6 +157,27 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .toggle input:checked + .tslider{background:var(--gold);}
 .toggle input:checked + .tslider::before{transform:translateX(20px);}
 .hidden{display:none!important;}
+.exp-col-label {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Barlow', sans-serif; font-size: .82rem; color: var(--text);
+  padding: 6px 10px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--navy3);
+  transition: background 0.15s;
+}
+.exp-col-label:hover { background: var(--navy2); }
+.exp-col-label input { accent-color: var(--gold); flex-shrink: 0; }
+#exp-table th {
+  text-align: left; padding: 8px 12px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+#exp-table td {
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  font-size: .78rem; color: var(--text); max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#exp-table tr:hover td { background: var(--navy3); }
 </style>
 </head>
 <body>
@@ -1331,27 +1352,6 @@ async function saveWidgets() {
   showOk('sok-widgets');
 }
 
-.exp-col-label {
-  display: flex; align-items: center; gap: 8px;
-  font-family: 'Barlow', sans-serif; font-size: .82rem; color: var(--text);
-  padding: 6px 10px; border-radius: 7px; cursor: pointer;
-  border: 1px solid var(--border); background: var(--navy3);
-  transition: background 0.15s;
-}
-.exp-col-label:hover { background: var(--navy2); }
-.exp-col-label input { accent-color: var(--gold); flex-shrink: 0; }
-#exp-table th {
-  text-align: left; padding: 8px 12px;
-  font-size: .68rem; font-weight: 700; letter-spacing: .07em;
-  text-transform: uppercase; color: var(--muted);
-  border-bottom: 1px solid var(--border); white-space: nowrap;
-}
-#exp-table td {
-  padding: 7px 12px; border-bottom: 1px solid var(--border);
-  font-size: .78rem; color: var(--text); max-width: 200px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-#exp-table tr:hover td { background: var(--navy3); }
 
 function showOk(id) {
   const el = document.getElementById(id);
