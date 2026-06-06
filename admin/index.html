@@ -194,6 +194,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si">🏔️</span>Your Side of the Trail</button>
       <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
       <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si">📊</span>Export to Sheets</button>
+      <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si">📅</span>Panel Follow-Ups</button>
+      <button class="sb-item" onclick="showPage('longitudinal')" id="nav-longitudinal"><span class="si">📈</span>Student Growth Arc</button>
     </div>
     <div class="sb-footer">
       <div style="margin-bottom:10px">
@@ -955,6 +957,127 @@ Required structure:
       </div>
     </div>
 
+    <!-- PANEL FOLLOW-UP TRACKER -->
+    <div class="page" id="page-followup">
+      <div class="page-hd">
+        <h2>Panel Follow-Up Tracker</h2>
+        <p>All active panel sessions with upcoming check-in dates. Sorted by soonest check-in. Click a row to view the full recommendation.</p>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
+        <div class="ed-field" style="margin:0">
+          <label class="ed-lbl">Filter by Status</label>
+          <select class="ed-inp" id="fu-filter" style="width:160px" onchange="loadFollowUps()">
+            <option value="">All</option>
+            <option value="upcoming">Due within 7 days</option>
+            <option value="overdue">Overdue</option>
+            <option value="complete">Completed</option>
+          </select>
+        </div>
+        <div class="ed-field" style="margin:0">
+          <label class="ed-lbl">Squad</label>
+          <select class="ed-inp" id="fu-squad-filter" style="width:130px" onchange="loadFollowUps()">
+            <option value="">All squads</option>
+            <option>Gold</option><option>Grey</option>
+            <option>Black</option><option>Purple</option>
+          </select>
+        </div>
+        <button class="save-btn" onclick="loadFollowUps()">↻ Refresh</button>
+      </div>
+
+      <!-- Summary chips -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap" id="fu-summary-chips"></div>
+
+      <div id="fu-table-wrap">
+        <table class="dash-table" id="fu-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Squad</th>
+              <th>Panel Date</th>
+              <th>Check-In Person</th>
+              <th>Next Check-In</th>
+              <th>Status</th>
+              <th>Recommendation</th>
+              <th>TJ Linked</th>
+            </tr>
+          </thead>
+          <tbody id="fu-body"></tbody>
+        </table>
+        <div id="fu-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No panel sessions found.</div>
+        <div id="fu-loading" style="font-size:.84rem;color:var(--muted);padding:20px 0">Loading panel sessions…</div>
+      </div>
+
+      <!-- Detail drawer -->
+      <div id="fu-detail" style="display:none;margin-top:20px">
+        <div class="ed-panel">
+          <div class="ed-sec">
+            <h4 id="fu-detail-title">Session Detail</h4>
+            <div id="fu-detail-body" style="font-size:.84rem;color:var(--text);line-height:1.7"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LONGITUDINAL VIEW -->
+    <div class="page" id="page-longitudinal">
+      <div class="page-hd">
+        <h2>Student Growth Arc</h2>
+        <p>Enter a student initial to see their full history — all Trail Journal reflections, panel sessions, insight trend, and trait pattern over time.</p>
+      </div>
+
+      <div class="ed-panel" style="margin-bottom:20px">
+        <div class="ed-sec">
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            <div class="ed-field" style="margin:0">
+              <label class="ed-lbl">Student Initial</label>
+              <input type="text" class="ed-inp" id="lg-initial" placeholder="e.g. J" maxlength="2" style="width:80px;text-transform:uppercase">
+            </div>
+            <button class="save-btn" onclick="loadLongitudinal()">Load Growth Arc</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="lg-content" style="display:none">
+        <!-- Overview stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="lg-stats"></div>
+
+        <!-- Insight trend -->
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Insight Level Over Time</h4>
+            <div id="lg-insight-trend" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <!-- Trait pattern -->
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>LRG Traits Selected</h4>
+            <div id="lg-traits" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
+        </div>
+
+        <!-- Reflection timeline -->
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Reflection Timeline</h4>
+            <div id="lg-timeline" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <!-- Panel sessions -->
+        <div class="ed-panel" id="lg-panel-section" style="display:none;margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Trailback Panel Sessions</h4>
+            <div id="lg-panels" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+      <div id="lg-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No records found for that initial.</div>
+      <div id="lg-loading" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">Loading…</div>
+    </div>
+
   </main>
 </div>
 
@@ -1043,7 +1166,7 @@ async function loadDash() {
 
 function renderBars(id, counts, limit) {
   const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
-  const max = sorted[0]?.[1] || 1;
+  const max = (sorted[0] && sorted[0][1]) || 1;
   const el = document.getElementById(id);
   if (!sorted.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">No data yet.</div>'; return; }
   el.innerHTML = sorted.map(([lbl, n]) =>
@@ -1391,7 +1514,7 @@ async function generateBrief() {
     sb('reflections?session_id=eq.' + jId + '&select=*'),
     sb('responder_reflections?session_id=eq.' + rId + '&select=*'),
   ]);
-  const j = jRows?.[0], r = rRows?.[0];
+  const j = jRows && jRows[0], r = rRows && rRows[0];
   if (!j || !r) { document.getElementById('brief-loading').textContent = 'Could not find one or both submissions.'; return; }
   const brief = `CAMP MOUNTAINEER — CONFERENCE BRIEF\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
     `=== STUDENT A (Trail Journal) — Initial: ${j.initial||'?'} ===\n` +
@@ -1576,17 +1699,231 @@ function copyCSV() {
 }
 
 // Add export to showPage
+
+// ── PANEL FOLLOW-UP TRACKER ───────────────────────────────────────────────
+async function loadFollowUps() {
+  document.getElementById('fu-loading').style.display = 'block';
+  document.getElementById('fu-table').style.display = 'none';
+  document.getElementById('fu-empty').style.display = 'none';
+
+  const squadFilter  = document.getElementById('fu-squad-filter').value;
+  const statusFilter = document.getElementById('fu-filter').value;
+
+  let query = 'panel_sessions?select=*&order=created_at.desc&limit=200';
+  if (squadFilter) query += `&clash_squad=eq.${squadFilter}`;
+  const data = await sb(query);
+  document.getElementById('fu-loading').style.display = 'none';
+
+  if (!data?.length) { document.getElementById('fu-empty').style.display='block'; return; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in7   = new Date(today); in7.setDate(in7.getDate()+7);
+
+  const enriched = data.map(s => {
+    const dates = s.followup_dates||{};
+    const allDates = [dates.two_days,dates.one_week,dates.two_weeks,dates.one_month]
+      .filter(Boolean).map(d => new Date(d+'T12:00'));
+    const future = allDates.filter(d => d >= today);
+    const nextDate = future.length ? future[0] : null;
+    let status = 'complete';
+    if (nextDate) status = nextDate <= in7 ? 'upcoming' : 'future';
+    else if (allDates.length && allDates[allDates.length-1] < today) status = 'overdue';
+    return { ...s, _nextDate:nextDate, _status:status };
+  });
+
+  const filtered = statusFilter ? enriched.filter(s =>
+    statusFilter === 'upcoming' ? s._status==='upcoming' :
+    statusFilter === 'overdue'  ? s._status==='overdue' :
+    statusFilter === 'complete' ? s._status==='complete' : true
+  ) : enriched;
+
+  filtered.sort((a,b) => {
+    if (!a._nextDate && !b._nextDate) return 0;
+    if (!a._nextDate) return 1;
+    if (!b._nextDate) return -1;
+    return a._nextDate - b._nextDate;
+  });
+
+  const upcoming = enriched.filter(s=>s._status==='upcoming').length;
+  const overdue  = enriched.filter(s=>s._status==='overdue').length;
+  document.getElementById('fu-summary-chips').innerHTML = [
+    overdue  ? `<span style="background:#fde8e8;color:#b03030;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">⚠️ ${overdue} overdue</span>` : '',
+    upcoming ? `<span style="background:#fdf5df;color:#8a6820;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">📅 ${upcoming} due this week</span>` : '',
+    `<span style="background:var(--navy3);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">${enriched.length} total sessions</span>`,
+  ].filter(Boolean).join('');
+
+  if (!filtered.length) { document.getElementById('fu-empty').style.display='block'; return; }
+
+  const badgeCfg = {
+    overdue:  {bg:'#fde8e8',color:'#b03030',label:'⚠️ Overdue'},
+    upcoming: {bg:'#fdf5df',color:'#8a6820',label:'📅 This week'},
+    future:   {bg:'var(--navy3)',color:'var(--muted)',label:'Scheduled'},
+    complete: {bg:'var(--navy3)',color:'var(--muted)',label:'Done'},
+  };
+  const sqColor = {Gold:'#c9a84c',Grey:'#6b7280',Black:'#aaa',Purple:'#9f7aea'};
+
+  document.getElementById('fu-body').innerHTML = filtered.map(s => {
+    const cfg = badgeCfg[s._status]||badgeCfg.future;
+    const badge = `<span style="background:${cfg.bg};color:${cfg.color};padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">${cfg.label}</span>`;
+    const nextStr = s._nextDate ? s._nextDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+    const dateStr = s.panel_date ? new Date(s.panel_date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+    return `<tr style="cursor:pointer" onclick="showFUDetail('${s.session_id}')">
+      <td><strong>${s.student_initial||'—'}</strong></td>
+      <td style="color:${sqColor[s.clash_squad]||'var(--text)'};font-weight:700">${s.clash_squad||'—'}</td>
+      <td>${dateStr}</td>
+      <td>${s.followup_person||'—'}</td>
+      <td>${nextStr}</td>
+      <td>${badge}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.recommendation_narrative||'—').slice(0,80)}</td>
+      <td>${s.trail_journal_id?'<span style="color:var(--green)">✓ Linked</span>':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('fu-table').style.display = 'table';
+  window._fuData = filtered;
+}
+
+function showFUDetail(sessionId) {
+  const s = (window._fuData||[]).find(r => r.session_id===sessionId);
+  if (!s) return;
+  const detail = document.getElementById('fu-detail');
+  document.getElementById('fu-detail-title').textContent = `Student ${s.student_initial||'?'} — Panel ${s.panel_date||''}`;
+  const d = s.followup_dates||{};
+  document.getElementById('fu-detail-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="ed-lbl">Referring Staff</div><div style="margin-bottom:10px">${s.referring_staff||'—'}</div>
+        <div class="ed-lbl">Incident</div><div style="margin-bottom:10px">${s.incident_summary||'—'}</div>
+        <div class="ed-lbl">LRG Trait</div><div style="margin-bottom:10px">${s.lrg_trait||'—'}</div>
+        <div class="ed-lbl">Recommendation</div><div>${s.recommendation_narrative||'—'}</div>
+      </div>
+      <div>
+        <div class="ed-lbl">Check-In Person</div><div style="margin-bottom:10px">${s.followup_person||'—'}</div>
+        <div class="ed-lbl">2-Day</div><div style="margin-bottom:6px">${d.two_days||'—'}</div>
+        <div class="ed-lbl">1-Week</div><div style="margin-bottom:6px">${d.one_week||'—'}</div>
+        <div class="ed-lbl">2-Week</div><div style="margin-bottom:6px">${d.two_weeks||'—'}</div>
+        <div class="ed-lbl">1-Month</div><div style="margin-bottom:10px">${d.one_month||'—'}</div>
+        ${s.trail_journal_id?`<div class="ed-lbl">Trail Journal ID</div><div style="font-size:.76rem;font-family:monospace">${s.trail_journal_id}</div>`:''}
+      </div>
+    </div>`;
+  detail.style.display = 'block';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ── LONGITUDINAL VIEW ─────────────────────────────────────────────────────
+async function loadLongitudinal() {
+  const initial = document.getElementById('lg-initial').value.trim().toUpperCase();
+  if (!initial) return;
+  document.getElementById('lg-loading').style.display = 'block';
+  document.getElementById('lg-content').style.display = 'none';
+  document.getElementById('lg-empty').style.display = 'none';
+
+  const [reflections, panels] = await Promise.all([
+    sb(`reflections?select=*&initial=eq.${initial}&order=created_at.asc`),
+    sb(`panel_sessions?select=*&student_initial=eq.${initial}&order=created_at.asc`),
+  ]);
+  document.getElementById('lg-loading').style.display = 'none';
+
+  if (!reflections?.length && !panels?.length) {
+    document.getElementById('lg-empty').style.display = 'block'; return;
+  }
+  document.getElementById('lg-content').style.display = 'block';
+
+  const iScore = {High:3,Medium:2,Low:1};
+  const iColor = {High:'var(--green)',Medium:'#f59e0b',Low:'#ef4444'};
+  const iBg    = {High:'rgba(52,211,153,.1)',Medium:'rgba(245,158,11,.1)',Low:'rgba(239,68,68,.1)'};
+
+  const highCount = reflections.filter(r=>r.insight_level==='High').length;
+  const traitMap  = {};
+  reflections.forEach(r => { const t=r.part3_json?.trait; if(t) traitMap[t]=(traitMap[t]||0)+1; });
+  const avgScore  = reflections.length
+    ? (reflections.reduce((a,r)=>a+(iScore[r.insight_level]||2),0)/reflections.length).toFixed(1) : '—';
+
+  document.getElementById('lg-stats').innerHTML = [
+    {val:reflections.length, lbl:'Reflections', color:'var(--text)'},
+    {val:highCount, lbl:'High Insight', color:'var(--green)'},
+    {val:panels?.length||0, lbl:'Panel Sessions', color:'#c4b5fd'},
+    {val:avgScore, lbl:'Avg Insight (1-3)', color:'#f59e0b'},
+  ].map(s=>`<div style="background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+    <div style="font-size:1.8rem;font-weight:800;color:${s.color};margin-bottom:4px">${s.val}</div>
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">${s.lbl}</div>
+  </div>`).join('');
+
+  document.getElementById('lg-insight-trend').innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+      ${reflections.map(r=>{
+        const lvl=r.insight_level||'Medium';
+        const ht=lvl==='High'?48:lvl==='Medium'?32:18;
+        const date=new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div title="${lvl} — ${date}" style="width:18px;height:${ht}px;background:${iColor[lvl]};border-radius:4px;opacity:.85"></div>
+          <div style="font-size:.6rem;color:var(--muted);writing-mode:vertical-lr;transform:rotate(180deg)">${date}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">
+      ${['High','Medium','Low'].map(l=>`<div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)">
+        <div style="width:10px;height:10px;border-radius:2px;background:${iColor[l]}"></div>${l}
+      </div>`).join('')}
+    </div>`;
+
+  document.getElementById('lg-traits').innerHTML = Object.entries(traitMap)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([t,c])=>`<div style="padding:6px 12px;background:var(--navy3);border:1px solid var(--border);border-radius:20px;font-size:.78rem;color:var(--text)">${t} <span style="color:var(--gold);font-weight:700;margin-left:4px">×${c}</span></div>`)
+    .join('');
+
+  document.getElementById('lg-timeline').innerHTML = reflections.map(r=>{
+    const lvl=r.insight_level||'—';
+    const date=new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<div style="display:flex;gap:12px;margin-bottom:10px;padding:12px;background:${iBg[lvl]||'var(--navy3)'};border:1px solid var(--border);border-radius:9px">
+      <div style="width:3px;background:${iColor[lvl]||'var(--border)'};border-radius:2px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <span style="font-size:.72rem;font-weight:700;color:var(--muted)">${date}</span>
+          <span style="background:${iBg[lvl]};color:${iColor[lvl]};padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:800">${lvl}</span>
+          ${r.panel_completed?'<span style="background:rgba(92,61,143,.2);color:#c4b5fd;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700">🏔️ Panel done</span>':''}
+        </div>
+        <div style="font-size:.8rem;color:var(--text);margin-bottom:3px"><strong>Trait:</strong> ${r.part3_json?.trait||'—'}</div>
+        ${r.goal?`<div style="font-size:.78rem;color:var(--muted)"><strong>Goal:</strong> ${r.goal}</div>`:''}
+        ${r.panel_recommendation?`<div style="font-size:.76rem;color:var(--muted);margin-top:3px"><strong>Panel rec:</strong> ${r.panel_recommendation.slice(0,120)}…</div>`:''}
+      </div>
+    </div>`;
+  }).join('')||'<div style="font-size:.82rem;color:var(--muted)">No reflections yet.</div>';
+
+  const panelSec = document.getElementById('lg-panel-section');
+  if (panels?.length) {
+    panelSec.style.display='block';
+    document.getElementById('lg-panels').innerHTML = panels.map(p=>{
+      const date=new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const d=p.followup_dates||{};
+      return `<div style="padding:12px;background:rgba(92,61,143,.08);border:1px solid rgba(92,61,143,.25);border-radius:9px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:.72rem;font-weight:700;color:var(--muted)">${date}</span>
+          <span style="background:rgba(92,61,143,.2);color:#c4b5fd;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700">🏔️ Trailback Panel</span>
+        </div>
+        <div style="font-size:.8rem;color:var(--text);margin-bottom:4px"><strong>Recommendation:</strong> ${p.recommendation_narrative||'—'}</div>
+        <div style="font-size:.78rem;color:var(--muted)"><strong>Trait:</strong> ${p.lrg_trait||'—'} · <strong>Next check-in:</strong> ${d.two_days||'—'} · <strong>Person:</strong> ${p.followup_person||'—'}</div>
+      </div>`;
+    }).join('');
+  } else panelSec.style.display='none';
+}
+
 const _origShowPageExport = window.showPage;
 window.showPage = function(name) {
   _origShowPageExport(name);
   if (name === 'export') {
-    // Set default date range — last 30 days
     const now = new Date();
     const from = new Date(now - 30*24*60*60*1000);
     if (!document.getElementById('exp-to').value) {
       document.getElementById('exp-to').value = now.toISOString().split('T')[0];
       document.getElementById('exp-from').value = from.toISOString().split('T')[0];
     }
+  }
+  if (name === 'followup') loadFollowUps();
+  if (name === 'longitudinal') {
+    document.getElementById('lg-content').style.display = 'none';
+    document.getElementById('lg-empty').style.display = 'none';
+    document.getElementById('lg-loading').style.display = 'none';
   }
 };
 </script>
