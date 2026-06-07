@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Follow-Up Scheduler · Trail Journal Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #490e6f;
+    --purple-mid: #6b1fa0;
+    --purple-lt: #c8a8e0;
+    --gold: #ffe100;
+    --gold-dk: #c9a800;
+    --ink: #1a1025;
+    --ink-lt: #5a4a72;
+    --paper: #f7f3ee;
+    --paper-dk: #ede7dd;
+    --paper-dkr: #d8cfc2;
+    --cream: #faf7f2;
+    --success: #1a7a4a;
+    --success-lt: #d4f0e2;
+    --warn: #a85b00;
+    --warn-lt: #fdecd4;
+    --error: #8b1a1a;
+    --error-lt: #fde0d4;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(73,14,111,.12), 0 1px 4px rgba(73,14,111,.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(73,14,111,.04) 38px, rgba(73,14,111,.04) 39px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(73,14,111,.03) 38px, rgba(73,14,111,.03) 39px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: var(--purple);
+    color: #fff;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(73,14,111,.3);
+  }
+  .page-header-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+  }
+  .header-back {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s;
+  }
+  .header-back:hover { background: rgba(255,255,255,.25); }
+  .header-title { flex: 1; }
+  .header-title h1 {
+    font-family: 'Walter Turncoat', cursive;
+    font-size: 1.25rem;
+    color: var(--gold);
+    line-height: 1.1;
+  }
+  .header-title p { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 2px; letter-spacing: .5px; text-transform: uppercase; }
+  .header-icon { font-size: 28px; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--purple) 0%, #2d0a45 100%);
+    color: #fff;
+    padding: 36px 24px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '🏔️';
+    position: absolute;
+    right: 20px;
+    bottom: -10px;
+    font-size: 100px;
+    opacity: .08;
+    pointer-events: none;
+  }
+  .hero-step { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .hero h2 { font-family: 'Walter Turncoat', cursive; font-size: 2rem; color: var(--gold); line-height: 1.1; margin-bottom: 8px; }
+  .hero p { color: rgba(255,255,255,.8); font-size: .95rem; line-height: 1.6; max-width: 520px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid var(--paper-dkr);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+  .card-label {
+    font-family: 'Walter Turncoat', cursive;
+    font-size: 1.05rem;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+  .card-sub {
+    font-size: .82rem;
+    color: var(--ink-lt);
+    margin-bottom: 14px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* ── GRADE TOGGLE ── */
+  .grade-row { display: flex; gap: 10px; margin-bottom: 4px; }
+  .grade-btn {
+    flex: 1;
+    padding: 13px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--paper-dkr);
+    background: var(--cream);
+    color: var(--ink-lt);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .grade-btn .grade-window {
+    display: block;
+    font-size: .72rem;
+    font-weight: 400;
+    color: var(--ink-lt);
+    margin-top: 3px;
+    font-style: italic;
+  }
+  .grade-btn.active {
+    border-color: var(--gold);
+    background: rgba(255,225,0,.12);
+    color: var(--purple);
+  }
+  .grade-btn.active .grade-window { color: var(--ink-lt); }
+
+  /* ── TRIGGER TOGGLE ── */
+  .trigger-row { display: flex; gap: 10px; }
+  .trigger-btn {
+    flex: 1;
+    padding: 11px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--paper-dkr);
+    background: var(--cream);
+    color: var(--ink-lt);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+  .trigger-btn.active {
+    border-color: var(--gold);
+    background: rgba(255,225,0,.12);
+    color: var(--purple);
+  }
+
+  /* ── FORM ── */
+  label { display: block; font-size: .78rem; font-weight: 700; color: var(--purple); margin-bottom: 5px; letter-spacing: .3px; text-transform: uppercase; }
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--paper-dkr);
+    border-radius: 9px;
+    font-family: 'Barlow', sans-serif;
+    font-size: .95rem;
+    color: var(--ink);
+    background: var(--cream);
+    transition: border-color .15s, box-shadow .15s;
+    appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--purple-mid);
+    box-shadow: 0 0 0 3px rgba(107,31,160,.12);
+  }
+  textarea { resize: vertical; }
+  .form-row { margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+  /* ── ATTENDEES ── */
+  .attendee-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 9px;
+  }
+  .btn-remove {
+    background: rgba(139,26,26,.1);
+    border: 1px solid rgba(139,26,26,.25);
+    color: var(--error);
+    border-radius: 7px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .btn-remove:hover { background: rgba(139,26,26,.2); }
+  .btn-add {
+    width: 100%;
+    background: transparent;
+    border: 1.5px dashed var(--paper-dkr);
+    border-radius: 9px;
+    padding: 9px;
+    font-family: 'Barlow', sans-serif;
+    font-size: .85rem;
+    color: var(--ink-lt);
+    cursor: pointer;
+    transition: all .15s;
+    margin-top: 4px;
+  }
+  .btn-add:hover { border-color: var(--purple-lt); color: var(--purple); }
+
+  /* ── GUIDELINES ── */
+  .guideline-row { display: flex; flex-direction: column; gap: 10px; }
+  .guideline {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--cream);
+    border-radius: 10px;
+    border-left: 4px solid var(--purple);
+    padding: 12px 14px;
+  }
+  .guideline.day2  { border-color: #22c55e; }
+  .guideline.week2 { border-color: #3b82f6; }
+  .guideline.month2{ border-color: var(--purple); }
+  .guideline-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .guideline-title { font-weight: 700; font-size: .9rem; color: var(--ink); margin-bottom: 3px; }
+  .guideline-title span { font-size: .75rem; font-weight: 400; color: var(--ink-lt); margin-left: 6px; }
+  .guideline-text { font-size: .82rem; color: var(--ink-lt); line-height: 1.55; }
+
+  /* ── PREVIEW ROWS ── */
+  .preview-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--cream);
+    border: 1.5px solid var(--paper-dkr);
+    margin-bottom: 9px;
+    transition: border-color .3s, background .3s;
+  }
+  .preview-row.status-success { border-color: #22c55e; background: #f0fdf4; }
+  .preview-row.status-error   { border-color: #ef4444; background: #fef2f2; }
+  .preview-row.status-loading { border-color: var(--gold-dk); background: #fffbeb; }
+  .preview-icon { font-size: 22px; flex-shrink: 0; }
+  .preview-body { flex: 1; min-width: 0; }
+  .preview-title { font-weight: 700; font-size: .9rem; color: var(--ink); }
+  .preview-meta  { font-size: .76rem; color: var(--ink-lt); margin-top: 2px; line-height: 1.4; }
+  .preview-time  { font-size: .76rem; color: var(--purple); font-weight: 600; margin-top: 1px; }
+
+  .status-pill {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 99px;
+    flex-shrink: 0; letter-spacing: .3px; white-space: nowrap;
+  }
+  .pill-pending { background: var(--paper-dk); color: var(--ink-lt); }
+  .pill-loading { background: #fef3c7; color: #92400e; }
+  .pill-success { background: var(--success-lt); color: var(--success); }
+  .pill-error   { background: var(--error-lt); color: var(--error); }
+
+  /* ── SNAP NOTE ── */
+  .snap-note {
+    font-size: .78rem;
+    color: var(--ink-lt);
+    font-style: italic;
+    margin-top: -4px;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  .snap-note strong { color: var(--purple); font-style: normal; }
+
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+  .btn-primary {
+    flex: 1;
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background .2s, box-shadow .2s;
+    box-shadow: 0 3px 14px rgba(73,14,111,.3);
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--purple-mid); }
+  .btn-primary:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+  .btn-secondary {
+    padding: 14px 18px;
+    background: var(--cream);
+    border: 1.5px solid var(--paper-dkr);
+    border-radius: 10px;
+    font-family: 'Barlow', sans-serif;
+    font-size: .9rem;
+    color: var(--ink-lt);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-secondary:hover { border-color: var(--purple-lt); color: var(--purple); }
+  .btn-success {
+    flex: 1;
+    background: #15803d;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 3px 14px rgba(21,128,61,.25);
+  }
+
+  /* ── ALERT ── */
+  .alert { border-radius: 10px; padding: 12px 16px; font-weight: 600; font-size: .88rem; margin-bottom: 16px; display: none; }
+  .alert.show { display: block; }
+  .alert-success { background: var(--success-lt); color: var(--success); border: 1px solid #86efac; }
+  .alert-error   { background: var(--error-lt);   color: var(--error);   border: 1px solid #fca5a5; }
+  .alert-warn    { background: var(--warn-lt);     color: var(--warn);    border: 1px solid #fdba74; }
+
+  .record-note { text-align: center; font-size: .78rem; color: var(--ink-lt); margin-top: 24px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <a href="/panel" class="header-back">← Panel</a>
+    <div class="header-title">
+      <h1>Follow-Up Scheduler</h1>
+      <p>Trail Journal · Panel Tools</p>
+    </div>
+    <span class="header-icon">📅</span>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <div class="hero">
+    <div class="hero-step">Panel Tool · Follow-Up</div>
+    <h2>Schedule the Check-Ins</h2>
+    <p>After an intervention or Trailback Panel, the work continues. This tool logs the record to Supabase and sends Outlook calendar events to your follow-up team — snapped to the nearest workday, timed to the student's grade schedule.</p>
+  </div>
+
+  <!-- ── SECTION 1: STUDENT & GRADE ── -->
+  <div class="card">
+    <div class="card-label">📌 Student & Intervention</div>
+    <div class="card-sub">Grade determines the calendar event time window — events land during a period that works for that student's schedule.</div>
+
+    <div class="form-row">
+      <label>Grade</label>
+      <div class="grade-row">
+        <button class="grade-btn active" id="btn-grade8" onclick="setGrade(8)">
+          8th Grade
+          <span class="grade-window">8:15 – 9:15 AM</span>
+        </button>
+        <button class="grade-btn" id="btn-grade7" onclick="setGrade(7)">
+          7th Grade
+          <span class="grade-window">9:50 – 11:00 AM</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="student-initials">Student Initials</label>
+        <input type="text" id="student-initials" placeholder="e.g. A.M." maxlength="6">
+      </div>
+      <div class="form-row">
+        <label for="student-squad">Squad</label>
+        <select id="student-squad">
+          <option value="">Select…</option>
+          <option value="Black">⬛ Black</option>
+          <option value="Gold">🟡 Gold</option>
+          <option value="Grey">🩶 Grey</option>
+          <option value="Purple">🟣 Purple</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Trigger Type</label>
+      <div class="trigger-row">
+        <button class="trigger-btn active" id="btn-intervention" onclick="setTrigger('intervention')">🎯 Intervention</button>
+        <button class="trigger-btn" id="btn-trailback" onclick="setTrigger('trailback')">🔄 Trailback Panel</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label for="trigger-date">Date of <span id="trigger-label-date">Intervention</span></label>
+      <input type="date" id="trigger-date">
+    </div>
+
+    <div class="form-row">
+      <label for="submitted-by">Submitted By</label>
+      <input type="text" id="submitted-by" placeholder="Staff name">
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: OUTCOME ── -->
+  <div class="card">
+    <div class="card-label">📝 Outcome Summary</div>
+    <div class="card-sub">Write a brief description of what occurred, what was decided, and what the student committed to. This text appears in every calendar event body so the team has context when each check-in arrives.</div>
+
+    <div class="form-row">
+      <label for="outcome-summary">Outcome Summary</label>
+      <textarea id="outcome-summary" rows="4" placeholder="Brief narrative of what happened, what was agreed upon, and what the student is working toward…"></textarea>
+    </div>
+
+    <div class="form-row">
+      <label for="panel-session-id">Trail Journal Session ID (optional)</label>
+      <input type="text" id="panel-session-id" placeholder="From Trail Journal done screen or panel record">
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: GUIDELINES ── -->
+  <div class="card">
+    <div class="card-label">🗺️ Check-In Guidelines</div>
+    <div class="card-sub">These guidelines are embedded in every calendar event — so whoever shows up knows what the meeting is for.</div>
+
+    <div class="guideline-row">
+      <div class="guideline day2">
+        <div class="guideline-icon">🌱</div>
+        <div>
+          <div class="guideline-title">2-Day Check-In <span>· Early Pulse</span></div>
+          <div class="guideline-text">Keep it brief and relational — this is not a consequence review. Ask: "How are you doing since we last talked?" and "Is there anything still unresolved?" Look for re-engagement and early signs of follow-through on any commitments. Reinforce their capacity to grow. <strong>5–10 minutes max.</strong></div>
+        </div>
+      </div>
+      <div class="guideline week2">
+        <div class="guideline-icon">📋</div>
+        <div>
+          <div class="guideline-title">2-Week Review <span>· First Assessment</span></div>
+          <div class="guideline-text">Look at the whole picture: grades, attendance, relationships with staff and peers. First real opportunity to assess whether the intervention is holding. Ask: "What's been hard? What's gotten easier?" Review any repair commitments; update the plan if needed. <strong>10–20 minutes.</strong></div>
+        </div>
+      </div>
+      <div class="guideline month2">
+        <div class="guideline-icon">🏔️</div>
+        <div>
+          <div class="guideline-title">2-Month Follow-Up <span>· Long-Term Accountability</span></div>
+          <div class="guideline-text">Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the relationship with the community been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document the outcome in Supabase. <strong>15–30 minutes.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: ATTENDEES ── -->
+  <div class="card">
+    <div class="card-label">👥 Calendar Invitees</div>
+    <div class="card-sub">Each person receives Outlook calendar events for all three check-ins. Add everyone who should have accountability for this student's follow-up.</div>
+
+    <div id="attendee-list">
+      <div class="attendee-row" id="att-0">
+        <input type="text" placeholder="Name" style="flex:1">
+        <input type="email" placeholder="email@ephrata.org" style="flex:2">
+      </div>
+    </div>
+    <button class="btn-add" onclick="addAttendee()">+ Add Another Person</button>
+  </div>
+
+  <!-- ── SECTION 5: PREVIEW & SCHEDULE ── -->
+  <div class="card">
+    <div class="card-label">📅 Scheduled Events Preview</div>
+    <div class="card-sub">Dates snap to the nearest workday (Mon–Fri). Time window is set by grade.</div>
+
+    <p class="snap-note" id="snap-note">Select a grade and trigger date above to see exact times.</p>
+
+    <div id="preview-2day" class="preview-row">
+      <div class="preview-icon">🌱</div>
+      <div class="preview-body">
+        <div class="preview-title">2-Day Check-In</div>
+        <div class="preview-meta" id="date-2day">—</div>
+        <div class="preview-time" id="time-2day"></div>
+      </div>
+      <span class="status-pill pill-pending" id="pill-2day">Pending</span>
+    </div>
+
+    <div id="preview-2week" class="preview-row">
+      <div class="preview-icon">📋</div>
+      <div class="preview-body">
+        <div class="preview-title">2-Week Review</div>
+        <div class="preview-meta" id="date-2week">—</div>
+        <div class="preview-time" id="time-2week"></div>
+      </div>
+      <span class="status-pill pill-pending" id="pill-2week">Pending</span>
+    </div>
+
+    <div id="preview-2month" class="preview-row">
+      <div class="preview-icon">🏔️</div>
+      <div class="preview-body">
+        <div class="preview-title">2-Month Follow-Up</div>
+        <div class="preview-meta" id="date-2month">—</div>
+        <div class="preview-time" id="time-2month"></div>
+      </div>
+      <span class="status-pill pill-pending" id="pill-2month">Pending</span>
+    </div>
+
+    <div id="global-alert" class="alert"></div>
+
+    <div class="btn-row" id="action-row">
+      <button class="btn-secondary" onclick="resetForm()">Reset</button>
+      <button class="btn-primary" id="btn-schedule" onclick="scheduleAll()">📅 Schedule All 3 Check-Ins</button>
+    </div>
+
+    <div class="record-note">
+      Records saved to Supabase · Calendar events via Microsoft Outlook · EMS Trail Journal System
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────────
+const SUPABASE_URL = 'https://yvutgnpgnthvnonhgdux.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NjkwNjMsImV4cCI6MjA2MDI0NTA2M30.J4_u_JFSpzOFJWoWkGHPEqOjOlmpnZlvw_8cF6JdVhQ';
+
+// ─────────────────────────────────────────────
+//  GRADE TIME WINDOWS
+//  8th: 8:15–9:15  → start 8:15, end 8:45 (30 min block)
+//  7th: 9:50–11:00 → start 9:50, end 10:20 (30 min block)
+// ─────────────────────────────────────────────
+const GRADE_WINDOWS = {
+  8: { startH: 8,  startM: 15, endH: 8,  endM: 45, label: '8:15 – 8:45 AM' },
+  7: { startH: 9,  startM: 50, endH: 10, endM: 20, label: '9:50 – 10:20 AM' },
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let grade       = 8;
+let triggerType = 'intervention';
+let attendeeCount = 1;
+let scheduling  = false;
+let allDone     = false;
+
+// ─────────────────────────────────────────────
+//  GRADE TOGGLE
+// ─────────────────────────────────────────────
+function setGrade(g) {
+  grade = g;
+  document.getElementById('btn-grade7').classList.toggle('active', g === 7);
+  document.getElementById('btn-grade8').classList.toggle('active', g === 8);
+  updatePreview();
+}
+
+// ─────────────────────────────────────────────
+//  TRIGGER TOGGLE
+// ─────────────────────────────────────────────
+function setTrigger(type) {
+  triggerType = type;
+  document.getElementById('btn-intervention').classList.toggle('active', type === 'intervention');
+  document.getElementById('btn-trailback').classList.toggle('active', type === 'trailback');
+  document.getElementById('trigger-label-date').textContent = type === 'intervention' ? 'Intervention' : 'Trailback Panel';
+}
+
+// ─────────────────────────────────────────────
+//  WORKDAY SNAP
+//  Adds N calendar days then snaps forward to Mon-Fri.
+//  We parse the date string as local noon to avoid timezone drift.
+// ─────────────────────────────────────────────
+function addCalendarDays(dateStr, days) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function snapToWorkday(date) {
+  // 0 = Sun, 6 = Sat
+  const dow = date.getDay();
+  if (dow === 0) date.setDate(date.getDate() + 1); // Sun → Mon
+  if (dow === 6) date.setDate(date.getDate() + 2); // Sat → Mon
+  return date;
+}
+
+// Returns { date: Date (snapped), snapped: bool }
+function getCheckinDate(trigDateStr, calDays) {
+  const raw = addCalendarDays(trigDateStr, calDays);
+  const rawDow = raw.getDay();
+  const snapped = snapToWorkday(raw);
+  return {
+    date: snapped,
+    wasWeekend: rawDow === 0 || rawDow === 6,
+  };
+}
+
+// ─────────────────────────────────────────────
+//  FORMAT HELPERS
+// ─────────────────────────────────────────────
+function fmtDisplay(d) {
+  return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// Build ISO datetime string for the grade window
+function fmtEventTime(date, isEnd) {
+  const win = GRADE_WINDOWS[grade];
+  const h = isEnd ? win.endH   : win.startH;
+  const m = isEnd ? win.endM   : win.startM;
+  // Format as local ISO without Z so Outlook interprets in the given timezone
+  const pad = n => String(n).padStart(2, '0');
+  const y  = date.getFullYear();
+  const mo = pad(date.getMonth() + 1);
+  const dy = pad(date.getDate());
+  return `${y}-${mo}-${dy}T${pad(h)}:${pad(m)}:00`;
+}
+
+// ─────────────────────────────────────────────
+//  LIVE PREVIEW
+// ─────────────────────────────────────────────
+document.getElementById('trigger-date').addEventListener('input', updatePreview);
+
+function updatePreview() {
+  const raw = document.getElementById('trigger-date').value;
+  const win = GRADE_WINDOWS[grade];
+
+  if (!raw) {
+    ['2day','2week','2month'].forEach(k => {
+      document.getElementById('date-' + k).textContent = '—';
+      document.getElementById('time-' + k).textContent = '';
+    });
+    document.getElementById('snap-note').innerHTML = 'Select a grade and trigger date above to see exact times.';
+    return;
+  }
+
+  const intervals = [
+    { key: '2day',   days: 2,  label: '2 calendar days' },
+    { key: '2week',  days: 14, label: '2 weeks' },
+    { key: '2month', days: 60, label: '~2 months' },
+  ];
+
+  let snapMessages = [];
+
+  intervals.forEach(({ key, days, label }) => {
+    const { date, wasWeekend } = getCheckinDate(raw, days);
+    document.getElementById('date-' + key).textContent = fmtDisplay(date);
+    document.getElementById('time-' + key).textContent = `${win.label} · Grade ${grade}`;
+    if (wasWeekend) snapMessages.push(label);
+  });
+
+  if (snapMessages.length > 0) {
+    document.getElementById('snap-note').innerHTML =
+      `<strong>Snapped to Monday:</strong> ${snapMessages.join(', ')} fell on a weekend.`;
+  } else {
+    document.getElementById('snap-note').innerHTML =
+      `All three check-ins land on weekdays. <strong>Grade ${grade}</strong> window: ${win.label}.`;
+  }
+}
+
+// Pre-fill from URL params (from panel Screen 7 or admin dashboard)
+const _urlP = new URLSearchParams(location.search);
+if (_urlP.get('initials'))   document.getElementById('student-initials').value  = _urlP.get('initials');
+if (_urlP.get('squad'))      document.getElementById('student-squad').value      = _urlP.get('squad');
+if (_urlP.get('session_id')) document.getElementById('panel-session-id').value  = _urlP.get('session_id');
+if (_urlP.get('outcome'))    document.getElementById('outcome-summary').value    = decodeURIComponent(_urlP.get('outcome'));
+if (_urlP.get('trigger') === 'trailback') setTrigger('trailback');
+if (_urlP.get('date'))       document.getElementById('trigger-date').value       = _urlP.get('date');
+else document.getElementById('trigger-date').value = new Date().toISOString().split('T')[0];
+updatePreview();
+
+// ─────────────────────────────────────────────
+//  ATTENDEES
+// ─────────────────────────────────────────────
+function addAttendee() {
+  attendeeCount++;
+  const list = document.getElementById('attendee-list');
+  const row = document.createElement('div');
+  row.className = 'attendee-row';
+  row.id = 'att-' + attendeeCount;
+  row.innerHTML = `
+    <input type="text" placeholder="Name" style="flex:1">
+    <input type="email" placeholder="email@ephrata.org" style="flex:2">
+    <button class="btn-remove" onclick="removeAttendee(${attendeeCount})">✕</button>`;
+  list.appendChild(row);
+}
+function removeAttendee(id) {
+  document.getElementById('att-' + id)?.remove();
+}
+function getAttendees() {
+  return [...document.querySelectorAll('.attendee-row')].reduce((acc, row) => {
+    const email = row.querySelector('input[type="email"]')?.value?.trim();
+    const name  = row.querySelector('input[type="text"]')?.value?.trim();
+    if (email) acc.push({ email, name: name || email });
+    return acc;
+  }, []);
+}
+
+// ─────────────────────────────────────────────
+//  STATUS UI
+// ─────────────────────────────────────────────
+const STATUS_MAP = {
+  pending: ['pill-pending', 'Pending'],
+  loading: ['pill-loading', '⏳ Scheduling…'],
+  success: ['pill-success', '✓ Scheduled'],
+  error:   ['pill-error',   '✗ Failed'],
+};
+
+function setStatus(key, s) {
+  const [cls, label] = STATUS_MAP[s];
+  const pill = document.getElementById('pill-' + key);
+  const row  = document.getElementById('preview-' + key);
+  pill.className = 'status-pill ' + cls;
+  pill.textContent = label;
+  row.className = 'preview-row status-' + s;
+}
+
+function showAlert(type, text) {
+  const el = document.getElementById('global-alert');
+  el.className = 'alert show alert-' + type;
+  el.textContent = text;
+}
+function hideAlert() {
+  document.getElementById('global-alert').className = 'alert';
+}
+
+// ─────────────────────────────────────────────
+//  SUPABASE
+// ─────────────────────────────────────────────
+async function saveToSupabase(record) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/followup_records`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(record)
+  });
+  if (!res.ok) throw new Error('Supabase save failed: ' + res.status);
+  return (await res.json())[0];
+}
+
+async function updateCalendarStatus(id, calStatuses) {
+  await fetch(`${SUPABASE_URL}/rest/v1/followup_records?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    },
+    body: JSON.stringify({ calendar_status: calStatuses })
+  });
+}
+
+// ─────────────────────────────────────────────
+//  OUTLOOK EVENT VIA M365 MCP
+// ─────────────────────────────────────────────
+async function createOutlookEvent(payload) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      mcp_servers: [{ type: 'url', url: 'https://microsoft365.mcp.claude.com/mcp', name: 'microsoft365' }],
+      system: 'You are a calendar scheduling assistant for Ephrata Middle School. Use the Microsoft 365 calendar tool to create the Outlook event exactly as specified. Respond only with JSON: {"success":true} or {"success":false,"error":"reason"}.',
+      messages: [{ role: 'user', content: `Create this Outlook calendar event: ${JSON.stringify(payload)}` }]
+    })
+  });
+  if (!res.ok) throw new Error('API ' + res.status);
+  const data = await res.json();
+  const hasResult = (data.content || []).some(b => b.type === 'mcp_tool_result');
+  if (hasResult) return true;
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  return text.toLowerCase().includes('success') || text.includes('"success":true');
+}
+
+// ─────────────────────────────────────────────
+//  BUILD OUTLOOK PAYLOAD
+// ─────────────────────────────────────────────
+function buildPayload({ intervalDays, label, icon, initials, squad, trigDateStr, trigType, outcome, attendees }) {
+  const win      = GRADE_WINDOWS[grade];
+  const { date } = getCheckinDate(trigDateStr, intervalDays);
+  const trigLabel = trigType === 'intervention' ? 'Intervention' : 'Trailback Panel';
+
+  const guideMap = {
+    2:  { focus: 'Early Pulse',             detail: 'Keep it brief and relational — not a consequence review. Ask: "How are you doing since we last talked?" and "Is there anything still unresolved?" Look for re-engagement and early signs of follow-through. Reinforce their capacity to grow. Duration: 5–10 minutes.' },
+    14: { focus: 'First Assessment',        detail: 'Look at the whole picture: grades, attendance, relationships with staff and peers. First real opportunity to assess whether the intervention is holding. Ask: "What\'s been hard? What\'s gotten easier?" Review any repair commitments and update the plan if needed. Duration: 10–20 minutes.' },
+    60: { focus: 'Long-Term Accountability',detail: 'Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the community relationship been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document outcome in Supabase. Duration: 15–30 minutes.' },
+  };
+  const g = guideMap[intervalDays];
+
+  const body = [
+    `${icon} ${label} — ${trigLabel} Follow-Up`,
+    '',
+    `Student: ${initials}${squad ? ' (' + squad + ' Squad)' : ''}   |   Grade: ${grade}th`,
+    `Trigger Date: ${fmtDisplay(new Date(trigDateStr + 'T12:00:00'))}`,
+    `Type: ${trigLabel}`,
+    `Meeting Window: ${win.label}`,
+    '',
+    '──────────────────────────────',
+    `PURPOSE: ${g.focus}`,
+    '',
+    g.detail,
+    '──────────────────────────────',
+    '',
+    outcome ? `OUTCOME SUMMARY FROM ${trigLabel.toUpperCase()}:\n${outcome}\n` : '',
+    '🏔️ EMS Mountaineers · Trail Journal / Trailback Panel System',
+  ].join('\n');
+
+  return {
+    subject: `[EMS Follow-Up] ${initials} — ${label} (Grade ${grade}, ${trigLabel})`,
+    body: { contentType: 'text', content: body },
+    start: { dateTime: fmtEventTime(date, false), timeZone: 'America/New_York' },
+    end:   { dateTime: fmtEventTime(date, true),  timeZone: 'America/New_York' },
+    attendees: attendees.map(a => ({
+      emailAddress: { address: a.email, name: a.name },
+      type: 'required'
+    })),
+    isReminderOn: true,
+    reminderMinutesBeforeStart: 60,
+  };
+}
+
+// ─────────────────────────────────────────────
+//  MAIN SCHEDULE
+// ─────────────────────────────────────────────
+async function scheduleAll() {
+  if (scheduling) return;
+
+  const initials    = document.getElementById('student-initials').value.trim();
+  const squad       = document.getElementById('student-squad').value;
+  const trigDateStr = document.getElementById('trigger-date').value;
+  const outcome     = document.getElementById('outcome-summary').value.trim();
+  const submittedBy = document.getElementById('submitted-by').value.trim();
+  const sessionId   = document.getElementById('panel-session-id').value.trim();
+  const attendees   = getAttendees();
+
+  hideAlert();
+  if (!initials)    { showAlert('error', 'Please enter the student\'s initials.'); return; }
+  if (!trigDateStr) { showAlert('error', 'Please select the date of the intervention or panel.'); return; }
+  if (!attendees.length) { showAlert('error', 'Add at least one staff email address.'); return; }
+
+  scheduling = true;
+  document.getElementById('btn-schedule').disabled = true;
+
+  // 1 — Supabase record
+  let record = null;
+  try {
+    const win = GRADE_WINDOWS[grade];
+    record = await saveToSupabase({
+      student_initials: initials,
+      trigger_type:     triggerType,
+      trigger_date:     trigDateStr,
+      outcome_summary:  outcome || null,
+      panel_session_id: sessionId || null,
+      attendee_emails:  attendees.map(a => a.email),
+      checkin_2day_date:   getCheckinDate(trigDateStr, 2).date.toISOString().split('T')[0],
+      checkin_2week_date:  getCheckinDate(trigDateStr, 14).date.toISOString().split('T')[0],
+      checkin_2month_date: getCheckinDate(trigDateStr, 60).date.toISOString().split('T')[0],
+      submitted_by: submittedBy || null,
+      squad:        squad || null,
+      notes:        `Grade ${grade} · ${GRADE_WINDOWS[grade].label}`,
+      calendar_status: { day2: 'pending', week2: 'pending', month2: 'pending' },
+    });
+  } catch (err) {
+    showAlert('warn', 'Could not save to Supabase — continuing to schedule calendar events.');
+  }
+
+  // 2 — Calendar events
+  const intervals = [
+    { key: '2day',   sbKey: 'day2',   label: '2-Day Check-In',   icon: '🌱', days: 2  },
+    { key: '2week',  sbKey: 'week2',  label: '2-Week Review',    icon: '📋', days: 14 },
+    { key: '2month', sbKey: 'month2', label: '2-Month Follow-Up',icon: '🏔️', days: 60 },
+  ];
+
+  let successCount = 0;
+  const calStatuses = {};
+
+  for (const interval of intervals) {
+    setStatus(interval.key, 'loading');
+    try {
+      const payload = buildPayload({
+        intervalDays: interval.days,
+        label:        interval.label,
+        icon:         interval.icon,
+        initials, squad, trigDateStr,
+        trigType: triggerType,
+        outcome, attendees,
+      });
+      const ok = await createOutlookEvent(payload);
+      setStatus(interval.key, ok ? 'success' : 'error');
+      calStatuses[interval.sbKey] = ok ? 'scheduled' : 'failed';
+      if (ok) successCount++;
+    } catch (err) {
+      setStatus(interval.key, 'error');
+      calStatuses[interval.sbKey] = 'failed';
+      console.error(interval.label, err);
+    }
+    if (interval !== intervals[intervals.length - 1]) await new Promise(r => setTimeout(r, 800));
+  }
+
+  // 3 — Update Supabase with calendar results
+  if (record?.id) {
+    try { await updateCalendarStatus(record.id, calStatuses); } catch(_) {}
+  }
+
+  scheduling = false;
+
+  if (successCount === 3) {
+    showAlert('success', `All 3 check-ins scheduled for ${initials} (Grade ${grade}) on ${attendees.length} calendar(s). Record saved.`);
+    allDone = true;
+    document.getElementById('action-row').innerHTML =
+      `<button class="btn-success" onclick="resetForm()">✓ Done — Schedule Another Student</button>`;
+  } else if (successCount > 0) {
+    showAlert('warn', `${successCount} of 3 events scheduled. See errors above.`);
+    document.getElementById('btn-schedule').disabled = false;
+  } else {
+    showAlert('error', 'Calendar scheduling failed. Check that your Microsoft 365 connection is active.');
+    document.getElementById('btn-schedule').disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  RESET
+// ─────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('student-initials').value = '';
+  document.getElementById('student-squad').value    = '';
+  document.getElementById('trigger-date').value     = new Date().toISOString().split('T')[0];
+  document.getElementById('outcome-summary').value  = '';
+  document.getElementById('panel-session-id').value = '';
+  document.getElementById('submitted-by').value     = '';
+  document.getElementById('attendee-list').innerHTML = `
+    <div class="attendee-row" id="att-0">
+      <input type="text" placeholder="Name" style="flex:1">
+      <input type="email" placeholder="email@ephrata.org" style="flex:2">
+    </div>`;
+  attendeeCount = 1;
+  ['2day','2week','2month'].forEach(k => setStatus(k, 'pending'));
+  hideAlert();
+  scheduling = false;
+  allDone    = false;
+  grade      = 8;
+  setGrade(8);
+  setTrigger('intervention');
+  updatePreview();
+  document.getElementById('action-row').innerHTML = `
+    <button class="btn-secondary" onclick="resetForm()">Reset</button>
+    <button class="btn-primary" id="btn-schedule" onclick="scheduleAll()">📅 Schedule All 3 Check-Ins</button>`;
+}
+</script>
+</body>
+</html>
