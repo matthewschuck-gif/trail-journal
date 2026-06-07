@@ -985,6 +985,15 @@ Required structure:
         <p>All active panel sessions with upcoming check-in dates. Sorted by soonest check-in. Click a row to view the full recommendation.</p>
       </div>
 
+      <!-- ── SCHEDULER LAUNCH BANNER ── -->
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(92,61,143,.1) 0%,rgba(201,168,76,.08) 100%);border:1.5px solid rgba(92,61,143,.3);border-radius:12px;padding:14px 18px;margin-bottom:20px">
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;font-size:.9rem;color:var(--text)">📅 Outlook Check-In Scheduler</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule 2-day, 2-week &amp; 2-month Outlook calendar events — workday-snapped, grade-timed. Or click any row below to schedule from an existing session.</div>
+        </div>
+        <a href="/panel/followup" target="_blank" style="display:inline-block;padding:9px 18px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;box-shadow:0 2px 10px rgba(92,61,143,.3);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Open Scheduler →</a>
+      </div>
+
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
         <div class="ed-field" style="margin:0">
           <label class="ed-lbl">Filter by Status</label>
@@ -1701,6 +1710,19 @@ function copyCSV() {
 // Add export to showPage
 
 // ── PANEL FOLLOW-UP TRACKER ───────────────────────────────────────────────
+// ── FOLLOW-UP SCHEDULER URL BUILDER ──────────────────────────────────────
+// Builds a pre-filled URL to /panel/followup from a panel_sessions record
+function buildSchedulerUrl(s) {
+  const p = new URLSearchParams();
+  if (s.student_initial)         p.set('initials',   s.student_initial);
+  if (s.clash_squad)             p.set('squad',      s.clash_squad);
+  if (s.panel_date)              p.set('date',       s.panel_date);
+  if (s.session_id)              p.set('session_id', s.session_id);
+  p.set('trigger', 'trailback');
+  if (s.recommendation_narrative) p.set('outcome', s.recommendation_narrative.slice(0, 300));
+  return '/panel/followup?' + p.toString();
+}
+
 async function loadFollowUps() {
   document.getElementById('fu-loading').style.display = 'block';
   document.getElementById('fu-table').style.display = 'none';
@@ -1803,7 +1825,9 @@ function showFUDetail(sessionId) {
         <div class="ed-lbl">1-Week</div><div style="margin-bottom:6px">${d.one_week||'—'}</div>
         <div class="ed-lbl">2-Week</div><div style="margin-bottom:6px">${d.two_weeks||'—'}</div>
         <div class="ed-lbl">1-Month</div><div style="margin-bottom:10px">${d.one_month||'—'}</div>
-        ${s.trail_journal_id?`<div class="ed-lbl">Trail Journal ID</div><div style="font-size:.76rem;font-family:monospace">${s.trail_journal_id}</div>`:''}
+        ${s.trail_journal_id?`<div class="ed-lbl">Trail Journal ID</div><div style="font-size:.76rem;font-family:monospace;margin-bottom:12px">${s.trail_journal_id}</div>`:''}
+        <a href="${buildSchedulerUrl(s)}" target="_blank" style="display:inline-block;padding:8px 14px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.8rem;text-decoration:none;box-shadow:0 2px 8px rgba(92,61,143,.25);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📅 Schedule Outlook Check-Ins →</a>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:5px">Opens pre-filled with this student's session data</div>
       </div>
     </div>`;
   detail.style.display = 'block';
