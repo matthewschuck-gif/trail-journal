@@ -93,11 +93,22 @@ body {
   width: 100%; background: rgba(255,255,255,.08);
   border: 1.5px solid rgba(255,255,255,.15); border-radius: 9px;
   padding: 13px 16px; font-family: 'Barlow', sans-serif; font-size: .95rem;
-  color: white; text-align: center; letter-spacing: .1em; margin-bottom: 12px;
+  color: #fff; text-align: center; letter-spacing: .1em; margin-bottom: 12px;
   transition: border-color .15s;
+  -webkit-text-fill-color: #fff;
+  caret-color: var(--gold);
 }
 .pw-gate-input:focus { outline: none; border-color: var(--gold); }
 .pw-gate-input::placeholder { color: rgba(255,255,255,.25); letter-spacing: .04em; }
+.pw-gate-input:-webkit-autofill,
+.pw-gate-input:-webkit-autofill:hover,
+.pw-gate-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0px 1000px #2d0a45 inset;
+  box-shadow: 0 0 0px 1000px #2d0a45 inset;
+  border-color: var(--gold);
+  transition: background-color 5000s ease-in-out 0s;
+}
 .pw-gate-btn {
   width: 100%; background: var(--gold); color: var(--forest); border: none;
   border-radius: 9px; padding: 13px; font-family: 'Barlow', sans-serif;
@@ -488,7 +499,7 @@ textarea { min-height: 90px; }
     <div class="pw-gate-icon">⛺</div>
     <h2>Trailback Panel</h2>
     <p>This tool is for trained panel members and staff only. Enter the staff password to access the session.</p>
-    <input type="password" class="pw-gate-input" id="pw-gate-input"
+    <input type="text" class="pw-gate-input" id="pw-gate-input"
       placeholder="Staff password"
       onkeydown="if(event.key==='Enter')checkGatePW()">
     <button class="pw-gate-btn" onclick="checkGatePW()">Enter Panel →</button>
