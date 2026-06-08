@@ -550,7 +550,7 @@
     </div>
 
     <div class="record-note">
-      Records saved to Supabase · Calendar events via Microsoft Outlook · EMS Trail Journal System
+      Records saved to Supabase · Calendar invites sent via email (.ics) · EMS Trail Journal System
     </div>
   </div>
 
@@ -791,74 +791,28 @@ async function updateCalendarStatus(id, calStatuses) {
 }
 
 // ─────────────────────────────────────────────
-//  OUTLOOK EVENT VIA M365 MCP
+//  SEND VIA SUPABASE EDGE FUNCTION
+//  Each attendee gets an email with a .ics file
+//  attached — one click adds it to Outlook.
 // ─────────────────────────────────────────────
-async function createOutlookEvent(payload) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/send-followup-emails`;
+
+async function sendCalendarEmails({ initials, squad, trigDateStr, outcome, attendees, submittedBy }) {
+  const res = await fetch(EDGE_FN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+    },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      mcp_servers: [{ type: 'url', url: 'https://microsoft365.mcp.claude.com/mcp', name: 'microsoft365' }],
-      system: 'You are a calendar scheduling assistant for Ephrata Middle School. Use the Microsoft 365 calendar tool to create the Outlook event exactly as specified. Respond only with JSON: {"success":true} or {"success":false,"error":"reason"}.',
-      messages: [{ role: 'user', content: `Create this Outlook calendar event: ${JSON.stringify(payload)}` }]
-    })
+      initials, squad, grade, triggerType,
+      trigDateStr, outcome, attendees, submittedBy,
+    }),
   });
-  if (!res.ok) throw new Error('API ' + res.status);
-  const data = await res.json();
-  const hasResult = (data.content || []).some(b => b.type === 'mcp_tool_result');
-  if (hasResult) return true;
-  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  return text.toLowerCase().includes('success') || text.includes('"success":true');
+  if (!res.ok) throw new Error('Edge function error: ' + res.status);
+  return await res.json();
 }
 
-// ─────────────────────────────────────────────
-//  BUILD OUTLOOK PAYLOAD
-// ─────────────────────────────────────────────
-function buildPayload({ intervalDays, label, icon, initials, squad, trigDateStr, trigType, outcome, attendees }) {
-  const win      = GRADE_WINDOWS[grade];
-  const { date } = getCheckinDate(trigDateStr, intervalDays);
-  const trigLabel = trigType === 'intervention' ? 'Intervention' : 'Trailback Panel';
-
-  const guideMap = {
-    2:  { focus: 'Early Pulse',             detail: 'Keep it brief and relational — not a consequence review. Ask: "How are you doing since we last talked?" and "Is there anything still unresolved?" Look for re-engagement and early signs of follow-through. Reinforce their capacity to grow. Duration: 5–10 minutes.' },
-    14: { focus: 'First Assessment',        detail: 'Look at the whole picture: grades, attendance, relationships with staff and peers. First real opportunity to assess whether the intervention is holding. Ask: "What\'s been hard? What\'s gotten easier?" Review any repair commitments and update the plan if needed. Duration: 10–20 minutes.' },
-    60: { focus: 'Long-Term Accountability',detail: 'Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the community relationship been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document outcome in Supabase. Duration: 15–30 minutes.' },
-  };
-  const g = guideMap[intervalDays];
-
-  const body = [
-    `${icon} ${label} — ${trigLabel} Follow-Up`,
-    '',
-    `Student: ${initials}${squad ? ' (' + squad + ' Squad)' : ''}   |   Grade: ${grade}th`,
-    `Trigger Date: ${fmtDisplay(new Date(trigDateStr + 'T12:00:00'))}`,
-    `Type: ${trigLabel}`,
-    `Meeting Window: ${win.label}`,
-    '',
-    '──────────────────────────────',
-    `PURPOSE: ${g.focus}`,
-    '',
-    g.detail,
-    '──────────────────────────────',
-    '',
-    outcome ? `OUTCOME SUMMARY FROM ${trigLabel.toUpperCase()}:\n${outcome}\n` : '',
-    '🏔️ EMS Mountaineers · Trail Journal / Trailback Panel System',
-  ].join('\n');
-
-  return {
-    subject: `[EMS Follow-Up] ${initials} — ${label} (Grade ${grade}, ${trigLabel})`,
-    body: { contentType: 'text', content: body },
-    start: { dateTime: fmtEventTime(date, false), timeZone: 'America/New_York' },
-    end:   { dateTime: fmtEventTime(date, true),  timeZone: 'America/New_York' },
-    attendees: attendees.map(a => ({
-      emailAddress: { address: a.email, name: a.name },
-      type: 'required'
-    })),
-    isReminderOn: true,
-    reminderMinutesBeforeStart: 60,
-  };
-}
 
 // ─────────────────────────────────────────────
 //  MAIN SCHEDULE
@@ -875,17 +829,19 @@ async function scheduleAll() {
   const attendees   = getAttendees();
 
   hideAlert();
-  if (!initials)    { showAlert('error', 'Please enter the student\'s initials.'); return; }
-  if (!trigDateStr) { showAlert('error', 'Please select the date of the intervention or panel.'); return; }
+  if (!initials)         { showAlert('error', "Please enter the student's initials."); return; }
+  if (!trigDateStr)      { showAlert('error', 'Please select the date of the intervention or panel.'); return; }
   if (!attendees.length) { showAlert('error', 'Add at least one staff email address.'); return; }
 
   scheduling = true;
   document.getElementById('btn-schedule').disabled = true;
 
-  // 1 — Supabase record
+  // Show all three as loading immediately
+  ['2day','2week','2month'].forEach(k => setStatus(k, 'loading'));
+
+  // 1 — Save to Supabase
   let record = null;
   try {
-    const win = GRADE_WINDOWS[grade];
     record = await saveToSupabase({
       student_initials: initials,
       trigger_type:     triggerType,
@@ -902,43 +858,33 @@ async function scheduleAll() {
       calendar_status: { day2: 'pending', week2: 'pending', month2: 'pending' },
     });
   } catch (err) {
-    showAlert('warn', 'Could not save to Supabase — continuing to schedule calendar events.');
+    showAlert('warn', 'Could not save to Supabase — continuing to send emails.');
   }
 
-  // 2 — Calendar events
-  const intervals = [
-    { key: '2day',   sbKey: 'day2',   label: '2-Day Check-In',   icon: '🌱', days: 2  },
-    { key: '2week',  sbKey: 'week2',  label: '2-Week Review',    icon: '📋', days: 14 },
-    { key: '2month', sbKey: 'month2', label: '2-Month Follow-Up',icon: '🏔️', days: 60 },
-  ];
-
+  // 2 — Send all 3 emails via Edge Function (one call)
+  let calStatuses = { day2: 'failed', week2: 'failed', month2: 'failed' };
   let successCount = 0;
-  const calStatuses = {};
 
-  for (const interval of intervals) {
-    setStatus(interval.key, 'loading');
-    try {
-      const payload = buildPayload({
-        intervalDays: interval.days,
-        label:        interval.label,
-        icon:         interval.icon,
-        initials, squad, trigDateStr,
-        trigType: triggerType,
-        outcome, attendees,
-      });
-      const ok = await createOutlookEvent(payload);
-      setStatus(interval.key, ok ? 'success' : 'error');
-      calStatuses[interval.sbKey] = ok ? 'scheduled' : 'failed';
+  try {
+    const result = await sendCalendarEmails({ initials, squad, trigDateStr, outcome, attendees, submittedBy });
+    calStatuses = {
+      day2:   result.results?.day2   || 'failed',
+      week2:  result.results?.week2  || 'failed',
+      month2: result.results?.month2 || 'failed',
+    };
+    const keyMap = { day2: '2day', week2: '2week', month2: '2month' };
+    for (const [sbKey, uiKey] of Object.entries(keyMap)) {
+      const ok = calStatuses[sbKey] === 'sent';
+      setStatus(uiKey, ok ? 'success' : 'error');
       if (ok) successCount++;
-    } catch (err) {
-      setStatus(interval.key, 'error');
-      calStatuses[interval.sbKey] = 'failed';
-      console.error(interval.label, err);
     }
-    if (interval !== intervals[intervals.length - 1]) await new Promise(r => setTimeout(r, 800));
+    if (result.errors?.length) console.warn('Email errors:', result.errors);
+  } catch (err) {
+    ['2day','2week','2month'].forEach(k => setStatus(k, 'error'));
+    console.error('Edge function failed:', err);
   }
 
-  // 3 — Update Supabase with calendar results
+  // 3 — Update Supabase with results
   if (record?.id) {
     try { await updateCalendarStatus(record.id, calStatuses); } catch(_) {}
   }
@@ -946,15 +892,15 @@ async function scheduleAll() {
   scheduling = false;
 
   if (successCount === 3) {
-    showAlert('success', `All 3 check-ins scheduled for ${initials} (Grade ${grade}) on ${attendees.length} calendar(s). Record saved.`);
+    showAlert('success', `✓ Calendar invite emails sent to ${attendees.length} staff member(s). Each person received a .ics file — one click adds it to Outlook.`);
     allDone = true;
     document.getElementById('action-row').innerHTML =
       `<button class="btn-success" onclick="resetForm()">✓ Done — Schedule Another Student</button>`;
   } else if (successCount > 0) {
-    showAlert('warn', `${successCount} of 3 events scheduled. See errors above.`);
+    showAlert('warn', `${successCount} of 3 emails sent. Check errors above.`);
     document.getElementById('btn-schedule').disabled = false;
   } else {
-    showAlert('error', 'Calendar scheduling failed. Check that your Microsoft 365 connection is active.');
+    showAlert('error', 'Email sending failed. Check Supabase Edge Function logs and RESEND_API_KEY secret.');
     document.getElementById('btn-schedule').disabled = false;
   }
 }
