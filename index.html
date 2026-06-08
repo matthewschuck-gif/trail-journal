@@ -1165,19 +1165,6 @@ input[type="range"]::-webkit-slider-thumb {
 .pp-day-text { font-family: 'Barlow', sans-serif; font-size: 0.84rem; color: rgba(255,255,255,0.85); line-height: 1.55; }
 
 /* ── FAIR SCREEN ── */
-.fair-tabs {
-  display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0;
-}
-.fair-tab {
-  flex: 1; padding: 11px 6px; text-align: center;
-  font-family: 'Barlow', sans-serif; font-size: 0.74rem; font-weight: 700;
-  color: var(--ink-light); cursor: pointer; border: none; background: transparent;
-  border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s;
-}
-.fair-tab:hover { color: var(--trail); }
-.fair-tab.active { color: var(--trail); border-bottom-color: var(--trail); }
-.fair-panel { display: none; padding: 20px 0 6px; }
-.fair-panel.show { display: block; animation: trailIn 0.3s ease; }
 
 /* Fair vs Unfair comparison */
 .fair-vs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
@@ -1922,169 +1909,73 @@ body.squad-purple {
   <div class="section-head">
     <div class="trail-marker marker-gold">⚖️ Before You Choose</div>
     <h2>What Does <em>Fair</em> Actually Mean?</h2>
-    <p>Most people think fair means everyone gets the same thing. Research says something different — and it changes everything about how this works.</p>
+    <p>Before you decide what happens next, take a moment with this.</p>
   </div>
 
+  <!-- MOMENT 1: VS COMPARISON -->
   <div class="jcard">
-    <div class="fair-tabs">
-      <button class="fair-tab active" onclick="showFairTab('fp',this)">Fair Process</button>
-      <button class="fair-tab" onclick="showFairTab('hope',this)">Hope is a Skill</button>
-      <button class="fair-tab" onclick="showFairTab('yours',this)">This Is Yours</button>
-    </div>
-
-    <!-- TAB 1: FAIR PROCESS -->
-    <div class="fair-panel show" id="ftp-fp">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:16px">
-        Research by Kim and Mauborgne found something surprising: <strong>most people will accept an unfavorable outcome as long as the process that reached that conclusion is fair.</strong> You don't have to love what happens next — you just need to trust how it was decided.
-      </p>
-      <div class="fair-vs">
-        <div class="fair-vs-col myth">
-          <div class="fair-vs-head">❌ What people think "fair" means</div>
-          <div class="fair-vs-item">Everyone gets the same consequence</div>
-          <div class="fair-vs-item">The student who "wins" gets less</div>
-          <div class="fair-vs-item">It's about the outcome being equal</div>
-          <div class="fair-vs-item">Fair = no consequences at all</div>
-        </div>
-        <div class="fair-vs-col truth">
-          <div class="fair-vs-head">✅ What fair actually means</div>
-          <div class="fair-vs-item">The <em>process</em> is transparent and consistent</div>
-          <div class="fair-vs-item">Your voice was heard before decisions were made</div>
-          <div class="fair-vs-item">You understand why what happened is happening</div>
-          <div class="fair-vs-item">You know exactly what comes next</div>
-        </div>
+    <div class="jcard-label">What most people think "fair" means — and what it actually means</div>
+    <div class="fair-vs" style="margin-top:14px">
+      <div class="fair-vs-col myth">
+        <div class="fair-vs-head">❌ What people think</div>
+        <div class="fair-vs-item">Everyone gets the same consequence</div>
+        <div class="fair-vs-item">Fair means no consequences at all</div>
+        <div class="fair-vs-item">It's about the outcome being equal</div>
+        <div class="fair-vs-item">The decision is made <em>for</em> you</div>
       </div>
-      <p style="font-family:'Barlow',sans-serif;font-size:.86rem;font-weight:700;color:var(--trail);margin:14px 0 10px">Fair process has three parts. Your journal is designed around all three:</p>
-      <div class="three-e-grid">
-        <div class="e-card">
-          <div class="e-icon">🗣️</div>
-          <div class="e-title">Engagement</div>
-          <div class="e-desc">You had the chance to tell your full story — what happened, why, and what was going on underneath. Your voice was heard before anything was decided.</div>
-          <div class="e-check">✓ You did this in Part 1</div>
-        </div>
-        <div class="e-card">
-          <div class="e-icon">💡</div>
-          <div class="e-title">Explanation</div>
-          <div class="e-desc">You now understand what makes a consequence logical, what the 3 R's mean, and how the four buckets work. Nothing is random or hidden.</div>
-          <div class="e-check">✓ You learned this in the last screen</div>
-        </div>
-        <div class="e-card">
-          <div class="e-icon">🗺️</div>
-          <div class="e-title">Expectation Clarity</div>
-          <div class="e-desc">You'll know exactly what happens next, when, and what your role is. No surprises. A clear path forward — built with you, not handed to you.</div>
-          <div class="e-check">✓ You'll build this in Part 2</div>
-        </div>
-      </div>
-      <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-top:6px">
-        🏔 <strong>The trail test for fair:</strong> Were you heard? Do you understand why? Do you know what's next? If all three are yes — the process was fair, even if the outcome is hard.
-      </div>
-      <div style="text-align:right;margin-top:14px">
-        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showFairTab('hope',document.querySelectorAll('.fair-tab')[1])">Next: Hope Is a Skill →</button>
+      <div class="fair-vs-col truth">
+        <div class="fair-vs-head">✅ What it actually means</div>
+        <div class="fair-vs-item">Your voice was heard before decisions were made</div>
+        <div class="fair-vs-item">You understand why what's happening is happening</div>
+        <div class="fair-vs-item">You know exactly what comes next</div>
+        <div class="fair-vs-item">It's done <em>with</em> you — not <em>to</em> you</div>
       </div>
     </div>
-
-    <!-- TAB 2: HOPE IS A SKILL -->
-    <div class="fair-panel" id="ftp-hope">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">
-        Hope isn't a feeling — it's a skill. The difference between <strong>hope</strong> and a <strong>wish</strong> is that hopeful people are willing to do the work. They have a destination, a map, and fuel in the engine.
-      </p>
-      <div class="hope-triangle">
-        <div class="hope-pillar">
-          <div class="hp-icon">🎯</div>
-          <div class="hp-title">Goals</div>
-          <div class="hp-desc">A destination worth working toward. Hope is about intention — what you actually believe in, not just what you say you want.</div>
-        </div>
-        <div class="hope-pillar">
-          <div class="hp-icon">🗺️</div>
-          <div class="hp-title">Pathways</div>
-          <div class="hp-desc">The map that gets you there. Hopeful people can see multiple routes to their goal — and they find new ones when obstacles come up.</div>
-        </div>
-        <div class="hope-pillar">
-          <div class="hp-icon">⚡</div>
-          <div class="hp-title">Agency</div>
-          <div class="hp-desc">The engine and the fuel. The motivation to actually walk the path. High-hope people are resource seekers — they never go at it alone.</div>
-        </div>
-      </div>
-      <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
-        💬 <strong>Willpower without pathways is a wish.</strong> Pathways without willpower go nowhere. You need both — and this journal is helping you build both right now.
-      </div>
-      <p style="font-family:'Barlow',sans-serif;font-size:.86rem;font-weight:700;color:var(--ink);margin:14px 0 8px">Where are you on the Hope Staircase right now?</p>
-      <p style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);margin-bottom:12px">Be honest — hope is situational. You might feel different in different places.</p>
-      <div class="hope-stair" id="hope-stair">
-        <div class="hope-step" onclick="selectHopeStep(this,1)">
-          <div class="hs-num">1</div>
-          <div><div class="hs-label">I can't see a way forward right now</div><div class="hs-desc">Things feel stuck. I'm not sure anything I do will make a difference.</div></div>
-        </div>
-        <div class="hope-step" onclick="selectHopeStep(this,2)">
-          <div class="hs-num">2</div>
-          <div><div class="hs-label">I want things to be better but I don't know how</div><div class="hs-desc">I have the wish, but not the map or the energy to get there yet.</div></div>
-        </div>
-        <div class="hope-step" onclick="selectHopeStep(this,3)">
-          <div class="hs-num">3</div>
-          <div><div class="hs-label">I can see a path but I need help walking it</div><div class="hs-desc">I know what needs to happen — I just need support to actually do it.</div></div>
-        </div>
-        <div class="hope-step" onclick="selectHopeStep(this,4)">
-          <div class="hs-num">4</div>
-          <div><div class="hs-label">I'm ready to do the work</div><div class="hs-desc">I have a goal, I can see the path, and I'm motivated to follow through.</div></div>
-        </div>
-      </div>
-      <div class="hope-ai-panel" id="hope-ai-panel">
-        <div class="ai-thinking" id="hope-ai-thinking"><div class="spin"></div>Generating your hope reflection…</div>
-        <div class="hope-ai-text hidden" id="hope-ai-text"></div>
-      </div>
-      <div style="text-align:right;margin-top:14px" id="hope-next-btn" style="display:none">
-        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showFairTab('yours',document.querySelectorAll('.fair-tab')[2])">Next: This Is Yours →</button>
-      </div>
-    </div>
-
-    <!-- TAB 3: THIS IS YOURS -->
-    <div class="fair-panel" id="ftp-yours">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">
-        Geoffrey Cohen calls this <strong>Situation Crafting</strong>. What you're about to do isn't a random punishment — it was designed with three things in mind.
-      </p>
-      <div class="sc-grid">
-        <div class="sc-card">
-          <div class="sc-icon">🎯</div>
-          <div class="sc-title">Tailoring</div>
-          <div class="sc-desc">The right message for you — based on what you shared, what happened, and what you need to grow.</div>
-        </div>
-        <div class="sc-card">
-          <div class="sc-icon">👤</div>
-          <div class="sc-title">Targeting</div>
-          <div class="sc-desc">Designed for the right person. This isn't a one-size-fits-all consequence. It's built for your specific situation.</div>
-        </div>
-        <div class="sc-card">
-          <div class="sc-icon">⏱️</div>
-          <div class="sc-title">Timeliness</div>
-          <div class="sc-desc">Happening at the right time — now, while the experience is fresh and the brain is ready to learn.</div>
-        </div>
-      </div>
-      <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
-        ⚖️ <strong>The Social Discipline Window:</strong> The most effective interventions apply both pressure <em>and</em> support at the same time — done <em>with</em> you, not <em>to</em> you or <em>for</em> you. That's what this journal is.
-      </div>
-      <div style="background:rgba(201,168,76,0.1);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin:14px 0">
-        💡 <strong>Lending Hope:</strong> An adult is going to be part of what happens next. Research shows we only accept hope from people we actually trust. The adult walking through this with you is choosing to be on your side — not just enforcing rules.
-      </div>
-      <div class="agency-reflect">
-        <div class="ar-question">Right now, what feels most true for you?</div>
-        <div class="ar-options">
-          <button class="ar-opt" onclick="selectAgency(this,'ready')">I'm ready to own this</button>
-          <button class="ar-opt" onclick="selectAgency(this,'trying')">I'm trying but it's hard</button>
-          <button class="ar-opt" onclick="selectAgency(this,'unsure')">I'm not sure yet</button>
-          <button class="ar-opt" onclick="selectAgency(this,'resistant')">I don't really want to</button>
-        </div>
-        <div id="agency-response" class="hidden">
-          <textarea id="q-fair-reflect" rows="3" placeholder="Write what's going through your mind right now — even if it's complicated…"></textarea>
-        </div>
-      </div>
-      <div class="fair-gate-unlock" id="fair-unlock">
-        <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
-          ✅ The process is fair. You understand it. Now it's yours to shape.
-        </div>
-        <button class="pause-btn" onclick="goTo(3)">Continue to Part 2 — Making Things Right →</button>
-      </div>
+    <div style="background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:13px 15px;margin-top:14px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65">
+      🏔 Research shows that people can accept a hard outcome — as long as they trust the process that got there. That's what this journal is building.
     </div>
   </div>
+
+  <!-- MOMENT 2: HOPE STAIRCASE -->
+  <div class="jcard">
+    <div class="jcard-label">Where are you right now?</div>
+    <div class="jcard-sub">Be honest. Hope is a skill — and it's situational. Where you are right now is the starting point, not a judgment.</div>
+    <div class="hope-stair" id="hope-stair">
+      <div class="hope-step" onclick="selectHopeStep(this,1)">
+        <div class="hs-num">1</div>
+        <div><div class="hs-label">I can't see a way forward right now</div><div class="hs-desc">Things feel stuck. I'm not sure anything I do will make a difference.</div></div>
+      </div>
+      <div class="hope-step" onclick="selectHopeStep(this,2)">
+        <div class="hs-num">2</div>
+        <div><div class="hs-label">I want things to be better but I don't know how</div><div class="hs-desc">I have the wish — I just don't have the map yet.</div></div>
+      </div>
+      <div class="hope-step" onclick="selectHopeStep(this,3)">
+        <div class="hs-num">3</div>
+        <div><div class="hs-label">I can see a path but I need help walking it</div><div class="hs-desc">I know what needs to happen — I just need support to actually do it.</div></div>
+      </div>
+      <div class="hope-step" onclick="selectHopeStep(this,4)">
+        <div class="hs-num">4</div>
+        <div><div class="hs-label">I'm ready to do the work</div><div class="hs-desc">I have a goal, I can see the path, and I'm motivated to follow through.</div></div>
+      </div>
+    </div>
+    <div class="hope-ai-panel" id="hope-ai-panel">
+      <div class="ai-thinking" id="hope-ai-thinking"><div class="spin"></div>Generating your reflection…</div>
+      <div class="hope-ai-text hidden" id="hope-ai-text"></div>
+    </div>
+  </div>
+
+  <!-- MOMENT 3: ONE QUESTION -->
+  <div class="jcard" id="fair-question-card" style="display:none">
+    <div class="jcard-label">One question before you continue</div>
+    <div class="jcard-sub">What would make what comes next feel fair to you?</div>
+    <textarea id="q-fair-reflect" rows="3" placeholder="Write whatever's on your mind — even if it's complicated…"></textarea>
+    <div style="text-align:right;margin-top:14px">
+      <button class="pause-btn" onclick="goTo(3)">Continue to Part 2 — Making Things Right →</button>
+    </div>
+  </div>
+
 </div>
+
 
 <!-- ═══ SCREEN 3: PART 2 ═══ -->
 <div class="screen" id="screen-3">
@@ -3280,25 +3171,21 @@ async function selectSkill(domainName, strategy, cardEl) {
 }
 
 // ─── FAIR SCREEN ─────────────────────────────────────────────────────────
-function showFairTab(name, tabEl) {
-  document.querySelectorAll('.fair-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.fair-panel').forEach(p => p.classList.remove('show'));
-  if (tabEl) tabEl.classList.add('active');
-  document.getElementById('ftp-' + name).classList.add('show');
-}
+// showFairTab removed — tabs replaced with linear flow
 
 // Hope Staircase selection → triggers AI response
 let hopeLevel = null;
 let hopeAIFired = false;
+
 async function selectHopeStep(el, level) {
   document.querySelectorAll('.hope-step').forEach(s => s.classList.remove('selected'));
   el.classList.add('selected');
   hopeLevel = level;
   S.hopeLevel = level;
 
-  // Show next button regardless
-  const nextBtn = document.getElementById('hope-next-btn');
-  if (nextBtn) nextBtn.style.display = 'block';
+  // Reveal the question card immediately — don't wait for AI
+  const qCard = document.getElementById('fair-question-card');
+  if (qCard) qCard.style.display = 'block';
 
   if (hopeAIFired) return;
   hopeAIFired = true;
@@ -3317,17 +3204,15 @@ async function selectHopeStep(el, level) {
   document.getElementById('hope-ai-thinking').classList.add('hidden');
   const textEl = document.getElementById('hope-ai-text');
   textEl.classList.remove('hidden');
-  if (result?.reflection) {
-    textEl.innerHTML = result.reflection.split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
+  if (result && result.reflection) {
+    textEl.innerHTML = result.reflection.split(/\n\n+/).map(p => '<p>' + p + '</p>').join('');
   } else {
-    textEl.innerHTML = '<p>Where you are right now is exactly where you\'re supposed to be for this moment. The fact that you\'re here, going through this process, is the first step on the staircase back up.</p>';
+    textEl.innerHTML = '<p>Where you are right now is exactly where you\'re supposed to be for this moment. The fact that you\'re here, going through this process, is the first step.</p>';
   }
 }
 
-// Agency selection → show reflection prompt + unlock continue button
+// Agency kept for data compatibility but no longer shown in UI
 function selectAgency(btn, val) {
-  document.querySelectorAll('.ar-opt').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
   S.agencyChoice = val;
   document.getElementById('agency-response').classList.remove('hidden');
   document.getElementById('fair-unlock').classList.add('show');
