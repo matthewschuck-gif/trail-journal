@@ -2633,12 +2633,15 @@ async function awardClashPoints(initial, sessionId, insightLevel) {
       pts: 1,
     };
 
+    const newHistEntry = { type: 'event', name: newEvent.name, pts, time: new Date().toISOString() };
     const updatedValue = {
       ...coc,
       nextId: newId + 1,
       events: [...(coc.events || []), newEvent],
-      history: [...(coc.history || []), { pts, name: newEvent.name, time: new Date().toISOString(), type: 'trail_journal' }],
-      activityLog: [...(coc.activityLog || []), newActivity],
+      // prepend so CoC's history panel (.slice(0,60) from front) shows this entry
+      history: [newHistEntry, ...(coc.history || [])],
+      // prepend + cap at 50 to match CoC's logActivity() pattern
+      activityLog: [newActivity, ...(coc.activityLog || [])].slice(0, 50),
       freudenLog: [...(coc.freudenLog || []), freudenEntry],
     };
 
