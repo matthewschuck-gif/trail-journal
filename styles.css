@@ -1,0 +1,693 @@
+/*
+ * Trail Journal — Brand Redesign (Option B: Warm Parchment / Daylight)
+ * CSS-only layer. Zero changes to JS or Supabase logic.
+ * Inject via: <link rel="stylesheet" href="/styles.css">
+ */
+
+/* ══════════════════════════════════
+   FONTS
+═══════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@400;500&display=swap');
+
+/* ══════════════════════════════════
+   TOKEN OVERRIDES
+═══════════════════════════════════ */
+:root {
+  /* Warmer, richer parchment */
+  --paper:       #f6efe1;
+  --paper-dark:  #ede3cc;
+  --paper-mid:   #e3d6bc;
+  --paper-warm:  #faf5eb;
+
+  /* Ink — warm charcoal, not cold black */
+  --ink:         #1e190f;
+  --ink-mid:     #4d4333;
+  --ink-light:   #8a7a62;
+
+  /* Trail green — deeper, richer */
+  --trail:       #243d2d;
+  --trail-mid:   #365c44;
+  --trail-light: #d6e8db;
+  --trail-deep:  #16271b;
+
+  /* Antique gold */
+  --gold:        #b8821e;
+  --gold-light:  #fdf0d0;
+  --gold-dark:   #7a5510;
+
+  /* Warm red */
+  --red:         #9e2a2a;
+  --red-light:   #fceeee;
+
+  /* Borders */
+  --border:      #cbbfa5;
+  --border-light: #ddd3bb;
+
+  /* Shadows */
+  --shadow-warm: 0 4px 20px rgba(30,25,15,0.1), 0 1px 4px rgba(30,25,15,0.06);
+  --shadow-lift: 0 8px 32px rgba(30,25,15,0.14), 0 2px 8px rgba(30,25,15,0.08);
+
+  /* Radius */
+  --radius: 12px;
+}
+
+/* ══════════════════════════════════
+   BODY — PARCHMENT PAPER
+═══════════════════════════════════ */
+body {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  font-family: 'Lora', Georgia, serif !important;
+}
+
+/* Lined-paper grid — horizontal rules only, warm and subtle */
+body::before {
+  background-image:
+    repeating-linear-gradient(
+      180deg,
+      transparent, transparent 27px,
+      rgba(36,61,45,0.055) 28px
+    ) !important;
+  background-size: 100% 28px !important;
+}
+
+/* ══════════════════════════════════
+   PRIVACY BAR
+═══════════════════════════════════ */
+.privacy-bar {
+  background: var(--trail-deep) !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.67rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* ══════════════════════════════════
+   HEADER
+═══════════════════════════════════ */
+.site-header {
+  background: var(--trail-deep) !important;
+  border-bottom: 3px solid var(--gold) !important;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.35) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Mountain silhouette watermark on header */
+.site-header::after {
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0; left: 0;
+  height: 100%;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 80' preserveAspectRatio='none'%3E%3Cpath d='M0 80 L0 55 L80 30 L160 50 L240 20 L350 45 L420 10 L520 40 L600 25 L680 45 L760 15 L860 42 L940 28 L1040 48 L1120 22 L1200 38 L1200 80 Z' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: bottom;
+}
+
+.header-inner {
+  position: relative; z-index: 1;
+}
+
+/* Emblem — replace gold circle with stamp look */
+.header-emblem {
+  background: var(--gold) !important;
+  border: 2px solid rgba(255,255,255,0.25) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+}
+
+/* Title font upgrade */
+.header-text h1 {
+  font-family: 'Fraunces', serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  font-style: italic !important;
+}
+.header-text span {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.6rem !important;
+  letter-spacing: 0.15em !important;
+  color: rgba(255,255,255,0.45) !important;
+}
+
+.header-initial {
+  font-family: 'Fraunces', serif !important;
+  font-weight: 700 !important;
+  background: var(--gold) !important;
+  color: var(--trail-deep) !important;
+}
+
+/* ══════════════════════════════════
+   TRAIL PROGRESS BAR
+═══════════════════════════════════ */
+.trail-progress-bar {
+  background: var(--paper-dark) !important;
+  height: 5px !important;
+}
+.trail-progress-fill {
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold)) !important;
+  box-shadow: 0 0 10px rgba(184,130,30,0.5) !important;
+}
+
+/* ══════════════════════════════════
+   STEP PIPS
+═══════════════════════════════════ */
+.steps-bar {
+  background: var(--paper-warm) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(30,25,15,0.06) !important;
+}
+.step-pip {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.1em !important;
+  color: var(--ink-light) !important;
+  padding: 11px 4px !important;
+}
+.step-pip.active {
+  color: var(--trail) !important;
+  border-bottom-color: var(--trail) !important;
+}
+.step-pip.done {
+  color: var(--gold-dark) !important;
+  border-bottom-color: var(--gold) !important;
+}
+
+/* ══════════════════════════════════
+   SECTION HEADS — TYPOGRAPHY UPGRADE
+═══════════════════════════════════ */
+.section-head h2 {
+  font-family: 'Fraunces', serif !important;
+  font-size: 2.4rem !important;
+  font-weight: 900 !important;
+  color: var(--ink) !important;
+  letter-spacing: -0.02em !important;
+  font-style: italic !important;
+}
+.section-head h2 em {
+  color: var(--trail) !important;
+  font-style: normal !important;
+}
+.section-head p {
+  font-family: 'Lora', serif !important;
+  font-size: 0.98rem !important;
+  color: var(--ink-mid) !important;
+  line-height: 1.8 !important;
+}
+
+.trail-marker {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.62rem !important;
+  letter-spacing: 0.14em !important;
+}
+.marker-green {
+  background: var(--trail) !important;
+  color: rgba(255,255,255,0.92) !important;
+  box-shadow: 0 2px 8px rgba(36,61,45,0.25) !important;
+}
+.marker-gold {
+  background: var(--gold) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(184,130,30,0.25) !important;
+}
+.marker-bark {
+  background: #6b4e2e !important;
+  color: rgba(255,255,255,0.9) !important;
+}
+
+/* ══════════════════════════════════
+   JOURNAL CARDS
+═══════════════════════════════════ */
+.jcard {
+  background: var(--paper-warm) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-warm) !important;
+  padding: 22px 24px 22px 30px !important;
+}
+
+/* Wider, warmer spine */
+.jcard::before {
+  width: 6px !important;
+  background: var(--border-light) !important;
+  border-radius: 12px 0 0 12px !important;
+}
+.jcard.answered::before {
+  background: var(--trail-mid) !important;
+}
+
+.jcard-label {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.1em !important;
+  color: var(--trail) !important;
+}
+.jcard-sub {
+  font-family: 'Lora', serif !important;
+  font-size: 0.9rem !important;
+  color: var(--ink-mid) !important;
+  line-height: 1.7 !important;
+}
+
+/* ══════════════════════════════════
+   FORM ELEMENTS — LINED PAPER FEEL
+═══════════════════════════════════ */
+textarea, input[type="text"] {
+  background: white !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-family: 'Lora', serif !important;
+  font-size: 0.92rem !important;
+  color: var(--ink) !important;
+  line-height: 1.75 !important;
+  padding: 14px 16px !important;
+}
+textarea:focus, input[type="text"]:focus {
+  border-color: var(--trail-mid) !important;
+  background: var(--paper-warm) !important;
+  box-shadow: 0 0 0 3px rgba(36,61,45,0.08) !important;
+  outline: none !important;
+}
+textarea {
+  /* Lined-paper ruled lines inside textarea */
+  background-image: repeating-linear-gradient(
+    180deg,
+    white, white 27px,
+    rgba(36,61,45,0.06) 28px
+  ) !important;
+  background-attachment: local !important;
+}
+
+.ig label {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+  color: var(--ink-light) !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+}
+
+/* ══════════════════════════════════
+   BUTTONS
+═══════════════════════════════════ */
+
+/* Primary — forest green */
+.btn-primary, button.btn-primary,
+.btn-main, button.btn-main,
+.nav-btn, button.nav-btn {
+  font-family: 'Lora', serif !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  border-radius: 10px !important;
+  padding: 13px 26px !important;
+  font-size: 0.95rem !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+}
+
+/* All generic buttons get warmer styling */
+button {
+  font-family: 'Lora', serif !important;
+}
+
+/* Any button with a green/trail background */
+button[style*="background: var(--trail)"],
+button[style*="background:var(--trail)"],
+button[style*="background: #2c4a35"],
+button[style*="background:#2c4a35"],
+.btn-forest {
+  background: var(--trail) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 3px 12px rgba(36,61,45,0.3) !important;
+}
+button[style*="background: var(--trail)"]:hover,
+.btn-forest:hover {
+  background: var(--trail-mid) !important;
+  box-shadow: 0 5px 18px rgba(36,61,45,0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ══════════════════════════════════
+   WELCOME HERO
+═══════════════════════════════════ */
+.welcome-hero {
+  background: var(--trail-deep) !important;
+  border-radius: 16px !important;
+  padding: 56px 48px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-lift) !important;
+}
+
+/* Rich radial glow */
+.welcome-hero::before {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(184,130,30,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,255,255,0.04) 0%, transparent 50%) !important;
+}
+
+/* Forest treeline silhouette */
+.welcome-hero::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 0; right: 0; bottom: 0 !important;
+  height: 60px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L0 45 L20 45 L20 30 L30 30 L30 20 L40 20 L40 30 L50 30 L50 38 L70 38 L70 25 L80 25 L80 15 L92 15 L92 25 L104 25 L104 35 L120 35 L120 28 L132 28 L132 18 L144 18 L144 28 L156 28 L156 40 L180 40 L180 30 L192 30 L192 20 L204 20 L204 30 L216 30 L216 40 L240 40 L240 32 L252 32 L252 22 L264 22 L264 15 L276 15 L276 22 L288 22 L288 32 L300 32 L300 42 L320 42 L320 30 L334 30 L334 20 L346 20 L346 12 L358 12 L358 20 L370 20 L370 30 L384 30 L384 40 L400 40 L400 28 L414 28 L414 18 L426 18 L426 10 L438 10 L438 18 L450 18 L450 28 L464 28 L464 38 L480 38 L480 26 L494 26 L494 16 L506 16 L506 26 L518 26 L518 36 L540 36 L540 28 L554 28 L554 20 L566 20 L566 12 L578 12 L578 20 L590 20 L590 28 L604 28 L604 40 L620 40 L620 30 L634 30 L634 22 L646 22 L646 30 L660 30 L660 42 L680 42 L680 32 L694 32 L694 24 L706 24 L706 16 L718 16 L718 24 L730 24 L730 35 L750 35 L750 28 L764 28 L764 20 L776 20 L776 12 L788 12 L788 20 L800 20 L800 60 Z' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E") !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: bottom !important;
+}
+
+.welcome-hero > * { position: relative !important; z-index: 1 !important; }
+
+.welcome-hero h2 {
+  font-family: 'Fraunces', serif !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  letter-spacing: -0.02em !important;
+  font-size: 2.6rem !important;
+}
+.welcome-hero .tagline {
+  font-family: 'DM Mono', monospace !important;
+  letter-spacing: 0.16em !important;
+  font-size: 0.72rem !important;
+  color: rgba(255,255,255,0.55) !important;
+}
+.welcome-hero p {
+  font-family: 'Lora', serif !important;
+  font-size: 0.97rem !important;
+  line-height: 1.8 !important;
+}
+
+/* ══════════════════════════════════
+   FLIP CARDS — TACTILE INDEX CARDS
+═══════════════════════════════════ */
+.flip-card {
+  background: transparent;
+}
+.flip-card-inner {
+  box-shadow: var(--shadow-warm) !important;
+}
+.flip-card-front {
+  background: var(--paper-warm) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  border-top: 3px solid var(--trail) !important;
+}
+.flip-card-back {
+  background: var(--trail) !important;
+  border-radius: var(--radius) !important;
+  color: rgba(255,255,255,0.9) !important;
+}
+
+/* ══════════════════════════════════
+   EMOTION ZONE BUTTONS
+═══════════════════════════════════ */
+.zone-btn {
+  font-family: 'Lora', serif !important;
+  border-radius: 10px !important;
+  transition: all 0.18s ease !important;
+  border: 1.5px solid transparent !important;
+  box-shadow: 0 2px 8px rgba(30,25,15,0.08) !important;
+}
+.zone-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(30,25,15,0.14) !important;
+}
+.zone-btn.selected {
+  border-color: var(--ink) !important;
+  box-shadow: 0 0 0 2px var(--ink), 0 4px 14px rgba(30,25,15,0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ══════════════════════════════════
+   AI / READING INSIGHT SECTIONS
+═══════════════════════════════════ */
+.insight-card, .reading-card, .ai-card,
+[class*="insight"], [class*="reading-break"] {
+  background: var(--trail-light) !important;
+  border: 1px solid rgba(36,61,45,0.2) !important;
+  border-left: 4px solid var(--trail) !important;
+  border-radius: var(--radius) !important;
+  padding: 20px 22px !important;
+}
+
+/* The "thinking" spinner area */
+.thinking-wrap, .ai-thinking, [class*="thinking"] {
+  background: var(--paper-dark) !important;
+  border-radius: var(--radius) !important;
+  padding: 24px !important;
+  text-align: center !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.78rem !important;
+  color: var(--ink-light) !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* ══════════════════════════════════
+   CONSEQUENCE BUCKETS
+═══════════════════════════════════ */
+.bucket, [class*="bucket"] {
+  background: var(--paper-warm) !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-warm) !important;
+  transition: all 0.2s ease !important;
+}
+.bucket:hover, [class*="bucket"]:hover {
+  border-color: var(--trail-mid) !important;
+  box-shadow: var(--shadow-lift) !important;
+  transform: translateY(-2px) !important;
+}
+.bucket.selected, [class*="bucket"].selected {
+  border-color: var(--trail) !important;
+  background: var(--trail-light) !important;
+  box-shadow: 0 0 0 2px rgba(36,61,45,0.3), var(--shadow-warm) !important;
+}
+
+/* ══════════════════════════════════
+   THREE R'S / INFO TABS
+═══════════════════════════════════ */
+.tab-btn, [class*="tab-btn"], .lc-tab {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  border-radius: 8px 8px 0 0 !important;
+  transition: all 0.2s !important;
+}
+.tab-btn.active, [class*="tab-btn"].active, .lc-tab.active {
+  background: var(--trail) !important;
+  color: white !important;
+  border-color: var(--trail) !important;
+}
+
+/* ══════════════════════════════════
+   IMPACT MAP / DRAG RANKING
+═══════════════════════════════════ */
+.rank-item, [class*="rank-item"],
+.impact-item, [class*="impact"] {
+  background: var(--paper-warm) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 9px !important;
+  box-shadow: 0 2px 8px rgba(30,25,15,0.07) !important;
+  transition: all 0.18s ease !important;
+  cursor: grab;
+}
+.rank-item:hover, [class*="rank-item"]:hover {
+  border-color: var(--trail-mid) !important;
+  box-shadow: var(--shadow-lift) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ══════════════════════════════════
+   DONE / RESULT SCREEN
+═══════════════════════════════════ */
+.done-hero, [class*="done-hero"] {
+  background: var(--trail-deep) !important;
+  border-radius: 16px !important;
+  padding: 52px 44px !important;
+  text-align: center !important;
+  color: white !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-lift) !important;
+}
+.done-hero h2, [class*="done-hero"] h2 {
+  font-family: 'Fraunces', serif !important;
+  font-style: italic !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* ══════════════════════════════════
+   QUALITY METER FLOAT
+═══════════════════════════════════ */
+.quality-float {
+  background: var(--paper-warm) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lift) !important;
+}
+.q-label {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.62rem !important;
+  letter-spacing: 0.08em !important;
+}
+.q-label span {
+  font-family: 'Fraunces', serif !important;
+  font-style: italic !important;
+  font-size: 0.85rem !important;
+  color: var(--trail) !important;
+}
+.q-track {
+  background: var(--paper-mid) !important;
+}
+.q-fill { background: var(--red) !important; }
+.q-fill.med { background: var(--gold) !important; }
+.q-fill.good { background: var(--trail-mid) !important; }
+.q-msg {
+  font-family: 'Lora', serif !important;
+  font-size: 0.78rem !important;
+  color: var(--ink-mid) !important;
+}
+
+/* ══════════════════════════════════
+   SQUAD LEADERBOARD (done screen)
+═══════════════════════════════════ */
+.leaderboard, [class*="leaderboard"],
+.squad-board, [class*="squad-board"] {
+  background: var(--paper-warm) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shadow-warm) !important;
+}
+
+/* ══════════════════════════════════
+   SCROLLBAR — WARM TONED
+═══════════════════════════════════ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--paper-dark); }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-light); }
+
+/* ══════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════ */
+@keyframes trailIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger cards on screen enter */
+.screen.active .jcard:nth-child(1) { animation: fadeUp 0.4s 0.05s both; }
+.screen.active .jcard:nth-child(2) { animation: fadeUp 0.4s 0.12s both; }
+.screen.active .jcard:nth-child(3) { animation: fadeUp 0.4s 0.19s both; }
+.screen.active .jcard:nth-child(4) { animation: fadeUp 0.4s 0.26s both; }
+.screen.active .jcard:nth-child(5) { animation: fadeUp 0.4s 0.33s both; }
+
+/* ══════════════════════════════════
+   MOBILE
+═══════════════════════════════════ */
+@media (max-width: 600px) {
+  .section-head h2 {
+    font-size: 1.8rem !important;
+  }
+  .welcome-hero {
+    padding: 36px 28px !important;
+  }
+  .welcome-hero h2 {
+    font-size: 2rem !important;
+  }
+  .main {
+    padding: 24px 18px 100px !important;
+  }
+  .header-text h1 {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* ══════════════════════════════════
+   VALIDATION MESSAGES
+═══════════════════════════════════ */
+.val-msg {
+  font-family: 'Lora', serif !important;
+  font-size: 0.82rem !important;
+  background: var(--red-light) !important;
+  border-color: rgba(158,42,42,0.4) !important;
+  color: var(--red) !important;
+  border-radius: 9px !important;
+}
+
+/* ══════════════════════════════════
+   SECTION / DIVIDER LABELS
+═══════════════════════════════════ */
+.section-divider, [class*="section-div"] {
+  border: none !important;
+  border-top: 1.5px solid var(--border) !important;
+  margin: 28px 0 !important;
+}
+
+/* ══════════════════════════════════
+   GENERAL HEADINGS WITHIN CARDS
+═══════════════════════════════════ */
+.jcard h3, .jcard h4 {
+  font-family: 'Fraunces', serif !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+}
+
+/* Info boxes / callouts */
+.info-box, [class*="info-box"],
+.callout, [class*="callout"] {
+  background: var(--gold-light) !important;
+  border: 1px solid rgba(184,130,30,0.25) !important;
+  border-left: 4px solid var(--gold) !important;
+  border-radius: 9px !important;
+  font-family: 'Lora', serif !important;
+  font-size: 0.9rem !important;
+  color: var(--ink-mid) !important;
+  line-height: 1.7 !important;
+}
+
+/* Pill / badge labels */
+.badge, [class*="badge"],
+.chip, [class*="chip"] {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.6rem !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  border-radius: 20px !important;
+  padding: 3px 10px !important;
+}
+
+/* Next / submit buttons — main CTA */
+.next-btn, button.next-btn,
+[class*="next-btn"] {
+  background: var(--trail) !important;
+  color: white !important;
+  font-family: 'Lora', serif !important;
+  font-weight: 600 !important;
+  font-size: 0.98rem !important;
+  padding: 14px 28px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(36,61,45,0.3) !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.01em !important;
+}
+.next-btn:hover, [class*="next-btn"]:hover {
+  background: var(--trail-mid) !important;
+  box-shadow: 0 6px 22px rgba(36,61,45,0.4) !important;
+  transform: translateY(-2px) !important;
+}
