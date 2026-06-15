@@ -5,34 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Follow-Up Scheduler · Trail Journal Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --purple: #490e6f;
-    --purple-mid: #6b1fa0;
-    --purple-lt: #c8a8e0;
-    --gold: #ffe100;
-    --gold-dk: #c9a800;
-    --ink: #1a1025;
-    --ink-lt: #5a4a72;
-    --paper: #f7f3ee;
-    --paper-dk: #ede7dd;
-    --paper-dkr: #d8cfc2;
-    --cream: #faf7f2;
-    --success: #1a7a4a;
-    --success-lt: #d4f0e2;
-    --warn: #a85b00;
+    --purple: #243d2d;
+    --purple-mid: #365c44;
+    --purple-lt: #d6e8db;
+    --gold: #b8821e;
+    --gold-dk: #7a5510;
+    --ink: #1e190f;
+    --ink-lt: #8a7a62;
+    --paper: #f6efe1;
+    --paper-dk: #ede3cc;
+    --paper-dkr: #cbbfa5;
+    --cream: #faf5eb;
+    --success: #1a5c38;
+    --success-lt: #d4ece0;
+    --warn: #8a5800;
     --warn-lt: #fdecd4;
-    --error: #8b1a1a;
-    --error-lt: #fde0d4;
+    --error: #9e2a2a;
+    --error-lt: #fceeee;
     --radius: 14px;
-    --shadow: 0 4px 24px rgba(73,14,111,.12), 0 1px 4px rgba(73,14,111,.07);
+    --shadow: 0 4px 20px rgba(30,25,15,.10), 0 1px 4px rgba(30,25,15,.06);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     background: var(--paper);
     color: var(--ink);
     min-height: 100vh;
@@ -44,8 +44,8 @@
     position: fixed;
     inset: 0;
     background-image:
-      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(73,14,111,.04) 38px, rgba(73,14,111,.04) 39px),
-      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(73,14,111,.03) 38px, rgba(73,14,111,.03) 39px);
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(36,61,45,.04) 38px, rgba(36,61,45,.04) 39px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(36,61,45,.03) 38px, rgba(36,61,45,.03) 39px);
     pointer-events: none;
     z-index: 0;
   }
@@ -60,7 +60,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 12px rgba(73,14,111,.3);
+    box-shadow: 0 2px 12px rgba(36,61,45,.25);
   }
   .page-header-inner {
     max-width: 720px;
@@ -76,7 +76,7 @@
     color: #fff;
     border-radius: 8px;
     padding: 6px 12px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: 13px;
     cursor: pointer;
     text-decoration: none;
@@ -85,7 +85,7 @@
   .header-back:hover { background: rgba(255,255,255,.25); }
   .header-title { flex: 1; }
   .header-title h1 {
-    font-family: 'Walter Turncoat', cursive;
+    font-family: 'Fraunces', serif;
     font-size: 1.25rem;
     color: var(--gold);
     line-height: 1.1;
@@ -95,7 +95,7 @@
 
   /* ── HERO ── */
   .hero {
-    background: linear-gradient(135deg, var(--purple) 0%, #2d0a45 100%);
+    background: linear-gradient(135deg, var(--purple) 0%, #16271b 100%);
     color: #fff;
     padding: 36px 24px 32px;
     margin-bottom: 28px;
@@ -112,7 +112,7 @@
     pointer-events: none;
   }
   .hero-step { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
-  .hero h2 { font-family: 'Walter Turncoat', cursive; font-size: 2rem; color: var(--gold); line-height: 1.1; margin-bottom: 8px; }
+  .hero h2 { font-family: 'Fraunces', serif; font-size: 2rem; color: var(--gold); line-height: 1.1; margin-bottom: 8px; }
   .hero p { color: rgba(255,255,255,.8); font-size: .95rem; line-height: 1.6; max-width: 520px; }
 
   /* ── CARDS ── */
@@ -125,7 +125,7 @@
     margin-bottom: 18px;
   }
   .card-label {
-    font-family: 'Walter Turncoat', cursive;
+    font-family: 'Fraunces', serif;
     font-size: 1.05rem;
     color: var(--purple);
     margin-bottom: 4px;
@@ -147,7 +147,7 @@
     border: 2px solid var(--paper-dkr);
     background: var(--cream);
     color: var(--ink-lt);
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-weight: 700;
     font-size: .95rem;
     cursor: pointer;
@@ -179,7 +179,7 @@
     border: 2px solid var(--paper-dkr);
     background: var(--cream);
     color: var(--ink-lt);
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-weight: 700;
     font-size: .9rem;
     cursor: pointer;
@@ -203,7 +203,7 @@
     padding: 10px 13px;
     border: 1.5px solid var(--paper-dkr);
     border-radius: 9px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: .95rem;
     color: var(--ink);
     background: var(--cream);
@@ -245,7 +245,7 @@
     border: 1.5px dashed var(--paper-dkr);
     border-radius: 9px;
     padding: 9px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: .85rem;
     color: var(--ink-lt);
     cursor: pointer;
@@ -324,12 +324,12 @@
     border: none;
     border-radius: 10px;
     padding: 14px 20px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
     transition: background .2s, box-shadow .2s;
-    box-shadow: 0 3px 14px rgba(73,14,111,.3);
+    box-shadow: 0 3px 14px rgba(36,61,45,.25);
   }
   .btn-primary:hover:not(:disabled) { background: var(--purple-mid); }
   .btn-primary:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
@@ -338,7 +338,7 @@
     background: var(--cream);
     border: 1.5px solid var(--paper-dkr);
     border-radius: 10px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: .9rem;
     color: var(--ink-lt);
     cursor: pointer;
@@ -352,7 +352,7 @@
     border: none;
     border-radius: 10px;
     padding: 14px 20px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
