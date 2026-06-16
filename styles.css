@@ -614,6 +614,19 @@ button[style*="background: var(--trail)"]:hover,
   .header-text h1 {
     font-size: 1.2rem !important;
   }
+  /* Fix sticky header floating on mobile scroll */
+  .site-header {
+    position: relative !important;
+    top: auto !important;
+  }
+  .trail-progress-bar {
+    position: relative !important;
+    top: auto !important;
+  }
+  .trail-tabs {
+    position: relative !important;
+    top: auto !important;
+  }
 }
 
 /* ══════════════════════════════════
