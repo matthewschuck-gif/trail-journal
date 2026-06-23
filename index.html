@@ -623,6 +623,15 @@ input[type="range"]::-webkit-slider-thumb {
 .creative-btn.on { border-color: var(--gold-dark); background: var(--gold); color: var(--trail-deep); transform: translateY(-1px); }
 .creative-btn .ce { font-size: 1.5rem; display: block; margin-bottom: 5px; }
 
+/* ── FOLLOW-THROUGH WHEN BUTTONS ── */
+.ft-when-btn {
+  padding: 10px 18px; border: 2px solid var(--border); border-radius: 9px;
+  font-family: 'Barlow', sans-serif; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; background: var(--paper); transition: all 0.15s; color: var(--ink);
+}
+.ft-when-btn:hover { border-color: var(--trail-mid); background: var(--trail-light); }
+.ft-when-btn.on { border-color: var(--trail); background: var(--trail); color: white; }
+
 /* ── AI PANELS ── */
 .ai-journal {
   background: linear-gradient(135deg, #1a2e1e 0%, #0d1c10 100%);
@@ -2158,8 +2167,8 @@ body.squad-purple {
 <div class="screen" id="screen-4">
   <div class="section-head">
     <div class="trail-marker marker-bark">🗺 Part 3 of 3 — The Path Forward</div>
-    <h2>Your <em>Growth Plan</em></h2>
-    <p>The last leg of the trail. Choose the Life Ready Graduate trait you most need to develop, and commit to how you'll demonstrate it before you leave today.</p>
+    <h2>Your <em>Growth Plan</em> &amp; Follow-Through</h2>
+    <p>The last leg of the trail. Choose the trait you most need to develop, pick how you'll demonstrate it, and then commit to a follow-through plan — the <strong>when</strong>, <strong>how</strong>, and <strong>who</strong> that turns your plan into action.</p>
   </div>
 
   <div class="jcard">
@@ -2244,6 +2253,59 @@ body.squad-purple {
     <div id="creative-detail" class="hidden" style="margin-top:16px">
       <div class="jcard-label" style="margin-bottom:8px">Describe What You'll Create</div>
       <textarea id="q-creative" rows="3" placeholder="Briefly describe what you'll make and what you'll need…"></textarea>
+    </div>
+  </div>
+
+  <!-- FOLLOW-THROUGH PLAN -->
+  <div id="followthrough-card" class="jcard hidden">
+    <div class="jcard-label">📋 Follow-Up, Then Follow-Through</div>
+    <div class="jcard-sub">Before you fill out your follow-through plan, let's put together everything you've built in this journal so you can see the full picture.</div>
+
+    <!-- BUILD MY PLAN BUTTON -->
+    <div id="ft-build-wrap" style="text-align:center;margin:20px 0">
+      <button id="ft-build-btn" onclick="buildMyPlan()" class="btn-submit" style="font-size:1rem;padding:14px 32px">🗺️ Build My Plan</button>
+      <div style="font-size:.72rem;color:var(--ink-light);margin-top:6px">Pulls from your trait, creative product, CPS work, and repair answers</div>
+    </div>
+
+    <!-- AI PLAN SUMMARY -->
+    <div id="ft-plan-summary" class="hidden">
+      <div id="ft-plan-thinking" style="display:flex;align-items:center;gap:10px;padding:16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid)">
+        <div class="spin" style="border-color:var(--border);border-top-color:var(--trail);width:16px;height:16px"></div>
+        Analyzing your journal and building your plan…
+      </div>
+      <div id="ft-plan-content" class="hidden" style="background:linear-gradient(135deg,var(--trail-deep) 0%,var(--trail) 100%);border-radius:12px;padding:22px 24px;color:white;margin-bottom:20px">
+        <div style="font-family:'Barlow',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">🗺️ Your Plan</div>
+        <div id="ft-plan-text" style="font-family:'Barlow',sans-serif;font-size:.92rem;line-height:1.75;color:rgba(255,255,255,.9)"></div>
+      </div>
+
+      <!-- FOLLOW-THROUGH FIELDS (appear after AI summary) -->
+      <div id="ft-fields" class="hidden">
+        <div style="font-family:'Barlow',sans-serif;font-size:.88rem;font-weight:600;color:var(--trail);margin-bottom:14px">Now commit to making it happen:</div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">When will you finish this?</label>
+          <div class="ft-when-grid" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="ft-when-btn" data-w="Before I leave today" onclick="pickFTWhen(this)">Before I leave today</button>
+            <button class="ft-when-btn" data-w="By tomorrow morning" onclick="pickFTWhen(this)">By tomorrow morning</button>
+            <button class="ft-when-btn" data-w="Within 2 days" onclick="pickFTWhen(this)">Within 2 days</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What do you need to make it happen?</label>
+          <textarea id="q-ft-needs" rows="2" placeholder="Materials, time, a quiet space, help from someone…"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">Who will you show or present your finished product to?</label>
+          <textarea id="q-ft-audience" rows="2" placeholder="A teacher, counselor, the person I hurt, my class…"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What will you do if you get stuck or want to quit?</label>
+          <textarea id="q-ft-stuck" rows="2" placeholder="I'll ask for help from… I'll take a break and come back… I'll remember why this matters because…"></textarea>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2347,6 +2409,71 @@ body.squad-purple {
           </a>
         </div>
 
+        <!-- STUDENT FOLLOW-THROUGH COMMITMENTS (staff context) -->
+        <div id="staff-ft-context" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="jcard-label" style="color:var(--trail);margin-bottom:8px">📋 Student's Follow-Through Commitments</div>
+          <div id="staff-ft-empty" style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);font-style:italic;margin-bottom:14px">Student has not completed the follow-through section yet.</div>
+          <div id="staff-ft-data" style="display:none">
+            <div style="background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+              <div id="staff-ft-plan" style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink);line-height:1.65;margin-bottom:10px"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><span style="font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase">When</span><div id="staff-ft-when" style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--trail);font-weight:600;margin-top:2px">—</div></div>
+                <div><span style="font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase">Audience</span><div id="staff-ft-audience" style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink);margin-top:2px">—</div></div>
+                <div><span style="font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase">Needs</span><div id="staff-ft-needs" style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink);margin-top:2px">—</div></div>
+                <div><span style="font-family:'Barlow',sans-serif;font-size:.68rem;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase">If Stuck</span><div id="staff-ft-stuck" style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink);margin-top:2px">—</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOLLOW-UP SCHEDULER — single event, free date/time -->
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="jcard-label" style="color:var(--trail);margin-bottom:4px">📅 Schedule Follow-Up Check-In</div>
+          <p style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink-mid);line-height:1.6;margin-bottom:14px">
+            Schedule a single Outlook calendar event to follow up on this student's plan. Pick any date and time.
+          </p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div>
+              <label style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">Follow-Up Date</label>
+              <input type="date" id="fu-event-date" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper);color:var(--ink)">
+            </div>
+            <div>
+              <label style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">Time</label>
+              <input type="time" id="fu-event-time" value="08:30" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper);color:var(--ink)">
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">Duration</label>
+            <div style="display:flex;gap:6px">
+              <button class="fu-dur-btn on" data-d="15" onclick="pickFuDuration(this)" style="flex:1;padding:8px;border-radius:7px;border:2px solid var(--trail);background:var(--trail);color:white;font-family:'Barlow',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer">15 min</button>
+              <button class="fu-dur-btn" data-d="30" onclick="pickFuDuration(this)" style="flex:1;padding:8px;border-radius:7px;border:2px solid var(--border);background:var(--paper);color:var(--ink);font-family:'Barlow',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer">30 min</button>
+              <button class="fu-dur-btn" data-d="45" onclick="pickFuDuration(this)" style="flex:1;padding:8px;border-radius:7px;border:2px solid var(--border);background:var(--paper);color:var(--ink);font-family:'Barlow',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer">45 min</button>
+            </div>
+          </div>
+
+          <!-- Attendees -->
+          <div style="margin-bottom:12px">
+            <label style="font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">Staff Email(s) to Invite</label>
+            <div id="fu-att-list">
+              <div class="fu-att-row" style="display:flex;gap:6px;margin-bottom:6px">
+                <input type="text" placeholder="Name" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+                <input type="email" placeholder="email@ephrata.org" style="flex:2;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+              </div>
+            </div>
+            <button onclick="addFuAttendee()" style="width:100%;background:transparent;border:1.5px dashed var(--border);border-radius:7px;padding:7px;font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);cursor:pointer">+ Add Another</button>
+          </div>
+
+          <div id="fu-alert" style="display:none;border-radius:8px;padding:10px 14px;font-family:'Barlow',sans-serif;font-size:.82rem;font-weight:600;margin-bottom:10px"></div>
+
+          <div style="display:flex;gap:8px">
+            <button onclick="resetFuScheduler()" style="padding:10px 16px;background:var(--paper);border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);cursor:pointer">Reset</button>
+            <button id="fu-schedule-btn" onclick="scheduleFuCheckin()" style="flex:1;padding:10px 16px;background:var(--trail);color:white;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 3px 12px rgba(44,74,53,.25)">📅 Schedule Follow-Up</button>
+          </div>
+          <div style="font-size:.7rem;color:var(--ink-light);text-align:center;margin-top:6px;font-style:italic">Record saved to Supabase · Calendar invite via email (.ics)</div>
+        </div>
+
         <!-- CLASH OF CLASSES LEADERBOARD -->
         <div class="coc-leaderboard" id="coc-leaderboard">
           <div class="coc-lb-title">🏆 Clash of Classes — Live Standings</div>
@@ -2409,6 +2536,7 @@ const S = {
   priorCount: 0, priorReflections: [],
   hopeLevel: null, agencyChoice: null,
   selectedSkill: null,
+  ftWhen: null,
   S_RESULT: null,
   _staffUnlocked: false,
 };
@@ -3453,6 +3581,67 @@ function pickCreative(btn) {
   btn.classList.add('on');
   S.creative = btn.dataset.cv;
   document.getElementById('creative-detail').classList.remove('hidden');
+  document.getElementById('followthrough-card').classList.remove('hidden');
+}
+
+function pickFTWhen(btn) {
+  document.querySelectorAll('.ft-when-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  S.ftWhen = btn.dataset.w;
+}
+
+async function buildMyPlan() {
+  const btn = document.getElementById('ft-build-btn');
+  btn.disabled = true; btn.textContent = '⏳ Building…';
+
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  const summary = document.getElementById('ft-plan-summary');
+  summary.classList.remove('hidden');
+
+  const result = await callEdge('build-plan', {
+    initial: S.initial,
+    trait: S.trait,
+    traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c => c.value),
+    traitWhy: gv('q-traitwhy'),
+    creativeFormat: S.creative,
+    creativePlan: gv('q-creative'),
+    cpsUnsolvedProblem: p1.cpsUnsolvedProblem,
+    cpsMyConcern: p1.cpsMyConcern,
+    cpsTheirConcern: p1.cpsTheirConcern,
+    whatHappened: p1.whatHappened,
+    hurtPeople: p2.hurtPeople,
+    makeRight: p2.makeRight,
+    different: p2.different,
+    bestIdea: p2.bestIdea,
+    plan: p2.plan,
+  });
+
+  document.getElementById('ft-plan-thinking').style.display = 'none';
+  const content = document.getElementById('ft-plan-content');
+  const textEl = document.getElementById('ft-plan-text');
+
+  if (result && result.planSummary) {
+    S.planSummary = result.planSummary;
+    textEl.innerHTML = result.planSummary;
+  } else {
+    // Fallback: build a summary from the data we have
+    const parts = [];
+    if (S.trait) parts.push('<strong>LRG Trait:</strong> ' + S.trait);
+    if (gv('q-traitwhy')) parts.push('<strong>Why:</strong> ' + gv('q-traitwhy'));
+    if (S.creative) parts.push('<strong>Creative Product:</strong> ' + S.creative);
+    if (gv('q-creative')) parts.push('<strong>Description:</strong> ' + gv('q-creative'));
+    if (p2.makeRight) parts.push('<strong>Making it right:</strong> ' + p2.makeRight);
+    if (p2.different) parts.push('<strong>Next time:</strong> ' + p2.different);
+    S.planSummary = parts.join('<br>');
+    textEl.innerHTML = '<p>Your plan is to demonstrate <strong>' + (S.trait||'your chosen trait') + '</strong> by creating a <strong>' + (S.creative||'creative product') + '</strong>.</p>' +
+      (p2.makeRight ? '<p>To make things right, you said: <em>"' + p2.makeRight + '"</em></p>' : '') +
+      (p2.different ? '<p>Next time, you plan to: <em>"' + p2.different + '"</em></p>' : '');
+  }
+
+  content.classList.remove('hidden');
+  document.getElementById('ft-fields').classList.remove('hidden');
+  document.getElementById('submit-card').classList.remove('hidden');
+  document.getElementById('ft-build-wrap').style.display = 'none';
 }
 
 // ─── SCREEN NAV ──────────────────────────────────────────────────────────
@@ -3513,6 +3702,12 @@ function getPart3() {
     selectedSkill: S.selectedSkill || null,
     loopingPlan: gv('q-looping'),
     creativeFormat: S.creative, creativePlan: gv('q-creative'),
+    followThrough: {
+      when: S.ftWhen || null,
+      needs: gv('q-ft-needs'),
+      audience: gv('q-ft-audience'),
+      stuckPlan: gv('q-ft-stuck'),
+    },
     hopeLevel: S.hopeLevel || null,
     agencyChoice: S.agencyChoice || null,
     fairReflect: gv('q-fair-reflect'),
@@ -3612,7 +3807,8 @@ function checkPW() {
     document.getElementById('pw-gate').style.display = 'none';
     document.getElementById('email-form').classList.add('show');
     buildBICLink();
-    loadCoCLeaderboard(); // load live standings
+    loadCoCLeaderboard();
+    populateStaffFTContext();
     if (S_RESULT) {
       document.getElementById('staff-loading').style.display = 'none';
       document.getElementById('staff-ready').style.display = 'block';
@@ -4007,6 +4203,195 @@ window.buildRankZone = function(items) {
     }, 800);
   }, 1800);
 };
+
+// ─── FOLLOW-UP SCHEDULER (staff section) ─────────────────────────────────
+// Single follow-up event with free date/time picker
+let fuDuration = 15;
+
+function pickFuDuration(btn) {
+  document.querySelectorAll('.fu-dur-btn').forEach(b => {
+    b.style.border = '2px solid var(--border)'; b.style.background = 'var(--paper)'; b.style.color = 'var(--ink)';
+  });
+  btn.style.border = '2px solid var(--trail)'; btn.style.background = 'var(--trail)'; btn.style.color = 'white';
+  fuDuration = parseInt(btn.dataset.d);
+}
+
+// Pre-fill follow-up date to 2 days from now (snapped to workday)
+(function initFuDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 2);
+  const dow = d.getDay();
+  if (dow === 0) d.setDate(d.getDate() + 1);
+  if (dow === 6) d.setDate(d.getDate() + 2);
+  const el = document.getElementById('fu-event-date');
+  if (el) el.value = d.toISOString().split('T')[0];
+})();
+
+// Populate student follow-through context when staff unlocks
+function populateStaffFTContext() {
+  const p3 = getPart3();
+  const ft = p3.followThrough || {};
+  const hasData = ft.when || ft.needs || ft.audience || ft.stuckPlan || S.planSummary;
+  if (!hasData) return;
+
+  document.getElementById('staff-ft-empty').style.display = 'none';
+  document.getElementById('staff-ft-data').style.display = 'block';
+
+  const planEl = document.getElementById('staff-ft-plan');
+  if (S.planSummary) {
+    planEl.innerHTML = S.planSummary;
+  } else {
+    const parts = [];
+    if (p3.trait) parts.push('<strong>' + p3.trait + '</strong>');
+    if (p3.creativeFormat) parts.push('via ' + p3.creativeFormat);
+    planEl.innerHTML = parts.length ? 'Plan: ' + parts.join(' ') : '';
+  }
+
+  document.getElementById('staff-ft-when').textContent = ft.when || '—';
+  document.getElementById('staff-ft-audience').textContent = ft.audience || '—';
+  document.getElementById('staff-ft-needs').textContent = ft.needs || '—';
+  document.getElementById('staff-ft-stuck').textContent = ft.stuckPlan || '—';
+}
+
+function addFuAttendee() {
+  const list = document.getElementById('fu-att-list');
+  const row = document.createElement('div');
+  row.className = 'fu-att-row';
+  row.style.cssText = 'display:flex;gap:6px;margin-bottom:6px';
+  row.innerHTML = `
+    <input type="text" placeholder="Name" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+    <input type="email" placeholder="email@ephrata.org" style="flex:2;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+    <button onclick="this.parentElement.remove()" style="background:rgba(176,48,48,.1);border:1px solid rgba(176,48,48,.25);color:var(--red);border-radius:7px;padding:6px 9px;cursor:pointer;font-size:.8rem;flex-shrink:0">✕</button>`;
+  list.appendChild(row);
+}
+
+function getFuAttendees() {
+  return [...document.querySelectorAll('.fu-att-row')].reduce((acc, row) => {
+    const email = row.querySelector('input[type="email"]')?.value?.trim();
+    const name = row.querySelector('input[type="text"]')?.value?.trim();
+    if (email) acc.push({ email, name: name || email });
+    return acc;
+  }, []);
+}
+
+function showFuAlert(type, msg) {
+  const el = document.getElementById('fu-alert');
+  el.style.display = 'block';
+  el.style.background = type === 'success' ? 'var(--trail-light)' : type === 'error' ? '#fdf0ee' : '#fef3c7';
+  el.style.color = type === 'success' ? 'var(--trail)' : type === 'error' ? 'var(--red)' : '#92400e';
+  el.style.border = '1px solid ' + (type === 'success' ? 'var(--trail-mid)' : type === 'error' ? 'var(--red)' : '#fdba74');
+  el.textContent = msg;
+}
+
+async function scheduleFuCheckin() {
+  const eventDate = document.getElementById('fu-event-date').value;
+  const eventTime = document.getElementById('fu-event-time').value;
+  const attendees = getFuAttendees();
+  if (!eventDate) { showFuAlert('error', 'Please select a follow-up date.'); return; }
+  if (!eventTime) { showFuAlert('error', 'Please select a time.'); return; }
+  if (!attendees.length) { showFuAlert('error', 'Add at least one staff email.'); return; }
+
+  const btn = document.getElementById('fu-schedule-btn');
+  btn.disabled = true; btn.textContent = '⏳ Scheduling…';
+
+  const initials = S.initial || '—';
+  const squad = S.squad || '';
+  const p3 = getPart3();
+  const ft = p3.followThrough || {};
+  const outcome = [
+    p3.trait ? 'LRG Trait: ' + p3.trait : '',
+    p3.creativeFormat ? 'Creative product: ' + p3.creativeFormat : '',
+    ft.when ? 'Student committed to finish: ' + ft.when : '',
+    ft.audience ? 'Presenting to: ' + ft.audience : '',
+    ft.needs ? 'Needs: ' + ft.needs : '',
+    ft.stuckPlan ? 'If stuck: ' + ft.stuckPlan : '',
+    p3.traitWhy || '',
+  ].filter(Boolean).join('\n');
+
+  // Save to Supabase
+  let record = null;
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/followup_records', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', apikey:SUPABASE_ANON, Authorization:'Bearer '+SUPABASE_ANON, Prefer:'return=representation' },
+      body: JSON.stringify({
+        student_initials: initials,
+        trigger_type: 'trail-journal',
+        trigger_date: new Date().toISOString().split('T')[0],
+        outcome_summary: outcome,
+        panel_session_id: S.sessionId,
+        attendee_emails: attendees.map(a => a.email),
+        checkin_2day_date: eventDate,
+        submitted_by: document.getElementById('staff-email')?.value?.trim() || null,
+        squad: squad || null,
+        notes: 'Single follow-up · ' + eventDate + ' at ' + eventTime + ' · ' + fuDuration + 'min · From Trail Journal',
+        calendar_status: { followup: 'pending' },
+      })
+    });
+    if (res.ok) record = (await res.json())[0];
+  } catch(e) { console.warn('Supabase save:', e); }
+
+  // Send single calendar email via edge function
+  const EDGE_FU = SUPABASE_URL + '/functions/v1/send-followup-emails';
+  let success = false;
+  try {
+    const res = await fetch(EDGE_FU, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization:'Bearer '+SUPABASE_ANON },
+      body: JSON.stringify({
+        initials, squad, triggerType: 'trail-journal',
+        singleEvent: true,
+        eventDate, eventTime, duration: fuDuration,
+        outcome, attendees,
+        submittedBy: document.getElementById('staff-email')?.value?.trim() || '',
+      }),
+    });
+    if (res.ok) {
+      const result = await res.json();
+      success = result.results?.followup === 'sent' || result.success;
+    }
+  } catch(e) {
+    console.error('Follow-up edge fn:', e);
+  }
+
+  // Update Supabase
+  if (record?.id) {
+    fetch(SUPABASE_URL + '/rest/v1/followup_records?id=eq.' + record.id, {
+      method:'PATCH', headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON},
+      body: JSON.stringify({ calendar_status: { followup: success ? 'sent' : 'failed' } })
+    }).catch(() => {});
+  }
+
+  if (success) {
+    showFuAlert('success', '✓ Follow-up invite sent to ' + attendees.length + ' staff member(s) for ' + eventDate + ' at ' + eventTime + '.');
+    btn.textContent = '✓ Scheduled'; btn.style.background = '#15803d';
+  } else {
+    showFuAlert('error', 'Email sending failed. Check Edge Function logs.');
+    btn.disabled = false; btn.textContent = '📅 Schedule Follow-Up';
+  }
+}
+
+function resetFuScheduler() {
+  const d = new Date(); d.setDate(d.getDate() + 2);
+  const dow = d.getDay();
+  if (dow === 0) d.setDate(d.getDate() + 1);
+  if (dow === 6) d.setDate(d.getDate() + 2);
+  document.getElementById('fu-event-date').value = d.toISOString().split('T')[0];
+  document.getElementById('fu-event-time').value = '08:30';
+  document.getElementById('fu-att-list').innerHTML = `<div class="fu-att-row" style="display:flex;gap:6px;margin-bottom:6px">
+    <input type="text" placeholder="Name" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+    <input type="email" placeholder="email@ephrata.org" style="flex:2;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
+  </div>`;
+  document.getElementById('fu-alert').style.display = 'none';
+  const btn = document.getElementById('fu-schedule-btn');
+  btn.disabled = false; btn.textContent = '📅 Schedule Follow-Up'; btn.style.background = 'var(--trail)';
+  fuDuration = 15;
+  document.querySelectorAll('.fu-dur-btn').forEach((b,i) => {
+    b.style.border = i===0 ? '2px solid var(--trail)' : '2px solid var(--border)';
+    b.style.background = i===0 ? 'var(--trail)' : 'var(--paper)';
+    b.style.color = i===0 ? 'white' : 'var(--ink)';
+  });
+}
 </script>
 </body>
 </html>
