@@ -2471,7 +2471,7 @@ body.squad-purple {
             <button onclick="resetFuScheduler()" style="padding:10px 16px;background:var(--paper);border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);cursor:pointer">Reset</button>
             <button id="fu-schedule-btn" onclick="scheduleFuCheckin()" style="flex:1;padding:10px 16px;background:var(--trail);color:white;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 3px 12px rgba(44,74,53,.25)">📅 Schedule Follow-Up</button>
           </div>
-          <div style="font-size:.7rem;color:var(--ink-light);text-align:center;margin-top:6px;font-style:italic">Record saved to Supabase · Calendar invite via email (.ics)</div>
+          <div style="font-size:.7rem;color:var(--ink-light);text-align:center;margin-top:6px;font-style:italic">Record saved · Calendar invite via email (.ics)</div>
         </div>
 
         <!-- CLASH OF CLASSES LEADERBOARD -->
@@ -2493,9 +2493,25 @@ body.squad-purple {
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────
-const SUPABASE_URL     = 'https://kduypmpqkirvjkbnmuha.supabase.co';
-const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
-const EDGE_FN          = 'https://kduypmpqkirvjkbnmuha.supabase.co/functions/v1/ai-proxy';
+// --- Apps Script backend (replaces Supabase) ---
+// Anonymous student journal: uses the PUBLIC deployment. The Clash of Classes bridge
+// further down (COC_URL/COC_ANON) is untouched -- that project stays on Supabase.
+// The staff-only sections below (checkPW, follow-up scheduler) use the ADMIN
+// (domain-restricted) deployment instead -- see APP_URL_ADMIN.
+const APP_URL       = 'PASTE_PUBLIC_DEPLOYMENT_URL_HERE';
+const APP_URL_ADMIN = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
+const APP_TOKEN     = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+
+async function callBackend(body, admin) {
+  const res = await fetch(admin ? APP_URL_ADMIN : APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────
 // ─── UTILITIES ───────────────────────────────────────────────────────────
@@ -2702,13 +2718,12 @@ async function triggerCPSSynthesis(problem, myConcern, theirConcern) {
 // ─── FEATURE 7: LONGITUDINAL CHECK ───────────────────────────────────────
 async function checkPriorReflections(initial) {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/reflections?initial=eq.${encodeURIComponent(initial)}&select=id,created_at,insight_level,part3_json&order=created_at.desc&limit=5`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON } }
-    );
-    const data = await res.json();
+    const data = await callBackend({ action: 'query', table: 'reflections', filters: { initial: initial } });
     // Return count and last reflection summary (excluding current session which isn't saved yet)
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    return data
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 5);
   } catch(e) { return []; }
 }
 
@@ -2787,16 +2802,8 @@ async function awardClashPoints(initial, sessionId, insightLevel) {
       }
     );
 
-    // 4. Mark awarded in Trail Journal Supabase
-    await fetch(`${SUPABASE_URL}/rest/v1/reflections?session_id=eq.${sessionId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: SUPABASE_ANON,
-        Authorization: 'Bearer ' + SUPABASE_ANON,
-      },
-      body: JSON.stringify({ clash_flagged: true, clash_points_awarded: true }),
-    });
+    // 4. Mark awarded on the reflection record
+    await callBackend({ action: 'update', table: 'reflections', match: { session_id: sessionId }, patch: { clash_flagged: true, clash_points_awarded: true } });
 
     console.log(`✓ Clash point awarded to ${squad} via Trail Journal`);
   } catch(e) {
@@ -3717,33 +3724,15 @@ function getPart3() {
 // ─── AI CALLS ────────────────────────────────────────────────────────────
 async function callEdge(type, payload) {
   try {
-    const res = await fetch(EDGE_FN, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-      },
-      body: JSON.stringify({type, payload})
-    });
-    if (!res.ok) throw new Error('Edge fn ' + res.status);
-    return await res.json();
-  } catch(e) { console.error('Edge fn error:', e); return null; }
+    return await callBackend({ action: 'ai', type, payload });
+  } catch(e) { console.error('AI call error:', e); return null; }
 }
 
 // ─── SAVE TO SUPABASE ────────────────────────────────────────────────────
 async function saveRow(row) {
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/reflections', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify(row)
-    });
-  } catch(e) { console.error('Supabase save:', e); }
+    await callBackend({ action: 'insert', table: 'reflections', row: row });
+  } catch(e) { console.error('Save error:', e); }
 }
 
 // ─── PART 1 SUBMIT ────────────────────────────────────────────────────────
@@ -3799,28 +3788,38 @@ function sendSummaryPDF() {
   window.location.href = `mailto:${email}?subject=${subject}&body=${bodyEncoded}`;
   setEmailStatus('✓ Email client opened — complete sending from your email app.', 'var(--trail)');
 }
-const STAFF_PW = 'togetherweclimb';
-
-function checkPW() {
-  const val = document.getElementById('pw-input').value;
-  if (val === STAFF_PW || (IS_PREVIEW && val === 'preview')) {
-    document.getElementById('pw-gate').style.display = 'none';
-    document.getElementById('email-form').classList.add('show');
-    buildBICLink();
-    loadCoCLeaderboard();
-    populateStaffFTContext();
-    if (S_RESULT) {
-      document.getElementById('staff-loading').style.display = 'none';
-      document.getElementById('staff-ready').style.display = 'block';
-    }
-    S._staffUnlocked = true;
-  } else {
-    const err = document.getElementById('pw-error');
+// Old hardcoded password removed. checkPW() now does a real backend call against the
+// ADMIN (domain-restricted) Apps Script deployment -- only staff signed into a school
+// Google account in this browser can unlock this section.
+async function checkPW() {
+  const err = document.getElementById('pw-error');
+  if (IS_PREVIEW && document.getElementById('pw-input').value === 'preview') {
+    unlockStaffSection();
+    return;
+  }
+  try {
+    await callBackend({ action: 'query', table: 'site_config', filters: {} }, /* admin */ true);
+    unlockStaffSection();
+  } catch (e) {
+    err.textContent = 'Not signed in with a school Google account in this browser. Sign in at accounts.google.com, then try again.';
     err.style.display = 'block';
     doShake(document.getElementById('pw-input'));
     document.getElementById('pw-input').value = '';
-    setTimeout(() => err.style.display = 'none', 3000);
+    setTimeout(() => err.style.display = 'none', 4000);
   }
+}
+
+function unlockStaffSection() {
+  document.getElementById('pw-gate').style.display = 'none';
+  document.getElementById('email-form').classList.add('show');
+  buildBICLink();
+  loadCoCLeaderboard();
+  populateStaffFTContext();
+  if (S_RESULT) {
+    document.getElementById('staff-loading').style.display = 'none';
+    document.getElementById('staff-ready').style.display = 'block';
+  }
+  S._staffUnlocked = true;
 }
 
 // ─── COC LEADERBOARD ──────────────────────────────────────────────────────
@@ -4132,11 +4131,7 @@ async function doSubmit() {
 
     // Feature 5: save goal + insight level to Supabase
     if (result.studentGoal || result.insightLevel) {
-      fetch(SUPABASE_URL + '/rest/v1/reflections?session_id=eq.' + S.sessionId, {
-        method: 'PATCH',
-        headers: {'Content-Type':'application/json', apikey:SUPABASE_ANON, Authorization:'Bearer '+SUPABASE_ANON},
-        body: JSON.stringify({ goal: result.studentGoal||null, insight_level: result.insightLevel||null })
-      });
+      callBackend({ action: 'update', table: 'reflections', match: { session_id: S.sessionId }, patch: { goal: result.studentGoal||null, insight_level: result.insightLevel||null } }).catch(e => console.error(e));
     }
 
     // Feature 9: Clash bridge
@@ -4308,58 +4303,48 @@ async function scheduleFuCheckin() {
     p3.traitWhy || '',
   ].filter(Boolean).join('\n');
 
-  // Save to Supabase
+  // Save record
   let record = null;
   try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/followup_records', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', apikey:SUPABASE_ANON, Authorization:'Bearer '+SUPABASE_ANON, Prefer:'return=representation' },
-      body: JSON.stringify({
-        student_initials: initials,
-        trigger_type: 'trail-journal',
-        trigger_date: new Date().toISOString().split('T')[0],
-        outcome_summary: outcome,
-        panel_session_id: S.sessionId,
-        attendee_emails: attendees.map(a => a.email),
-        checkin_2day_date: eventDate,
-        submitted_by: document.getElementById('staff-email')?.value?.trim() || null,
-        squad: squad || null,
-        notes: 'Single follow-up · ' + eventDate + ' at ' + eventTime + ' · ' + fuDuration + 'min · From Trail Journal',
-        calendar_status: { followup: 'pending' },
-      })
-    });
-    if (res.ok) record = (await res.json())[0];
-  } catch(e) { console.warn('Supabase save:', e); }
+    record = await callBackend({ action: 'insert', table: 'followup_records', row: {
+      student_initials: initials,
+      trigger_type: 'trail-journal',
+      trigger_date: new Date().toISOString().split('T')[0],
+      outcome_summary: outcome,
+      panel_session_id: S.sessionId,
+      attendee_emails: attendees.map(a => a.email),
+      checkin_2day_date: eventDate,
+      submitted_by: document.getElementById('staff-email')?.value?.trim() || null,
+      squad: squad || null,
+      notes: 'Single follow-up · ' + eventDate + ' at ' + eventTime + ' · ' + fuDuration + 'min · From Trail Journal',
+      calendar_status: { followup: 'pending' },
+    }}, /* admin */ true);
+  } catch(e) { console.warn('Save error:', e); }
 
-  // Send single calendar email via edge function
-  const EDGE_FU = SUPABASE_URL + '/functions/v1/send-followup-emails';
+  // NOTE ON A PRE-EXISTING QUIRK (found while porting, not introduced by this migration):
+  // this call sends singleEvent/eventDate/eventTime/duration, but the actual deployed
+  // send-followup-emails function (v1, checked directly in Supabase) never reads those --
+  // it always runs its fixed 2-day/2-week/2-month loop regardless. That means this
+  // "Schedule Follow-Up" button has likely always sent the standard 3-interval sequence
+  // rather than a single custom-dated event, even before this migration. Ported here
+  // exactly as the original behaves; flagged to Matt to decide whether to fix it.
   let success = false;
   try {
-    const res = await fetch(EDGE_FU, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', Authorization:'Bearer '+SUPABASE_ANON },
-      body: JSON.stringify({
-        initials, squad, triggerType: 'trail-journal',
-        singleEvent: true,
-        eventDate, eventTime, duration: fuDuration,
-        outcome, attendees,
-        submittedBy: document.getElementById('staff-email')?.value?.trim() || '',
-      }),
-    });
-    if (res.ok) {
-      const result = await res.json();
-      success = result.results?.followup === 'sent' || result.success;
-    }
+    const result = await callBackend({ action: 'sendFollowupEmails', payload: {
+      initials, squad, triggerType: 'trail-journal',
+      singleEvent: true,
+      eventDate, eventTime, duration: fuDuration,
+      outcome, attendees,
+      submittedBy: document.getElementById('staff-email')?.value?.trim() || '',
+    }}, /* admin */ true);
+    success = result?.results?.followup === 'sent' || result?.success || (result?.ok && !result?.errors?.length);
   } catch(e) {
-    console.error('Follow-up edge fn:', e);
+    console.error('Follow-up send error:', e);
   }
 
-  // Update Supabase
+  // Update record with outcome
   if (record?.id) {
-    fetch(SUPABASE_URL + '/rest/v1/followup_records?id=eq.' + record.id, {
-      method:'PATCH', headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON},
-      body: JSON.stringify({ calendar_status: { followup: success ? 'sent' : 'failed' } })
-    }).catch(() => {});
+    callBackend({ action: 'update', table: 'followup_records', match: { id: record.id }, patch: { calendar_status: { followup: success ? 'sent' : 'failed' } } }, /* admin */ true).catch(() => {});
   }
 
   if (success) {
