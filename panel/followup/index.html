@@ -387,7 +387,7 @@
   <div class="hero">
     <div class="hero-step">Panel Tool · Follow-Up</div>
     <h2>Schedule the Check-Ins</h2>
-    <p>After an intervention or Trailback Panel, the work continues. This tool logs the record to Supabase and sends Outlook calendar events to your follow-up team — snapped to the nearest workday, timed to the student's grade schedule.</p>
+    <p>After an intervention or Trailback Panel, the work continues. This tool logs the record to Google Sheets and sends Outlook calendar events to your follow-up team — snapped to the nearest workday, timed to the student's grade schedule.</p>
   </div>
 
   <!-- ── SECTION 1: STUDENT & GRADE ── -->
@@ -485,7 +485,7 @@
         <div class="guideline-icon">🏔️</div>
         <div>
           <div class="guideline-title">2-Month Follow-Up <span>· Long-Term Accountability</span></div>
-          <div class="guideline-text">Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the relationship with the community been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document the outcome in Supabase. <strong>15–30 minutes.</strong></div>
+          <div class="guideline-text">Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the relationship with the community been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document the outcome in Google Sheets. <strong>15–30 minutes.</strong></div>
         </div>
       </div>
     </div>
@@ -550,7 +550,7 @@
     </div>
 
     <div class="record-note">
-      Records saved to Supabase · Calendar invites sent via email (.ics) · EMS Trail Journal System
+      Records saved to Google Sheets · Calendar invites sent via email (.ics) · EMS Trail Journal System
     </div>
   </div>
 
@@ -560,8 +560,22 @@
 // ─────────────────────────────────────────────
 //  CONFIG
 // ─────────────────────────────────────────────
-const SUPABASE_URL = 'https://kduypmpqkirvjkbnmuha.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
+// --- Apps Script backend (replaces Supabase) ---
+// This page is staff-only, so it uses the ADMIN deployment URL (domain-restricted --
+// Apps Script itself requires school Google sign-in before this code can run at all).
+const APP_URL   = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
+const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+
+async function callBackend(body) {
+  const res = await fetch(APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
 
 // ─────────────────────────────────────────────
 //  GRADE TIME WINDOWS
@@ -764,30 +778,11 @@ function hideAlert() {
 //  SUPABASE
 // ─────────────────────────────────────────────
 async function saveToSupabase(record) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/followup_records`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(record)
-  });
-  if (!res.ok) throw new Error('Supabase save failed: ' + res.status);
-  return (await res.json())[0];
+  return await callBackend({ action: 'insert', table: 'followup_records', row: record });
 }
 
 async function updateCalendarStatus(id, calStatuses) {
-  await fetch(`${SUPABASE_URL}/rest/v1/followup_records?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`
-    },
-    body: JSON.stringify({ calendar_status: calStatuses })
-  });
+  await callBackend({ action: 'update', table: 'followup_records', match: { id: id }, patch: { calendar_status: calStatuses } });
 }
 
 // ─────────────────────────────────────────────
@@ -795,22 +790,11 @@ async function updateCalendarStatus(id, calStatuses) {
 //  Each attendee gets an email with a .ics file
 //  attached — one click adds it to Outlook.
 // ─────────────────────────────────────────────
-const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/send-followup-emails`;
-
 async function sendCalendarEmails({ initials, squad, trigDateStr, outcome, attendees, submittedBy }) {
-  const res = await fetch(EDGE_FN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-    },
-    body: JSON.stringify({
-      initials, squad, grade, triggerType,
-      trigDateStr, outcome, attendees, submittedBy,
-    }),
-  });
-  if (!res.ok) throw new Error('Edge function error: ' + res.status);
-  return await res.json();
+  return await callBackend({ action: 'sendFollowupEmails', payload: {
+    initials, squad, grade, triggerType,
+    trigDateStr, outcome, attendees, submittedBy,
+  }});
 }
 
 
@@ -858,7 +842,7 @@ async function scheduleAll() {
       calendar_status: { day2: 'pending', week2: 'pending', month2: 'pending' },
     });
   } catch (err) {
-    showAlert('warn', 'Could not save to Supabase — continuing to send emails.');
+    showAlert('warn', 'Could not save the record — continuing to send emails.');
   }
 
   // 2 — Send all 3 emails via Edge Function (one call)
@@ -900,7 +884,7 @@ async function scheduleAll() {
     showAlert('warn', `${successCount} of 3 emails sent. Check errors above.`);
     document.getElementById('btn-schedule').disabled = false;
   } else {
-    showAlert('error', 'Email sending failed. Check Supabase Edge Function logs and RESEND_API_KEY secret.');
+    showAlert('error', 'Email sending failed. Check the Apps Script execution log and RESEND_API_KEY script property.');
     document.getElementById('btn-schedule').disabled = false;
   }
 }
