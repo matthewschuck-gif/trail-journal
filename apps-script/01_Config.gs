@@ -64,6 +64,10 @@ const SCHEMA = {
     'recommendation_categories', 'recommendation_narrative', 'lrg_trait',
     'followup_person', 'followup_dates', 'followup_notes', 'status',
     'clash_squad', 'clash_point_awarded', 'ai_recommendation', 'ai_summary',
+    // Added alongside the reflections student_name/grade change -- 'student_initial' now
+    // holds the full name from the Panel's "Student Name" field (the column wasn't renamed
+    // to avoid a disruptive Sheet header change). Appended at the end for the same reason.
+    'grade',
   ],
   [TABS.FOLLOWUP_RECORDS]: [
     'id', 'created_at', 'student_initials', 'trigger_type', 'trigger_date', 'outcome_summary',
@@ -87,24 +91,28 @@ const SCHEMA = {
  */
 
 /**
- * Run this ONCE, only if you already ran setupSpreadsheet() before student_name/grade were
- * added to the reflections schema above. It safely appends the two new header cells to the
- * END of the existing reflections tab's header row -- it does not touch or reorder any
+ * Run this ONCE, only if you already ran setupSpreadsheet() before student_name/grade (and
+ * panel_sessions.grade) were added to the schemas above. Safely appends the new header
+ * cells to the END of each tab's existing header row -- does not touch or reorder any
  * existing columns or data. Safe to run more than once (skips columns that already exist).
  */
 function migrateAddNameGradeColumns_() {
-  const sheet = getSheet_(TABS.REFLECTIONS);
+  const results = [];
+  results.push(addMissingColumns_(TABS.REFLECTIONS, ['student_name', 'grade']));
+  results.push(addMissingColumns_(TABS.PANEL_SESSIONS, ['grade']));
+  SpreadsheetApp.getUi().alert(results.join('\n'));
+}
+
+function addMissingColumns_(tabName, cols) {
+  const sheet = getSheet_(tabName);
   const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
   const headers = headerRange.getValues()[0];
-  const toAdd = ['student_name', 'grade'].filter(function (col) { return headers.indexOf(col) === -1; });
-  if (toAdd.length === 0) {
-    SpreadsheetApp.getUi().alert('Nothing to do -- student_name and grade columns already exist.');
-    return;
-  }
+  const toAdd = cols.filter(function (col) { return headers.indexOf(col) === -1; });
+  if (toAdd.length === 0) return tabName + ': nothing to do, columns already exist.';
   const startCol = sheet.getLastColumn() + 1;
   sheet.getRange(1, startCol, 1, toAdd.length).setValues([toAdd])
     .setFontWeight('bold').setBackground('#2c4a35').setFontColor('#ffffff');
-  SpreadsheetApp.getUi().alert('Added column(s): ' + toAdd.join(', ') + ' to the reflections tab.');
+  return tabName + ': added ' + toAdd.join(', ') + '.';
 }
 
 function setupSpreadsheet() {

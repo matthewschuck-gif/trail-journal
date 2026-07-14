@@ -563,13 +563,21 @@ textarea { min-height: 90px; }
     <div class="card-label">📋 Case Details</div>
     <div class="two-col">
       <div class="field">
-        <label>Student Initial</label>
-        <input type="text" id="s-initial" placeholder="First initial only" maxlength="1">
+        <label>Student Name</label>
+        <input type="text" id="s-initial" placeholder="Full name" maxlength="60">
       </div>
       <div class="field">
         <label>Panel Date</label>
         <input type="date" id="s-date">
       </div>
+    </div>
+    <div class="field">
+      <label>Grade</label>
+      <select id="s-grade">
+        <option value="">Not set</option>
+        <option value="7">Grade 7</option>
+        <option value="8">Grade 8</option>
+      </select>
     </div>
     <div class="field">
       <label>Referring Staff Member</label>
@@ -1077,7 +1085,7 @@ textarea { min-height: 90px; }
 // Reads Screen 1 fields and updates the scheduler context strip on Screen 7.
 // Also builds a pre-filled URL so the scheduler opens with student data ready.
 function refreshFuStrip() {
-  const initial = (document.getElementById('s-initial')?.value || '').trim().toUpperCase();
+  const initial = (document.getElementById('s-initial')?.value || '').trim();
   const squad   = document.getElementById('s-squad')?.value || '';
   const date    = document.getElementById('s-date')?.value || '';
 
@@ -1164,7 +1172,7 @@ async function callBackend(body, admin) {
 // ── STATE ─────────────────────────────────────────────────────────────────
 const P = {
   sessionId: genUUID(),
-  date: null, initial: null, staff: null,
+  date: null, initial: null, grade: null, staff: null,
   incident: null, pattern: null, squad: null,
   tjId: null, tjData: null,
   panelists: [],
@@ -1217,9 +1225,10 @@ function toast(msg) {
 
 // ── SESSION START ─────────────────────────────────────────────────────────
 function startSession() {
-  const initial = document.getElementById('s-initial').value.trim().toUpperCase();
-  if (!initial) { toast('Enter the student initial before starting.'); return; }
+  const initial = document.getElementById('s-initial').value.trim();
+  if (!initial) { toast('Enter the student\'s name before starting.'); return; }
   P.initial = initial;
+  P.grade = document.getElementById('s-grade')?.value || null;
   P.date = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
   P.staff = document.getElementById('s-staff').value.trim();
   P.incident = document.getElementById('s-incident').value.trim();
@@ -1357,8 +1366,10 @@ async function importTrailJournal() {
     const p3 = r.part3_json || {};
 
     // Pre-fill case setup fields
-    if (r.initial && !document.getElementById('s-initial').value)
-      document.getElementById('s-initial').value = r.initial;
+    if ((r.student_name || r.initial) && !document.getElementById('s-initial').value)
+      document.getElementById('s-initial').value = r.student_name || r.initial;
+    if (r.grade && !document.getElementById('s-grade').value)
+      document.getElementById('s-grade').value = r.grade;
 
     // Build preview
     document.getElementById('tj-preview-body').innerHTML = `
@@ -1592,6 +1603,7 @@ async function submitAndRecord() {
     session_id: P.sessionId,
     panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
     student_initial: P.initial,
+    grade: P.grade || null,
     referring_staff: document.getElementById('s-staff').value,
     incident_summary: document.getElementById('s-incident').value,
     behavior_pattern: document.getElementById('s-pattern').value,
@@ -1733,7 +1745,7 @@ function buildRecordSummary(r) {
     <div class="card">
       <div class="summary-section">
         <h4>Case</h4>
-        <div class="summary-item"><strong>Student:</strong> ${r.student_initial} · ${r.panel_date} · ${r.clash_squad ? r.clash_squad + ' Squad' : 'Squad not recorded'}</div>
+        <div class="summary-item"><strong>Student:</strong> ${r.student_initial}${r.grade?' (Grade '+r.grade+')':''} · ${r.panel_date} · ${r.clash_squad ? r.clash_squad + ' Squad' : 'Squad not recorded'}</div>
         <div class="summary-item"><strong>Referred by:</strong> ${r.referring_staff||'—'}</div>
         <div class="summary-item"><strong>Incident:</strong> ${r.incident_summary||'—'}</div>
         ${r.trail_journal_id ? `<div class="summary-item"><strong>Trail Journal imported:</strong> Yes (${r.trail_journal_id})</div>` : ''}

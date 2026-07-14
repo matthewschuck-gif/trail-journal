@@ -918,7 +918,9 @@ Required structure:
         <div class="ed-sec" style="margin-top:16px"><h4>Columns to Include</h4>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px">
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="date" checked> Submission Date</label>
-            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial" checked> Student Initial</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="name" checked> Student Name</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="grade" checked> Grade</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial"> Student Initial</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="insight" checked> Insight Level</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait" checked> LRG Trait</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait_specifics" checked> Trait Specifics</label>
@@ -1300,17 +1302,17 @@ function renderTbl(data) {
     const bc = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins] || '';
     const trait = ((r.part3_json||{}).trait||'—').split('&')[0].trim();
     const rd = JSON.stringify(r).replace(/"/g,'&quot;');
-    return `<tr><td><strong>${r.initial||'?'}</strong></td><td>${ds}</td><td>${trait}</td><td><span class="badge ${bc}">${ins}</span></td><td><button class="view-btn" onclick='openModal(${rd})'>View</button></td></tr>`;
+    return `<tr><td><strong>${r.student_name||r.initial||'?'}</strong></td><td>${r.grade||'—'}</td><td>${ds}</td><td>${trait}</td><td><span class="badge ${bc}">${ins}</span></td><td><button class="view-btn" onclick='openModal(${rd})'>View</button></td></tr>`;
   }).join('');
   document.getElementById('tbl-body').innerHTML =
-    `<table><thead><tr><th>Initial</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table><thead><tr><th>Name</th><th>Grade</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function filterTbl() {
   const q = document.getElementById('tbl-search').value.toLowerCase();
   let f = ALL;
   if (curFilter !== 'all') f = f.filter(r => r.insight_level === curFilter);
-  if (q) f = f.filter(r => (r.initial||'').toLowerCase().includes(q) || JSON.stringify(r).toLowerCase().includes(q));
+  if (q) f = f.filter(r => (r.student_name||r.initial||'').toLowerCase().includes(q) || JSON.stringify(r).toLowerCase().includes(q));
   renderTbl(f);
 }
 
@@ -1329,7 +1331,7 @@ function openModal(r) {
   const ins = r.insight_level||'—';
   const ibcls = {Low:'dflag',Medium:'dgold',High:'dgreen'}[ins]||'';
   const ibadge = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins]||'';
-  document.getElementById('modal-title').textContent = `Initial: ${r.initial||'?'}  ·  ${d}`;
+  document.getElementById('modal-title').textContent = `${r.student_name||('Initial: '+(r.initial||'?'))}${r.grade?' · Grade '+r.grade:''}  ·  ${d}`;
   document.getElementById('modal-body').innerHTML = `
     <div class="ds"><h4>Part 1 — What Happened</h4>
       <div class="di"><div class="di-lbl">Situation</div><div class="di-val">${p1.whatHappened||'—'}</div></div>
@@ -1467,13 +1469,13 @@ window.showPage = function(name) {
 // ── FEATURE 4: PARENT LETTERS ─────────────────────────────────────────────
 let letterSubs = [];
 async function loadLetterSubs() {
-  const data = await sb('reflections?select=id,session_id,initial,created_at,insight_level,part3_json&order=created_at.desc&limit=20');
+  const data = await sb('reflections?select=id,session_id,initial,student_name,grade,created_at,insight_level,part3_json&order=created_at.desc&limit=20');
   if (!data) return;
   letterSubs = data;
   document.getElementById('letter-sub-list').innerHTML = data.map(r => {
     const d = new Date(r.created_at).toLocaleDateString();
     return `<button onclick="document.getElementById('letter-session-id').value='${r.session_id}'" style="display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:var(--navy3);border:1px solid var(--border);border-radius:7px;color:var(--text);cursor:pointer;font-family:'Barlow',sans-serif;font-size:.82rem">
-      <strong>${r.initial||'?'}</strong> · ${d} · ${(r.part3_json?.trait||'—').split('&')[0]} · <span style="color:var(--${r.insight_level==='High'?'green':r.insight_level==='Medium'?'gold':'red'})">${r.insight_level||'—'}</span>
+      <strong>${r.student_name||r.initial||'?'}</strong>${r.grade?' (Gr. '+r.grade+')':''} · ${d} · ${(r.part3_json?.trait||'—').split('&')[0]} · <span style="color:var(--${r.insight_level==='High'?'green':r.insight_level==='Medium'?'gold':'red'})">${r.insight_level||'—'}</span>
     </button>`;
   }).join('');
 }
@@ -1591,7 +1593,7 @@ async function generateBrief() {
   const j = jRows && jRows[0], r = rRows && rRows[0];
   if (!j || !r) { document.getElementById('brief-loading').textContent = 'Could not find one or both submissions.'; return; }
   const brief = `CAMP MOUNTAINEER — CONFERENCE BRIEF\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
-    `=== STUDENT A (Trail Journal) — Initial: ${j.initial||'?'} ===\n` +
+    `=== STUDENT A (Trail Journal) — ${j.student_name || ('Initial: ' + (j.initial||'?'))}${j.grade?' (Grade '+j.grade+')':''} ===\n` +
     `What happened: ${j.part1_json?.whatHappened||'—'}\n` +
     `Why: ${j.part1_json?.why||'—'}\n` +
     `What they cared about: ${j.part1_json?.cpsMyConcern||'—'}\n` +
@@ -1621,7 +1623,7 @@ function copyBrief() { navigator.clipboard.writeText(document.getElementById('br
 
 // ── FEATURE 9: CLASH FLAGS ────────────────────────────────────────────────
 async function loadClashFlags() {
-  const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
+  const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,student_name,grade,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
   if (!data || !data.length) {
     document.getElementById('clash-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏆</div><p>No High insight flags yet.</p></div>';
     return;
@@ -1630,7 +1632,8 @@ async function loadClashFlags() {
     const d = new Date(r.created_at).toLocaleDateString();
     const awarded = r.clash_points_awarded;
     return `<tr>
-      <td><strong>${r.initial||'?'}</strong></td>
+      <td><strong>${r.student_name||r.initial||'?'}</strong></td>
+      <td>${r.grade||'—'}</td>
       <td>${d}</td>
       <td>${(r.part3_json?.trait||'—').split('&')[0]}</td>
       <td style="color:var(--green);font-weight:700">High</td>
@@ -1639,7 +1642,7 @@ async function loadClashFlags() {
     </tr>`;
   }).join('');
   document.getElementById('clash-tbl-body').innerHTML =
-    `<table><thead><tr><th>Initial</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table><thead><tr><th>Name</th><th>Grade</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 async function awardPoint(sessionId, btn) {
@@ -1659,6 +1662,8 @@ let exportHeaders = [];
 // Column definitions — key, label, extractor function
 const EXPORT_COLS = {
   date:           { label: 'Date',                  fn: r => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
+  name:           { label: 'Student Name',          fn: r => r.student_name || '' },
+  grade:          { label: 'Grade',                 fn: r => r.grade || '' },
   initial:        { label: 'Initial',               fn: r => r.initial || '' },
   insight:        { label: 'Insight Level',         fn: r => r.insight_level || '' },
   trait:          { label: 'LRG Trait',             fn: r => r.part3_json?.trait || '' },
