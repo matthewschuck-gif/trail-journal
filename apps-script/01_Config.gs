@@ -12,16 +12,15 @@
  *      RESEND_API_KEY      = re_...              (existing Resend key from Supabase, or a new one)
  *      FROM_EMAIL           = noreply@trailjournal.org  (or your preferred sender)
  *      APP_TOKEN            = <any random string you make up> (shared token, see 03_Router.gs)
- *      ADMIN_DOMAIN         = yourschooldomain.org (checked against staff sign-in, see 05_AdminAuth.gs)
+ *      ADMIN_PASSWORD       = <a password for staff> (checked server-side, see 05_AdminAuth.gs)
  * 5. Run `setupSpreadsheet` once from the editor (select it in the function dropdown, click Run).
  *    Approve the permission prompts. This creates all 6 tabs with correct header rows.
- * 6. Deploy this TWICE as separate Web App deployments (see 05_AdminAuth.gs for exactly why):
- *      Deployment 1 "public": Execute as "Me", Who has access "Anyone"
- *        -> use this URL in index.html and respond/index.html
- *      Deployment 2 "admin": Execute as "Me", Who has access "Anyone within <your domain>"
- *        -> use this URL in admin/index.html, panel/index.html, panel/followup/index.html
- *    No Google Cloud Console / OAuth client needed for either -- both are plain Apps Script
- *    deployment settings.
+ * 6. Deploy ONCE as a Web App: Execute as "Me", Who has access "Anyone".
+ *    (An earlier version of this used two deployments -- one domain-restricted for staff --
+ *    but Apps Script's domain-restricted deployments don't return CORS headers to
+ *    cross-origin fetch() calls, so that path never actually worked from trailjournal.org.
+ *    One public deployment + a server-side password check in 05_AdminAuth.gs replaces it.)
+ *    Copy the resulting /exec URL -- it goes in ALL FIVE frontend files.
  */
 
 // --- SHEET TAB NAMES (mirrors the original Supabase table names 1:1) ---

@@ -1117,35 +1117,44 @@ function refreshFuStrip() {
 
 async function checkGatePW() {
   const err = document.getElementById('pw-gate-error');
-  err.textContent = 'Checking sign-in…';
+  const pw = document.getElementById('pw-gate-input').value;
+  ADMIN_PW_VALUE = pw;
   try {
-    await callBackend({ action: 'query', table: 'panel_sessions', filters: {} });
+    await callBackend({ action: 'query', table: 'panel_sessions', filters: {} }, true);
     document.getElementById('pw-gate-full').classList.add('hidden');
-    sessionStorage.setItem('panel-auth', '1');
+    // Store the actual password (not just a flag) so panel/followup/index.html -- a
+    // separate page on the same origin -- can reuse it without prompting again.
+    sessionStorage.setItem('panel-auth-pw', pw);
   } catch (e) {
-    err.textContent = 'Not signed in with a school Google account in this browser. Sign in at accounts.google.com, then try again.';
+    ADMIN_PW_VALUE = null;
+    err.textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-gate-input').value = '';
     setTimeout(() => err.textContent = '', 4000);
   }
 }
 
-// Auto-unlock if already authenticated this session (still just a UX shortcut --
-// the real check happens on every callBackend() call regardless of this flag)
-if (sessionStorage.getItem('panel-auth') === '1') {
+// Auto-unlock if already authenticated this session
+const _savedPanelPw = sessionStorage.getItem('panel-auth-pw');
+if (_savedPanelPw) {
+  ADMIN_PW_VALUE = _savedPanelPw;
   document.getElementById('pw-gate-full').classList.add('hidden');
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
 // --- Apps Script backend (replaces Supabase) ---
-// Staff-only page: uses the ADMIN (domain-restricted) deployment. The Clash of Classes
-// bridge below (COC_URL/COC_ANON) is untouched -- that project stays on Supabase as decided.
-const APP_URL   = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+// Single public deployment (the domain-restricted one didn't work cross-origin -- see
+// 05_AdminAuth.gs). Staff-only actions require a password checked server-side instead.
+// The Clash of Classes bridge below (COC_URL/COC_ANON) is untouched -- stays on Supabase.
+const APP_URL   = 'https://script.google.com/macros/s/AKfycbxlNfCjEj92jSWM8ajn2R_KI7_bskiMQR9hvdUQIxZA5wKiT9nae5HIY881jIJJjNx58w/exec';
 const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
+let ADMIN_PW_VALUE = null;
 
-async function callBackend(body) {
+async function callBackend(body, admin) {
+  const fullBody = admin ? Object.assign({ adminPassword: ADMIN_PW_VALUE }, body) : body;
   const res = await fetch(APP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
-    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, fullBody)),
   });
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || 'Request failed');
@@ -1335,7 +1344,7 @@ async function importTrailJournal() {
   if (!id) return;
   document.getElementById('import-status').textContent = 'Looking up session…';
   try {
-    const rows = await callBackend({ action: 'query', table: 'reflections', filters: { session_id: id } });
+    const rows = await callBackend({ action: 'query', table: 'reflections', filters: { session_id: id } }, true);
     if (!rows || !rows[0]) {
       document.getElementById('import-status').textContent = '⚠️ Session ID not found.';
       return;
@@ -1393,7 +1402,7 @@ async function importTrailJournal() {
 // ── AI CALLS ──────────────────────────────────────────────────────────────
 async function callEdge(type, payload) {
   try {
-    return await callBackend({ action: 'ai', type, payload });
+    return await callBackend({ action: 'ai', type, payload }, true);
   } catch(e) { console.error('AI call error:', e); return null; }
 }
 
@@ -1612,7 +1621,7 @@ async function submitAndRecord() {
 
   // 1. Save panel session
   saves.push(
-    callBackend({ action: 'insert', table: 'panel_sessions', row: record })
+    callBackend({ action: 'insert', table: 'panel_sessions', row: record }, true)
       .then(() => toast('✓ Panel record saved'))
       .catch(e => console.error('Panel save error:', e))
   );
@@ -1628,7 +1637,7 @@ async function submitAndRecord() {
         panel_checkin_person: followupPerson,
         panel_checkin_date: followupDates.two_days || null,
         panel_completed_at: new Date().toISOString(),
-      }})
+      }}, true)
         .then(() => console.log('✓ Trail Journal back-write complete'))
         .catch(e => console.error('TJ back-write error:', e))
     );

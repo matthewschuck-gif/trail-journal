@@ -561,16 +561,25 @@
 //  CONFIG
 // ─────────────────────────────────────────────
 // --- Apps Script backend (replaces Supabase) ---
-// This page is staff-only, so it uses the ADMIN deployment URL (domain-restricted --
-// Apps Script itself requires school Google sign-in before this code can run at all).
-const APP_URL   = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+// Single public deployment (the domain-restricted one didn't work cross-origin -- see
+// 05_AdminAuth.gs). This page is staff-only: it reuses the staff password saved to
+// sessionStorage by panel/index.html (same-origin, so it carries over automatically when
+// reached via the "Schedule Follow-Up" link). If opened directly with nothing saved yet,
+// it prompts once.
+const APP_URL   = 'https://script.google.com/macros/s/AKfycbxlNfCjEj92jSWM8ajn2R_KI7_bskiMQR9hvdUQIxZA5wKiT9nae5HIY881jIJJjNx58w/exec';
 const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
+
+let ADMIN_PW_VALUE = sessionStorage.getItem('panel-auth-pw') || null;
+if (!ADMIN_PW_VALUE) {
+  ADMIN_PW_VALUE = window.prompt('Staff password (from the Trailback Panel):') || null;
+  if (ADMIN_PW_VALUE) sessionStorage.setItem('panel-auth-pw', ADMIN_PW_VALUE);
+}
 
 async function callBackend(body) {
   const res = await fetch(APP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
-    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN, adminPassword: ADMIN_PW_VALUE }, body)),
   });
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || 'Request failed');

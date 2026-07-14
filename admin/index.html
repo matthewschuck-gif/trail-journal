@@ -1124,17 +1124,20 @@ Required structure:
 
 <script>
 // --- Apps Script backend (replaces Supabase) ---
-// Staff-only page: ALWAYS uses the ADMIN (domain-restricted) deployment. Apps Script itself
-// requires the visitor to be signed into a @ADMIN_DOMAIN Google account before this code can
-// reach any data at all -- that's the real security boundary now, not a client-side password.
-const APP_URL   = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+// Single public deployment for everything (the domain-restricted deployment approach didn't
+// work in practice -- see 05_AdminAuth.gs for why). Staff-only actions instead require a
+// password, checked server-side in Apps Script.
+const APP_URL   = 'https://script.google.com/macros/s/AKfycbxlNfCjEj92jSWM8ajn2R_KI7_bskiMQR9hvdUQIxZA5wKiT9nae5HIY881jIJJjNx58w/exec';
 const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
 
-async function callBackend(body) {
+let ADMIN_PW_VALUE = null; // held in memory only for this page load, sent on staff-only calls
+
+async function callBackend(body, admin) {
+  const fullBody = admin ? Object.assign({ adminPassword: ADMIN_PW_VALUE }, body) : body;
   const res = await fetch(APP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
-    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, fullBody)),
   });
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || 'Request failed');
@@ -1142,22 +1145,23 @@ async function callBackend(body) {
 }
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
-// The old hardcoded password gate is gone. Clicking through now just attempts a real
-// backend call; if the visitor isn't signed into the right Google account, Apps Script
-// itself rejects the request and we show a clear "sign in" message instead of a dashboard.
+// Password is checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
+// client-side, unlike the original hardcoded check.
 async function doLogin() {
-  document.getElementById('lerr').style.display = 'none';
-  document.getElementById('lerr').textContent = 'Checking sign-in…';
-  document.getElementById('lerr').style.display = 'block';
+  const err = document.getElementById('lerr');
+  err.style.display = 'none';
+  const pw = document.getElementById('lpw').value;
+  ADMIN_PW_VALUE = pw;
   try {
-    await callBackend({ action: 'query', table: 'site_config', filters: {} });
+    await callBackend({ action: 'query', table: 'site_config', filters: {} }, /* admin */ true);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-shell').style.display = 'block';
     loadDash();
   } catch (e) {
-    document.getElementById('lerr').textContent =
-      'Not signed in with a school Google account in this browser. Sign in at accounts.google.com, then try again. (' + e.message + ')';
-    document.getElementById('lerr').style.display = 'block';
+    ADMIN_PW_VALUE = null;
+    err.textContent = 'Incorrect password. Try again.';
+    err.style.display = 'block';
+    document.getElementById('lpw').value = '';
   }
 }
 function doLogout() {
@@ -1166,7 +1170,7 @@ function doLogout() {
 }
 // Try automatically on load -- if already signed into the right Google account in this
 // browser, staff skip straight to the dashboard with no extra click.
-doLogin();
+// Password entry required -- no auto-login on page load
 
 // ── PAGE NAV ──────────────────────────────────────────────────────────────
 function showPage(name) {
@@ -1210,15 +1214,15 @@ async function sb(pathOrQuery, opts = {}) {
   // PATCH/POST (updates from the content editor etc.) still go through opts.method/body
   if (opts.method === 'PATCH') {
     const body = JSON.parse(opts.body);
-    await callBackend({ action: 'update', table, match: eqFilters, patch: body });
+    await callBackend({ action: 'update', table, match: eqFilters, patch: body }, true);
     return null;
   }
   if (opts.method === 'POST') {
     const body = JSON.parse(opts.body);
-    return [await callBackend({ action: 'insert', table, row: body })];
+    return [await callBackend({ action: 'insert', table, row: body }, true)];
   }
 
-  let rows = await callBackend({ action: 'query', table, filters: eqFilters });
+  let rows = await callBackend({ action: 'query', table, filters: eqFilters }, true);
 
   rangeFilters.forEach(({ col, op, value }) => {
     rows = rows.filter(r => op === 'gte' ? (r[col] >= value) : (r[col] <= value));
@@ -1488,7 +1492,7 @@ async function generateLetter() {
     insightLevel: r.insight_level||'Medium',
     repairPlan: ai.repairPlan||'',
     studentGoal: r.goal||''
-  }});
+  }}, true);
   document.getElementById('letter-loading').style.display = 'none';
   if (data?.subject && data?.body) {
     document.getElementById('letter-subject').value = data.subject;
@@ -1523,7 +1527,7 @@ async function runPatternAnalysis() {
   });
   const summaryStats = { total:data.length, insights:insCounts, topTraits: Object.entries(traitCounts).sort((a,b)=>b[1]-a[1]).slice(0,5), topEmotions: Object.entries(emoCounts).sort((a,b)=>b[1]-a[1]).slice(0,8) };
 
-  const result = await callBackend({ action: 'ai', type: 'pattern_analysis', payload: { submissions: summaryStats, dateRange: from + ' to ' + to }});
+  const result = await callBackend({ action: 'ai', type: 'pattern_analysis', payload: { submissions: summaryStats, dateRange: from + ' to ' + to }}, true);
   document.getElementById('pat-loading').style.display = 'none';
   if (result?.summary) {
     document.getElementById('pat-output').style.display = 'block';

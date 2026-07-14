@@ -1,84 +1,51 @@
 /**
  * Trail Journal -- Apps Script backend
- * File 5 of N (revised): Workspace-restricted admin access -- NO Google Cloud Console needed.
+ * File 5 of N (revised again): staff password gate, checked server-side.
  *
- * Your district restricts Cloud Console / custom OAuth client creation, so this does NOT use
- * Google Identity Services or a Client ID. Instead it uses a feature built into Apps Script
- * deployments themselves: you can publish the SAME script as two separate Web App URLs with
- * different access levels. Apps Script enforces the sign-in/domain check itself, before your
- * code ever runs -- nothing to set up in Google Cloud.
+ * The original two-deployment (public + domain-restricted) design does NOT work in practice:
+ * Apps Script's "Anyone within domain" Web App deployments route requests through an extra
+ * Google auth-check hop that doesn't return CORS headers, so a cross-origin fetch() from
+ * trailjournal.org can never read the response, even when correctly signed in. Confirmed by
+ * testing. So there is now only ONE deployment (the public one), used by every page.
  *
- * ONE-TIME SETUP (Deploy > New deployment, done TWICE from the same Apps Script project):
- *
- *   Deployment 1 -- "public"
- *     Execute as: Me
- *     Who has access: Anyone
- *   -> gives you a URL like https://script.google.com/macros/s/AAA.../exec
- *   -> used ONLY by: the main student journal (index.html) and the responder form
- *      (respond/index.html), for insert-only, anonymous actions.
- *
- *   Deployment 2 -- "admin"
- *     Execute as: Me
- *     Who has access: Anyone within <your school Workspace domain>
- *   -> gives you a second, different URL, e.g. https://script.google.com/macros/s/BBB.../exec
- *   -> used ONLY by: admin/index.html, panel/index.html, panel/followup/index.html.
- *      Anyone who opens this URL who isn't signed into a @<yourdomain> Google account gets
- *      Google's own "you need permission" page automatically -- your code never even runs
- *      for them. Staff who ARE signed in reach your code, and Session.getActiveUser().getEmail()
- *      reliably returns their real school email address -- verified by Google, not by us.
- *
- * Both deployments run the exact same Code.gs files (this whole project). The only difference
- * is which URL each frontend page is configured to call -- that's set up in file 9 (frontend
- * rewiring): student-facing pages get the Deployment 1 URL, staff-facing pages get Deployment 2.
+ * Staff-only actions are instead gated by a password checked HERE, server-side, in Apps
+ * Script -- never exposed in frontend source. This is still a real improvement over the
+ * original app, which compared a hardcoded password directly in client-side JS (visible to
+ * anyone who viewed page source). It's a shared-secret model, similar in spirit to the
+ * APP_TOKEN check in 03_Router.gs, just with its own separate secret and its own error message.
  *
  * Add this Script Property (Project Settings > Script Properties):
- *   ADMIN_DOMAIN = <your school's Workspace domain, e.g. easdpa.org>
- * (used only as a sanity double-check below, in case the deployment's own domain restriction
- * is ever misconfigured -- belt and suspenders, not the primary control).
+ *   ADMIN_PASSWORD = <a password you choose for staff -- can be the old one or a new one>
  */
 
-// Table names that require the request to have come in through the domain-restricted
-// ("admin") deployment. The student journal (reflections insert) and responder form
-// (responder_reflections insert) are deliberately NOT in this list.
+// Table names that require a valid staff password on every request.
 const ADMIN_ONLY_TABLES_ = ['panel_sessions', 'followup_records', 'incident_reports'];
 
 // AI proxy "type" values that are staff-only tools, not part of the student-facing flow.
 const ADMIN_ONLY_AI_TYPES_ = ['pattern_analysis', 'parent_letter', 'panel_inquiry_analysis', 'panel_recommendation_draft'];
 
-/**
- * Call this from the router before running an action that needs staff identity.
- * Session.getActiveUser() is only populated when the request came through the
- * domain-restricted deployment AND the signed-in account is on that domain -- Apps Script
- * itself guarantees this, we're just reading the result. If someone somehow calls an
- * admin-only action through the public deployment, getActiveUser() comes back empty and
- * this throws.
- */
-function requireStaffUser_() {
-  const email = Session.getActiveUser().getEmail();
-  if (!email) {
-    throw new Error('This action requires school sign-in. Use the admin dashboard URL, not the public one.');
+function requireStaffPassword_(providedPassword) {
+  const expected = getProp_('ADMIN_PASSWORD');
+  if (!providedPassword || providedPassword !== expected) {
+    throw new Error('Incorrect staff password.');
   }
-  const adminDomain = getProp_('ADMIN_DOMAIN');
-  const domain = email.split('@')[1];
-  if (domain !== adminDomain) {
-    throw new Error('This dashboard is restricted to ' + adminDomain + ' accounts. Signed in as: ' + email);
-  }
-  return { email: email };
+  return { ok: true };
 }
 
 /**
- * Called from the router for every request. Throws if this action needs staff identity
- * and the request didn't come in with one. Silently passes through for anonymous
- * student-facing actions (journal + responder form inserts, and the student-facing AI types).
+ * Called from the router for every request. Throws if this action needs the staff password
+ * and the request didn't include a correct one. Silently passes through for anonymous
+ * student-facing actions (journal + responder form inserts, and student-facing AI types).
  */
 function enforceAdminGate_(body) {
   const needsAdmin =
     (ADMIN_ONLY_TABLES_.indexOf(body.table) !== -1) ||
     (body.action === 'ai' && ADMIN_ONLY_AI_TYPES_.indexOf(body.type) !== -1) ||
+    (body.action === 'sendFollowupEmails') ||
     // reflections/responder_reflections are open for insert (students submitting), but
     // reading them back in bulk (the admin dashboard listing/export) is staff-only.
     ((body.table === 'reflections' || body.table === 'responder_reflections') && body.action === 'query' && !body.filters);
 
   if (!needsAdmin) return null;
-  return requireStaffUser_();
+  return requireStaffPassword_(body.adminPassword);
 }
