@@ -15,6 +15,10 @@
   --gold: #c9a84c;
   --gold-light: #fdf5df;
   --gold-dark: #8a6820;
+  /* Fixed accent for text on the ripple-suggest panel's hardcoded dark background --
+     NOT overridden per squad theme (unlike --gold, which becomes low-contrast greys/blues
+     for Black/Grey squads and was hard to read on that dark green panel). */
+  --gold-on-dark: #e8c766;
   --bark: #7a5c3a;
   --bark-light: #f5ede0;
   --paper: #faf6ef;
@@ -54,21 +58,12 @@ body::before {
   pointer-events: none; z-index: 0;
 }
 
-/* ── PRIVACY BAR ── */
-.privacy-bar {
-  position: relative; z-index: 10;
-  background: var(--trail-deep);
-  color: rgba(255,255,255,0.75);
-  font-size: 0.72rem; text-align: center;
-  padding: 6px 16px; letter-spacing: 0.05em;
-  font-family: 'Barlow', sans-serif;
-}
-.privacy-bar strong { color: #a8d5b5; }
+/* ── STICKY NAV WRAPPER (header + progress bar + steps bar stack as one unit) ── */
+.sticky-nav { position: sticky; top: 0; z-index: 200; }
 
 /* ── HEADER ── */
 .site-header {
   background: var(--trail);
-  position: sticky; top: 0; z-index: 200;
   box-shadow: 0 2px 20px rgba(0,0,0,0.25);
   border-bottom: 3px solid var(--gold);
 }
@@ -112,7 +107,6 @@ body::before {
 /* ── TRAIL PROGRESS ── */
 .trail-progress-bar {
   height: 4px; background: rgba(255,255,255,0.1);
-  position: sticky; top: 73px; z-index: 199;
 }
 .trail-progress-fill {
   height: 100%; background: var(--gold);
@@ -125,7 +119,6 @@ body::before {
   background: white;
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
-  position: sticky; top: 77px; z-index: 198;
 }
 .steps-inner {
   display: flex; max-width: 860px; margin: 0 auto;
@@ -1054,14 +1047,26 @@ input[type="range"]::-webkit-slider-thumb {
 .r-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
 
 /* Bucket cards */
-.bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
-.bucket-card { border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border); background: var(--paper); }
+.bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; align-items: stretch; }
+.bucket-card {
+  display: flex; flex-direction: column;
+  border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.2s;
+  border: 2px solid var(--border); background: var(--paper);
+}
 .bucket-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-warm); }
 .bucket-card.selected { border-color: var(--trail); background: var(--trail-light); }
-.bucket-icon { font-size: 1.6rem; margin-bottom: 8px; }
-.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; color: var(--ink); }
-.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
-.bucket-example { font-family: 'Barlow', sans-serif; font-size: 0.75rem; color: var(--trail); font-style: italic; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.bucket-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1.05rem; margin-bottom: 8px; color: var(--ink); line-height: 1.3; }
+.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: var(--ink-mid); line-height: 1.6; }
+.bucket-example {
+  font-family: 'Barlow', sans-serif; font-size: 0.76rem; color: var(--trail); font-style: italic;
+  margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border);
+  /* margin-top: auto pins this to the bottom of the card regardless of description length,
+     so all 4 cards in the grid line up evenly instead of looking staggered/jagged. */
+}
+@media (max-width: 580px) {
+  .bucket-grid { grid-template-columns: 1fr; }
+}
 
 /* Checklist gate */
 .check-gate { margin: 16px 0; }
@@ -1099,53 +1104,6 @@ input[type="range"]::-webkit-slider-thumb {
 .cc-textarea::placeholder { opacity: 0.45; }
 .cc-textarea:focus { outline: none; border-color: var(--gold); }
 .cc-thinking { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.8rem; font-family: 'Barlow', sans-serif; padding: 4px 0; }
-
-/* ── SKILL BUILDING HUB ── */
-.skill-hub { margin-top: 14px; }
-.skill-domain {
-  border: 1.5px solid var(--border); border-radius: var(--radius);
-  margin-bottom: 10px; overflow: hidden;
-}
-.skill-domain-head {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 16px; cursor: pointer; background: var(--paper);
-  font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.88rem;
-  transition: background 0.2s;
-}
-.skill-domain-head:hover { background: var(--paper-dark); }
-.skill-domain-head .sd-icon { font-size: 1.2rem; flex-shrink: 0; }
-.skill-domain-head .sd-chevron { margin-left: auto; font-size: 0.75rem; color: var(--ink-light); transition: transform 0.2s; }
-.skill-domain.open .sd-chevron { transform: rotate(90deg); }
-.skill-domain-body { display: none; padding: 0 16px 14px; }
-.skill-domain.open .skill-domain-body { display: block; animation: trailIn 0.25s ease; }
-.skill-card {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 14px; margin: 8px 0;
-  border: 1.5px solid var(--border); border-radius: 9px; background: white;
-  cursor: pointer; transition: all 0.15s;
-}
-.skill-card:hover { border-color: var(--trail-mid); background: var(--trail-light); }
-.skill-card.selected { border-color: var(--trail); background: var(--trail); color: white; }
-.skill-card.selected .sc-name { color: white; }
-.skill-card.selected .sc-desc { color: rgba(255,255,255,0.75); }
-.sc-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
-.sc-name { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.85rem; margin-bottom: 3px; color: var(--trail); }
-.sc-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
-
-/* Skill micro-lesson */
-.skill-lesson {
-  display: none; margin-top: 14px;
-  background: linear-gradient(135deg, #1a2a1e 0%, #0d1810 100%);
-  border-radius: 10px; padding: 22px; color: white; animation: trailIn 0.4s ease;
-}
-.skill-lesson.show { display: block; }
-.sl-title { font-family: 'Walter Turncoat', cursive; font-size: 1.15rem; color: white; margin-bottom: 14px; }
-.sl-body { font-family: 'Barlow', sans-serif; font-size: 0.87rem; line-height: 1.8; color: rgba(255,255,255,0.88); }
-.sl-body p { margin-bottom: 11px; }
-.sl-body strong { color: #a8d5b5; }
-.sl-steps { list-style: none; margin: 12px 0; }
-.sl-steps li { display: flex; gap: 10px; margin-bottom: 10px; font-family: 'Barlow', sans-serif; font-size: 0.84rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
-.sl-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: var(--trail-deep); font-family: 'Walter Turncoat', cursive; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
 
 /* ── LOOPING PROMPT ── */
 .looping-block {
@@ -1273,7 +1231,7 @@ input[type="range"]::-webkit-slider-thumb {
   display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
 }
 .rs-badge {
-  background: var(--gold); color: var(--trail-deep);
+  background: var(--gold-on-dark); color: #1a2e1f;
   font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em;
   text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
   font-family: 'Barlow', sans-serif;
@@ -1293,7 +1251,7 @@ input[type="range"]::-webkit-slider-thumb {
 .rs-card:nth-child(3) { animation-delay: 0.2s; }
 .rs-person {
   font-family: 'Barlow', sans-serif; font-size: 0.8rem; font-weight: 700;
-  color: var(--gold); margin-bottom: 4px;
+  color: var(--gold-on-dark); margin-bottom: 4px;
 }
 .rs-insight {
   font-family: 'Barlow', sans-serif; font-size: 0.82rem;
@@ -1301,11 +1259,11 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .rs-add-btn {
   margin-top: 8px; padding: 5px 12px;
-  background: rgba(201,168,76,0.15); border: 1px solid var(--gold);
-  border-radius: 20px; color: var(--gold); font-family: 'Barlow', sans-serif;
+  background: rgba(232,199,102,0.15); border: 1px solid var(--gold-on-dark);
+  border-radius: 20px; color: var(--gold-on-dark); font-family: 'Barlow', sans-serif;
   font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
 }
-.rs-add-btn:hover { background: var(--gold); color: var(--trail-deep); }
+.rs-add-btn:hover { background: var(--gold-on-dark); color: #1a2e1f; }
 .rs-add-btn.added { background: var(--trail-mid); border-color: var(--trail-mid); color: white; cursor: default; }
 
 /* ── SQUAD THEMES ── */
@@ -1436,6 +1394,8 @@ body.squad-purple {
 .sq-purple { background: #5c3d8f; color: white; border-color: #7c5db5; }
 .sq-purple.selected { border-color: white; }
 .squad-hint { font-size: 0.72rem; opacity: 0.5; text-align: center; font-family: 'Barlow', sans-serif; margin-top: 4px; letter-spacing: 0.03em; }
+.grade-btn { width: 96px; }
+.grade-btn.selected { border-color: var(--gold) !important; }
 
 /* ── MISC ── */
 .hidden { display: none !important; }
@@ -1455,34 +1415,34 @@ body.squad-purple {
 </head>
 <body>
 
-<div class="privacy-bar">🔒 <strong>Privacy protected</strong> — Only your first initial is stored. No full names. All responses are anonymized.</div>
-
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-emblem">⛺</div>
-    <div class="header-text">
-      <h1>Trail Journal</h1>
-      <span>Camp Mountaineer</span>
+<div class="sticky-nav">
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-emblem">⛺</div>
+      <div class="header-text">
+        <h1>Trail Journal</h1>
+        <span>Camp Mountaineer</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+        <div class="squad-badge-hdr" id="squad-badge-hdr"></div>
+        <div class="header-initial" id="hdr-initial"></div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-      <div class="squad-badge-hdr" id="squad-badge-hdr"></div>
-      <div class="header-initial" id="hdr-initial"></div>
-    </div>
-  </div>
-</header>
+  </header>
 
-<div class="trail-progress-bar"><div class="trail-progress-fill" id="progress-fill"></div></div>
-<div class="steps-bar">
-  <div class="steps-inner">
-    <div class="step-pip active" id="pip-0">Welcome</div>
-    <div class="step-pip" id="pip-1">Part 1</div>
-    <div class="step-pip" id="pip-2">Reading</div>
-    <div class="step-pip" id="pip-2b">Consequences</div>
-    <div class="step-pip" id="pip-2c">Fair</div>
-    <div class="step-pip" id="pip-3">Part 2</div>
-    <div class="step-pip" id="pip-3b">Check-In</div>
-    <div class="step-pip" id="pip-4">Part 3</div>
-    <div class="step-pip" id="pip-done">Done</div>
+  <div class="trail-progress-bar"><div class="trail-progress-fill" id="progress-fill"></div></div>
+  <div class="steps-bar">
+    <div class="steps-inner">
+      <div class="step-pip active" id="pip-0">Welcome</div>
+      <div class="step-pip" id="pip-1">Part 1</div>
+      <div class="step-pip" id="pip-2">Reading</div>
+      <div class="step-pip" id="pip-2b">Consequences</div>
+      <div class="step-pip" id="pip-2c">Fair</div>
+      <div class="step-pip" id="pip-3">Part 2</div>
+      <div class="step-pip" id="pip-3b">Check-In</div>
+      <div class="step-pip" id="pip-4">Part 3</div>
+      <div class="step-pip" id="pip-done">Done</div>
+    </div>
   </div>
 </div>
 
@@ -1511,8 +1471,19 @@ body.squad-purple {
     <p>Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward. Take your time — honest answers matter.</p>
     <div class="name-entry">
       <div class="name-bubble" id="name-bubble"></div>
-      <input type="text" class="name-field-input" id="name-inp" placeholder="Your first name" maxlength="30" autocomplete="off" spellcheck="false">
-      <div class="name-hint">Only your first initial will be kept — your full name is never stored.</div>
+      <input type="text" class="name-field-input" id="name-inp" placeholder="Your first and last name" maxlength="60" autocomplete="off" spellcheck="false">
+    </div>
+    <div style="margin-top:18px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Grade</div>
+      <div class="squad-picker" id="grade-picker">
+        <button class="squad-btn grade-btn" data-grade="7" onclick="selectGrade('7',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+          <span class="sq-icon">7</span>Grade 7
+        </button>
+        <button class="squad-btn grade-btn" data-grade="8" onclick="selectGrade('8',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+          <span class="sq-icon">8</span>Grade 8
+        </button>
+      </div>
+      <div class="squad-hint">Select your grade level</div>
     </div>
     <div style="margin-top:18px">
       <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Clash of Classes Squad</div>
@@ -2202,20 +2173,6 @@ body.squad-purple {
     <div class="val-msg" id="e-traitwhy">Explain the connection — why does this trait relate to what happened?</div>
   </div>
 
-  <!-- SKILL BUILDING HUB -->
-  <div id="skill-hub-card" class="jcard hidden">
-    <div class="jcard-label">🧠 Build the Skill</div>
-    <div class="jcard-sub">Before you create your demonstration, explore one strategy connected to the skill you're working on. Pick the domain that feels most relevant, then choose a strategy to learn about.</div>
-    <div class="skill-hub" id="skill-hub">
-      <!-- Built dynamically based on trait selected -->
-    </div>
-    <div class="skill-lesson" id="skill-lesson">
-      <div class="ai-thinking" id="skill-lesson-thinking"><div class="spin"></div>Building your strategy briefing…</div>
-      <div class="sl-title hidden" id="sl-title"></div>
-      <div class="sl-body hidden" id="sl-body"></div>
-    </div>
-  </div>
-
   <!-- LOOPING PROMPT — shows after CPS synthesis, surfaces here in Part 3 context -->
   <div id="looping-card" class="jcard hidden">
     <div class="jcard-label">🔄 Perspective Getting — The Looping Technique</div>
@@ -2328,7 +2285,7 @@ body.squad-purple {
     <h2>Journal Complete</h2>
     <p>You've reached the top of this part of the trail. What you did here takes honesty and courage.</p>
     <div class="done-detail">
-      ✅ Your journal has been recorded anonymously.<br>
+      ✅ Your journal has been saved and shared with staff to support you.<br>
       📋 Keep working on your creative product if you haven't finished it yet.<br>
       🏕 Someone will connect with you soon to walk through your plan together.
     </div>
@@ -2544,6 +2501,8 @@ if (IS_PREVIEW) {
 
 const S = {
   initial: '',
+  name: '',
+  grade: null,
   sessionId: generateUUID(),
   squad: null,
   eduring: [], enow: [],
@@ -2571,16 +2530,24 @@ document.getElementById('name-inp').addEventListener('input', function() {
     bubble.textContent = init;
     bubble.classList.add('show');
     S.initial = init;
+    S.name = raw;
   } else {
     bubble.classList.remove('show');
     S.initial = '';
+    S.name = '';
   }
 });
 
+function selectGrade(grade, btn) {
+  S.grade = grade;
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
 function begin() {
-  // Admin preview bypass — skip name requirement
+  // Admin preview bypass — skip name/grade requirement
   if (IS_PREVIEW) {
-    S.initial = 'A';
+    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8';
     document.getElementById('hdr-initial').textContent = 'A';
     document.getElementById('hdr-initial').classList.add('show');
     document.getElementById('r-init').textContent = 'A';
@@ -2589,6 +2556,8 @@ function begin() {
   }
   const raw = document.getElementById('name-inp').value.trim();
   if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { doShake(document.getElementById('name-inp')); return; }
+  if (!S.grade) { doShake(document.getElementById('grade-picker')); return; }
+  S.name = raw;
   S.initial = raw[0].toUpperCase();
   document.getElementById('name-inp').value = '';
   const hi = document.getElementById('hdr-initial');
@@ -3183,134 +3152,6 @@ function triggerCreativeChallenge(ranked, whatHappened, hurtPeople) {
 }
 
 // ─── SKILL BUILDING HUB ───────────────────────────────────────────────────
-const SKILL_DOMAINS = {
-  'Self-Awareness': {
-    icon: '🪞',
-    desc: 'Understanding your emotions, thoughts, and behaviors and how they affect others.',
-    skills: [
-      { icon: '⚡', name: 'The Meta-Moment', desc: 'Pause before you react. Ask: What would my best self do right now?', strategy: 'meta_moment' },
-      { icon: '🏷️', name: 'Emotional Granularity', desc: 'Name your emotion precisely — not just "angry" but "frustrated" or "humiliated." The more specific, the more you can manage it.', strategy: 'granularity' },
-      { icon: '🔍', name: 'Trigger Mapping', desc: 'Identify what sets you off — the people, places, and situations that tend to activate your downstairs brain.', strategy: 'triggers' },
-    ]
-  },
-  'Self-Management': {
-    icon: '🧘',
-    desc: 'Regulating your emotions and behaviors, especially under stress.',
-    skills: [
-      { icon: '🌬️', name: 'Mindful Breathing (7-11)', desc: 'Breathe in for 7 counts, out for 11. This activates your parasympathetic nervous system — the brake on your stress response.', strategy: 'breathing' },
-      { icon: '🔄', name: 'Cognitive Reframing (PAIR)', desc: 'Pause → Acknowledge → Investigate → Reframe. Find a new way to see the situation before you react.', strategy: 'reframe' },
-      { icon: '🎯', name: 'Implementation Intention', desc: 'Plan your next move specifically: "When X happens, I will do Y." Specific plans are far more likely to happen.', strategy: 'implementation' },
-      { icon: '👆', name: 'Attention Shifting', desc: 'Redirect your attention away from the trigger. Look up, drink water, physically move — these shift your nervous system state.', strategy: 'attention' },
-    ]
-  },
-  'Perspective Getting': {
-    icon: '👥',
-    desc: 'Genuinely understanding another person\'s experience — not just tolerating it.',
-    skills: [
-      { icon: '🔁', name: 'Looping', desc: 'Ask, Repeat Back, Check, Determine Next Step. This is how you actually hear someone instead of just waiting to respond.', strategy: 'looping' },
-      { icon: '🗣️', name: 'Affective Statements', desc: 'Tell someone how their actions affected you using "I" language — without blame, just honest impact.', strategy: 'affective' },
-      { icon: '❓', name: 'Restorative Questions', desc: 'Use specific questions to understand impact: "Who was affected? How? What needs to happen to make this right?"', strategy: 'restorative_q' },
-    ]
-  },
-  'Regulation': {
-    icon: '⚖️',
-    desc: 'Getting your nervous system back to a place where you can think clearly and act intentionally.',
-    skills: [
-      { icon: '💧', name: 'Water (Ruby Payne)', desc: 'Drink a glass of water. Water helps metabolize cortisol — when your shoulders relax, it\'s working.', strategy: 'water' },
-      { icon: '👁️', name: 'Look Up', desc: 'Look at the ceiling for a moment. This creates a momentary pause that makes it harder to access runaway emotions.', strategy: 'look_up' },
-      { icon: '📅', name: 'Forward Story', desc: 'Describe what you want to do, be, and have at 25. Then identify the obstacles. This activates long-term thinking over short-term reaction.', strategy: 'forward_story' },
-      { icon: '❤️', name: 'Pat Heart & Stomach', desc: 'Left hand on heart, right on stomach, rub both. Increases serotonin — your body\'s calming chemical — through direct massage.', strategy: 'pat' },
-    ]
-  }
-};
-
-function buildSkillHub(trait) {
-  const hub = document.getElementById('skill-hub');
-  hub.innerHTML = '';
-  // Determine which domains are most relevant to the trait
-  const domainOrder = getDomainOrder(trait);
-  domainOrder.forEach(domainName => {
-    const domain = SKILL_DOMAINS[domainName];
-    if (!domain) return;
-    const div = document.createElement('div');
-    div.className = 'skill-domain';
-    div.innerHTML = `
-      <div class="skill-domain-head" onclick="toggleDomain(this.parentElement)">
-        <span class="sd-icon">${domain.icon}</span>
-        <span><strong>${domainName}</strong><br><span style="font-weight:400;font-size:.76rem;color:var(--ink-light)">${domain.desc}</span></span>
-        <span class="sd-chevron">▶</span>
-      </div>
-      <div class="skill-domain-body">
-        ${domain.skills.map(skill => `
-          <div class="skill-card" onclick="selectSkill('${domainName}','${skill.strategy}',this)">
-            <span class="sc-icon">${skill.icon}</span>
-            <div><div class="sc-name">${skill.name}</div><div class="sc-desc">${skill.desc}</div></div>
-          </div>
-        `).join('')}
-      </div>`;
-    hub.appendChild(div);
-  });
-}
-
-function getDomainOrder(trait) {
-  // Map traits to most relevant domains
-  const map = {
-    'Communication & Empathy': ['Perspective Getting','Self-Awareness','Regulation','Self-Management'],
-    'Honesty, Integrity, & Responsibility': ['Self-Awareness','Self-Management','Perspective Getting','Regulation'],
-    'Healthy Living, Wellness, & Self-Awareness': ['Self-Awareness','Regulation','Self-Management','Perspective Getting'],
-    'Critical Thinking & Problem Solving': ['Self-Management','Self-Awareness','Perspective Getting','Regulation'],
-    'Adaptability & Flexibility': ['Regulation','Self-Management','Perspective Getting','Self-Awareness'],
-    'Resilience & Grit': ['Regulation','Self-Management','Self-Awareness','Perspective Getting'],
-    'Collaborative & Teamwork': ['Perspective Getting','Self-Awareness','Regulation','Self-Management'],
-    'Civics, Leadership, & Service': ['Perspective Getting','Self-Management','Self-Awareness','Regulation'],
-  };
-  return map[trait] || ['Self-Awareness','Self-Management','Perspective Getting','Regulation'];
-}
-
-function toggleDomain(el) { el.classList.toggle('open'); }
-
-let selectedSkillStrategy = null;
-async function selectSkill(domainName, strategy, cardEl) {
-  document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('selected'));
-  cardEl.classList.add('selected');
-  selectedSkillStrategy = strategy;
-  S.selectedSkill = { domain: domainName, strategy };
-
-  // Show and populate the lesson
-  const lesson = document.getElementById('skill-lesson');
-  lesson.classList.add('show');
-  document.getElementById('skill-lesson-thinking').classList.remove('hidden');
-  document.getElementById('sl-title').classList.add('hidden');
-  document.getElementById('sl-body').classList.add('hidden');
-
-  const p1 = getPart1();
-  const result = await callEdge('skill_lesson', {
-    domain: domainName, strategy,
-    whatHappened: p1.whatHappened,
-    why: p1.why,
-    trait: S.trait,
-    emotions: S.eduring.map(e=>e.name),
-  });
-
-  document.getElementById('skill-lesson-thinking').classList.add('hidden');
-  const titleEl = document.getElementById('sl-title');
-  const bodyEl = document.getElementById('sl-body');
-  titleEl.classList.remove('hidden');
-  bodyEl.classList.remove('hidden');
-
-  if (result?.title && result?.steps) {
-    titleEl.textContent = result.title;
-    bodyEl.innerHTML = (result.intro ? `<p>${result.intro}</p>` : '') +
-      '<ul class="sl-steps">' +
-      result.steps.map((step, i) => `<li><span class="sl-step-num">${i+1}</span>${step}</li>`).join('') +
-      '</ul>' +
-      (result.application ? `<p><strong>In your situation:</strong> ${result.application}</p>` : '');
-  } else {
-    titleEl.textContent = 'How to Use This Strategy';
-    bodyEl.innerHTML = '<p>This strategy is a powerful tool for managing what you\'re experiencing. Talk to the adult in the room about how to practice it today.</p>';
-  }
-}
-
 // ─── FAIR SCREEN ─────────────────────────────────────────────────────────
 // showFairTab removed — tabs replaced with linear flow
 
@@ -3580,9 +3421,8 @@ function pickTrait(btn) {
   document.getElementById('trait-spec-list').innerHTML = items.map(i =>
     `<label><input type="checkbox" class="tspec" value="${i}"> ${i}</label>`
   ).join('');
-  ['trait-spec-card','trait-why-card','skill-hub-card','looping-card','creative-card','submit-card']
+  ['trait-spec-card','trait-why-card','looping-card','creative-card','submit-card']
     .forEach(id => document.getElementById(id).classList.remove('hidden'));
-  buildSkillHub(S.trait);
 }
 
 function pickCreative(btn) {
@@ -4112,6 +3952,7 @@ async function doSubmit() {
 
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
+    student_name: S.name, grade: S.grade,
     part1_json: p1, part2_json: p2, part3_json: p3,
     prior_count: S.priorCount || 0, status: 'submitted'
   });

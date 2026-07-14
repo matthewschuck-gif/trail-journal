@@ -43,6 +43,12 @@ const SCHEMA = {
     'status', 'goal', 'prior_count', 'conference_brief',
     'panel_completed', 'panel_session_id', 'panel_recommendation', 'panel_lrg_trait',
     'panel_checkin_person', 'panel_checkin_date', 'panel_completed_at',
+    // Added when the journal switched from anonymous-initial to full-name collection
+    // (data is now used for intervention/support, not anonymized) -- appended at the
+    // END of the column list, not inserted earlier, so existing rows/columns in an
+    // already-provisioned Sheet are not shifted. See migrateAddNameGradeColumns_() below
+    // if you already ran setupSpreadsheet() before this change.
+    'student_name', 'grade',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -79,6 +85,27 @@ const SCHEMA = {
  * go to that sheet tab -> right-click -> Protect range, and restrict edit/view access to the
  * same staff who currently have admin-dashboard access. Do not share this spreadsheet broadly.
  */
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before student_name/grade were
+ * added to the reflections schema above. It safely appends the two new header cells to the
+ * END of the existing reflections tab's header row -- it does not touch or reorder any
+ * existing columns or data. Safe to run more than once (skips columns that already exist).
+ */
+function migrateAddNameGradeColumns_() {
+  const sheet = getSheet_(TABS.REFLECTIONS);
+  const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+  const headers = headerRange.getValues()[0];
+  const toAdd = ['student_name', 'grade'].filter(function (col) { return headers.indexOf(col) === -1; });
+  if (toAdd.length === 0) {
+    SpreadsheetApp.getUi().alert('Nothing to do -- student_name and grade columns already exist.');
+    return;
+  }
+  const startCol = sheet.getLastColumn() + 1;
+  sheet.getRange(1, startCol, 1, toAdd.length).setValues([toAdd])
+    .setFontWeight('bold').setBackground('#2c4a35').setFontColor('#ffffff');
+  SpreadsheetApp.getUi().alert('Added column(s): ' + toAdd.join(', ') + ' to the reflections tab.');
+}
 
 function setupSpreadsheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
