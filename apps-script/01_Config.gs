@@ -11,11 +11,17 @@
  *      ANTHROPIC_API_KEY   = sk-ant-...          (Matt adds this directly, never in chat)
  *      RESEND_API_KEY      = re_...              (existing Resend key from Supabase, or a new one)
  *      FROM_EMAIL           = noreply@trailjournal.org  (or your preferred sender)
- *      ADMIN_DOMAIN         = yourschooldomain.org (for Google Sign-In restriction on admin dash)
+ *      APP_TOKEN            = <any random string you make up> (shared token, see 03_Router.gs)
+ *      ADMIN_DOMAIN         = yourschooldomain.org (checked against staff sign-in, see 05_AdminAuth.gs)
  * 5. Run `setupSpreadsheet` once from the editor (select it in the function dropdown, click Run).
  *    Approve the permission prompts. This creates all 6 tabs with correct header rows.
- * 6. Deploy -> New deployment -> type "Web app" -> Execute as "Me" -> Who has access "Anyone".
- *    Copy the resulting /exec URL -- this replaces every Supabase URL in the frontend.
+ * 6. Deploy this TWICE as separate Web App deployments (see 05_AdminAuth.gs for exactly why):
+ *      Deployment 1 "public": Execute as "Me", Who has access "Anyone"
+ *        -> use this URL in index.html and respond/index.html
+ *      Deployment 2 "admin": Execute as "Me", Who has access "Anyone within <your domain>"
+ *        -> use this URL in admin/index.html, panel/index.html, panel/followup/index.html
+ *    No Google Cloud Console / OAuth client needed for either -- both are plain Apps Script
+ *    deployment settings.
  */
 
 // --- SHEET TAB NAMES (mirrors the original Supabase table names 1:1) ---
@@ -95,20 +101,4 @@ function setupSpreadsheet() {
 function getSheet_(tabName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(tabName);
-  if (!sheet) throw new Error('Sheet tab not found: ' + tabName + ' -- run setupSpreadsheet() first.');
-  return sheet;
-}
-
-function getProp_(key) {
-  const v = PropertiesService.getScriptProperties().getProperty(key);
-  if (!v) throw new Error('Missing Script Property: ' + key + ' -- set it in Project Settings -> Script Properties.');
-  return v;
-}
-
-function newUuid_() {
-  return Utilities.getUuid();
-}
-
-function nowIso_() {
-  return new Date().toISOString();
-}
+  if (!sheet) 
