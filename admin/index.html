@@ -1127,8 +1127,8 @@ Required structure:
 // Staff-only page: ALWAYS uses the ADMIN (domain-restricted) deployment. Apps Script itself
 // requires the visitor to be signed into a @ADMIN_DOMAIN Google account before this code can
 // reach any data at all -- that's the real security boundary now, not a client-side password.
-const APP_URL   = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
-const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+const APP_URL   = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
 
 async function callBackend(body) {
   const res = await fetch(APP_URL, {

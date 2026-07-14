@@ -286,8 +286,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 // --- Apps Script backend (replaces Supabase) ---
 // PUBLIC deployment URL -- this page is anonymous/open, uses the "public" Apps Script
 // deployment (Execute as: Me, Who has access: Anyone). See 01_Config.gs setup notes.
-const APP_URL   = 'PASTE_PUBLIC_DEPLOYMENT_URL_HERE';
-const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+const APP_URL   = 'https://script.google.com/macros/s/AKfycbxlNfCjEj92jSWM8ajn2R_KI7_bskiMQR9hvdUQIxZA5wKiT9nae5HIY881jIJJjNx58w/exec';
+const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
 
 async function callBackend(body) {
   const res = await fetch(APP_URL, {

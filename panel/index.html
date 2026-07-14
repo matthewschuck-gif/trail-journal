@@ -1138,8 +1138,8 @@ if (sessionStorage.getItem('panel-auth') === '1') {
 // --- Apps Script backend (replaces Supabase) ---
 // Staff-only page: uses the ADMIN (domain-restricted) deployment. The Clash of Classes
 // bridge below (COC_URL/COC_ANON) is untouched -- that project stays on Supabase as decided.
-const APP_URL   = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
-const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+const APP_URL   = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+const APP_TOKEN = 'ERMuxkLJvx0p47-UzN6SFIhni5-fqsYDnERsBZfsVzY'; // must match the APP_TOKEN Script Property
 
 async function callBackend(body) {
   const res = await fetch(APP_URL, {
