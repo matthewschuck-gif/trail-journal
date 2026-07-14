@@ -283,9 +283,24 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 </main>
 
 <script>
-const SB_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
-const EDGE_FN = SB_URL + '/functions/v1/ai-proxy';
+// --- Apps Script backend (replaces Supabase) ---
+// PUBLIC deployment URL -- this page is anonymous/open, uses the "public" Apps Script
+// deployment (Execute as: Me, Who has access: Anyone). See 01_Config.gs setup notes.
+const APP_URL   = 'PASTE_PUBLIC_DEPLOYMENT_URL_HERE';
+const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+
+async function callBackend(body) {
+  const res = await fetch(APP_URL, {
+    method: 'POST',
+    // text/plain avoids a CORS preflight request -- Apps Script web apps can't answer
+    // OPTIONS requests, so application/json here would break cross-origin calls.
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
 const BAD_NAMES = /^(undefined|null|none|na|n\/a|anonymous|student|kid|me|myself|i|unknown|idk)$/i;
 const DISMISSIVE = /^(n\/?a|idk|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|skip)$/i;
 
@@ -451,11 +466,7 @@ async function submitR() {
   };
 
   try {
-    await fetch(SB_URL + '/rest/v1/responder_reflections', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+SB_ANON,'Prefer':'return=minimal'},
-      body: JSON.stringify(row)
-    });
+    await callBackend({ action: 'insert', table: 'responder_reflections', row: row });
   } catch(e) { console.error('save error:', e); }
 
   goToR('done');
@@ -464,20 +475,15 @@ async function submitR() {
   const panel = document.getElementById('r-ai-panel');
   panel.style.display = 'block';
   try {
-    const res = await fetch(EDGE_FN, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_ANON},
-      body: JSON.stringify({ type:'responder_note', payload:{
-        initial: RS.initial,
-        whatHappened: row.what_happened,
-        howAffected: row.how_affected,
-        emotions: RS.emotions.map(e=>e.name),
-        intensity: RS.intensity,
-        whatNeeds: needs,
-        readyToTalk: RS.ynReady,
-      }})
-    });
-    const data = await res.json();
+    const data = await callBackend({ action: 'ai', type: 'responder_note', payload: {
+      initial: RS.initial,
+      whatHappened: row.what_happened,
+      howAffected: row.how_affected,
+      emotions: RS.emotions.map(e=>e.name),
+      intensity: RS.intensity,
+      whatNeeds: needs,
+      readyToTalk: RS.ynReady,
+    }});
     const content = document.getElementById('r-ai-content');
     if (data?.title && data?.body) {
       content.innerHTML =
