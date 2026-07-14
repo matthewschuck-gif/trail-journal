@@ -992,7 +992,7 @@ textarea { min-height: 90px; }
     <a id="fu-scheduler-link" href="/panel/followup" target="_blank" style="display:block;width:100%;padding:12px 16px;background:var(--forest);color:#fff;border-radius:9px;font-family:'Lora',Georgia,serif;font-weight:700;font-size:.92rem;text-align:center;text-decoration:none;box-shadow:0 3px 12px rgba(44,74,53,.25);transition:opacity .15s;box-sizing:border-box" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       📅 Open Follow-Up Scheduler →
     </a>
-    <div style="font-size:.72rem;color:var(--ink-lt);text-align:center;margin-top:7px;font-style:italic">Opens in a new tab · Supabase + Outlook · Grade-aware · Workday-snapped</div>
+    <div style="font-size:.72rem;color:var(--ink-lt);text-align:center;margin-top:7px;font-style:italic">Opens in a new tab · Google Sheets + Outlook · Grade-aware · Workday-snapped</div>
   </div>
 
   <div class="btn-row">
@@ -1070,7 +1070,8 @@ textarea { min-height: 90px; }
 
 <script>
 // ── GATE PASSWORD ─────────────────────────────────────────────────────────
-const PANEL_PW = 'togetherweclimb';
+// Old hardcoded password removed -- see checkGatePW() below, which now does a real
+// backend check against the ADMIN (domain-restricted) Apps Script deployment.
 
 // ── FOLLOW-UP SCHEDULER STRIP ─────────────────────────────────────────────
 // Reads Screen 1 fields and updates the scheduler context strip on Screen 7.
@@ -1114,28 +1115,42 @@ function refreshFuStrip() {
 // Hook into goTo so strip refreshes automatically when Screen 7 opens
 
 
-function checkGatePW() {
-  const val = document.getElementById('pw-gate-input').value;
+async function checkGatePW() {
   const err = document.getElementById('pw-gate-error');
-  if (val === PANEL_PW) {
+  err.textContent = 'Checking sign-in…';
+  try {
+    await callBackend({ action: 'query', table: 'panel_sessions', filters: {} });
     document.getElementById('pw-gate-full').classList.add('hidden');
     sessionStorage.setItem('panel-auth', '1');
-  } else {
-    err.textContent = 'Incorrect password. Try again.';
-    document.getElementById('pw-gate-input').value = '';
-    setTimeout(() => err.textContent = '', 3000);
+  } catch (e) {
+    err.textContent = 'Not signed in with a school Google account in this browser. Sign in at accounts.google.com, then try again.';
+    setTimeout(() => err.textContent = '', 4000);
   }
 }
 
-// Auto-unlock if already authenticated this session
+// Auto-unlock if already authenticated this session (still just a UX shortcut --
+// the real check happens on every callBackend() call regardless of this flag)
 if (sessionStorage.getItem('panel-auth') === '1') {
   document.getElementById('pw-gate-full').classList.add('hidden');
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
-const SUPA_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
-const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
-const EDGE_FN   = `${SUPA_URL}/functions/v1/ai-proxy`;
+// --- Apps Script backend (replaces Supabase) ---
+// Staff-only page: uses the ADMIN (domain-restricted) deployment. The Clash of Classes
+// bridge below (COC_URL/COC_ANON) is untouched -- that project stays on Supabase as decided.
+const APP_URL   = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
+const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+
+async function callBackend(body) {
+  const res = await fetch(APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 const P = {
@@ -1320,11 +1335,7 @@ async function importTrailJournal() {
   if (!id) return;
   document.getElementById('import-status').textContent = 'Looking up session…';
   try {
-    const res = await fetch(
-      `${SUPA_URL}/rest/v1/reflections?session_id=eq.${id}&select=*`,
-      { headers: { apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON } }
-    );
-    const rows = await res.json();
+    const rows = await callBackend({ action: 'query', table: 'reflections', filters: { session_id: id } });
     if (!rows || !rows[0]) {
       document.getElementById('import-status').textContent = '⚠️ Session ID not found.';
       return;
@@ -1382,14 +1393,8 @@ async function importTrailJournal() {
 // ── AI CALLS ──────────────────────────────────────────────────────────────
 async function callEdge(type, payload) {
   try {
-    const res = await fetch(EDGE_FN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON },
-      body: JSON.stringify({ type, payload }),
-    });
-    const data = await res.json();
-    return data;
-  } catch(e) { console.error('Edge fn error:', e); return null; }
+    return await callBackend({ action: 'ai', type, payload });
+  } catch(e) { console.error('AI call error:', e); return null; }
 }
 
 async function runInquiryAI() {
@@ -1605,41 +1610,27 @@ async function submitAndRecord() {
   // Run all three saves in parallel — none block the UI
   const saves = [];
 
-  // 1. Save panel session to Supabase
+  // 1. Save panel session
   saves.push(
-    fetch(`${SUPA_URL}/rest/v1/panel_sessions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON,
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify(record),
-    }).then(() => toast('✓ Panel record saved'))
-     .catch(e => console.error('Panel save error:', e))
+    callBackend({ action: 'insert', table: 'panel_sessions', row: record })
+      .then(() => toast('✓ Panel record saved'))
+      .catch(e => console.error('Panel save error:', e))
   );
 
   // 2. Back-write to Trail Journal reflection if imported
   if (P.tjId) {
     saves.push(
-      fetch(`${SUPA_URL}/rest/v1/reflections?session_id=eq.${P.tjId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPA_ANON, Authorization: 'Bearer ' + SUPA_ANON,
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({
-          panel_completed: true,
-          panel_session_id: P.sessionId,
-          panel_recommendation: recNarrative.slice(0, 500),
-          panel_lrg_trait: lrgTrait,
-          panel_checkin_person: followupPerson,
-          panel_checkin_date: followupDates.two_days || null,
-          panel_completed_at: new Date().toISOString(),
-        }),
-      }).then(() => console.log('✓ Trail Journal back-write complete'))
-       .catch(e => console.error('TJ back-write error:', e))
+      callBackend({ action: 'update', table: 'reflections', match: { session_id: P.tjId }, patch: {
+        panel_completed: true,
+        panel_session_id: P.sessionId,
+        panel_recommendation: recNarrative.slice(0, 500),
+        panel_lrg_trait: lrgTrait,
+        panel_checkin_person: followupPerson,
+        panel_checkin_date: followupDates.two_days || null,
+        panel_completed_at: new Date().toISOString(),
+      }})
+        .then(() => console.log('✓ Trail Journal back-write complete'))
+        .catch(e => console.error('TJ back-write error:', e))
     );
   }
 
