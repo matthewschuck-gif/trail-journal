@@ -279,7 +279,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="page" id="page-editor">
       <div class="page-hd">
         <h2>Content Editor</h2>
-        <p>Edit every piece of text in the student form. Changes save to Supabase instantly. Reload the student form to see updates.</p>
+        <p>Edit every piece of text in the student form. Changes save to Google Sheets instantly. Reload the student form to see updates.</p>
       </div>
       <div class="editor-layout">
         <div class="ed-nav" style="min-width:200px">
@@ -701,7 +701,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="page" id="page-prompts">
       <div class="page-hd">
         <h2>AI Prompts</h2>
-        <p>Edit the system prompts sent to Claude for each AI call. Changes save to Supabase and are used by the Edge Function.</p>
+        <p>Edit the system prompts sent to Claude for each AI call. Changes save to Google Sheets and are used by the Apps Script backend.</p>
       </div>
       <div class="ed-panel" style="margin-bottom:18px">
         <div class="ed-sec">
@@ -1123,27 +1123,50 @@ Required structure:
 </div>
 
 <script>
-const SB_URL  = 'https://kduypmpqkirvjkbnmuha.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkdXlwbXBxa2lydmprYm5tdWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNzY2NjksImV4cCI6MjA5NTk1MjY2OX0.nyjvSvfqsdCJIghlmrwXvL0z1dK1dp2AznPD1CoSvJE';
-const ADMIN_PW = 'togetherweclimb';
+// --- Apps Script backend (replaces Supabase) ---
+// Staff-only page: ALWAYS uses the ADMIN (domain-restricted) deployment. Apps Script itself
+// requires the visitor to be signed into a @ADMIN_DOMAIN Google account before this code can
+// reach any data at all -- that's the real security boundary now, not a client-side password.
+const APP_URL   = 'PASTE_ADMIN_DEPLOYMENT_URL_HERE';
+const APP_TOKEN = 'PASTE_APP_TOKEN_HERE'; // must match the APP_TOKEN Script Property
+
+async function callBackend(body) {
+  const res = await fetch(APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+    body: JSON.stringify(Object.assign({ token: APP_TOKEN }, body)),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Request failed');
+  return json.data;
+}
 
 // ── AUTH ──────────────────────────────────────────────────────────────────
-function doLogin() {
-  if (document.getElementById('lpw').value === ADMIN_PW) {
+// The old hardcoded password gate is gone. Clicking through now just attempts a real
+// backend call; if the visitor isn't signed into the right Google account, Apps Script
+// itself rejects the request and we show a clear "sign in" message instead of a dashboard.
+async function doLogin() {
+  document.getElementById('lerr').style.display = 'none';
+  document.getElementById('lerr').textContent = 'Checking sign-in…';
+  document.getElementById('lerr').style.display = 'block';
+  try {
+    await callBackend({ action: 'query', table: 'site_config', filters: {} });
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-shell').style.display = 'block';
     loadDash();
-  } else {
+  } catch (e) {
+    document.getElementById('lerr').textContent =
+      'Not signed in with a school Google account in this browser. Sign in at accounts.google.com, then try again. (' + e.message + ')';
     document.getElementById('lerr').style.display = 'block';
-    document.getElementById('lpw').value = '';
   }
 }
 function doLogout() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-shell').style.display = 'none';
-  document.getElementById('lpw').value = '';
 }
-document.getElementById('lpw').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+// Try automatically on load -- if already signed into the right Google account in this
+// browser, staff skip straight to the dashboard with no extra click.
+doLogin();
 
 // ── PAGE NAV ──────────────────────────────────────────────────────────────
 function showPage(name) {
@@ -1155,14 +1178,62 @@ function showPage(name) {
   if (name === 'submissions') loadSubs();
 }
 
-// ── SUPABASE ─────────────────────────────────────────────────────────────
-async function sb(path, opts={}) {
-  const r = await fetch(SB_URL + '/rest/v1/' + path, {
-    headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, 'Content-Type': 'application/json', ...opts.headers },
-    ...opts
+// ── BACKEND (PostgREST-style query-string emulator over the Apps Script router) ────────
+// Every existing call site in this file still calls sb('table?select=*&order=col.desc&...')
+// exactly like before -- only this function's internals changed, so nothing else below
+// needed to be rewritten. eq./gte./lte. filters, order, and limit are parsed here and
+// applied client-side after a plain query to the Sheet-backed table.
+async function sb(pathOrQuery, opts = {}) {
+  const [table, qs] = pathOrQuery.split('?');
+  const params = new URLSearchParams(qs || '');
+
+  const eqFilters = {};
+  let orderCol = null, orderDir = 'asc', limit = null;
+  const rangeFilters = []; // { col, op: 'gte'|'lte', value }
+
+  for (const [key, value] of params.entries()) {
+    if (key === 'select') continue;
+    if (key === 'order') {
+      const [col, dir] = value.split('.');
+      orderCol = col; orderDir = dir || 'asc';
+      continue;
+    }
+    if (key === 'limit') { limit = Number(value); continue; }
+    const m = value.match(/^(eq|gte|lte)\.(.*)$/);
+    if (m) {
+      const [, op, val] = m;
+      if (op === 'eq') eqFilters[key] = val;
+      else rangeFilters.push({ col: key, op, value: val });
+    }
+  }
+
+  // PATCH/POST (updates from the content editor etc.) still go through opts.method/body
+  if (opts.method === 'PATCH') {
+    const body = JSON.parse(opts.body);
+    await callBackend({ action: 'update', table, match: eqFilters, patch: body });
+    return null;
+  }
+  if (opts.method === 'POST') {
+    const body = JSON.parse(opts.body);
+    return [await callBackend({ action: 'insert', table, row: body })];
+  }
+
+  let rows = await callBackend({ action: 'query', table, filters: eqFilters });
+
+  rangeFilters.forEach(({ col, op, value }) => {
+    rows = rows.filter(r => op === 'gte' ? (r[col] >= value) : (r[col] <= value));
   });
-  if (!r.ok) return null;
-  return r.json().catch(() => null);
+
+  if (orderCol) {
+    rows.sort((a, b) => {
+      if (a[orderCol] < b[orderCol]) return orderDir === 'desc' ? 1 : -1;
+      if (a[orderCol] > b[orderCol]) return orderDir === 'desc' ? -1 : 1;
+      return 0;
+    });
+  }
+  if (limit) rows = rows.slice(0, limit);
+
+  return rows;
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
@@ -1412,17 +1483,12 @@ async function generateLetter() {
   if (!rows || !rows[0]) { document.getElementById('letter-loading').textContent = 'Submission not found.'; return; }
   const r = rows[0];
   const ai = r.ai_staff_summary || {};
-  const res = await fetch(SB_URL + '/functions/v1/ai-proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
-    body: JSON.stringify({ type: 'parent_letter', payload: {
-      part1: r.part1_json||{}, part2: r.part2_json||{}, part3: r.part3_json||{},
-      insightLevel: r.insight_level||'Medium',
-      repairPlan: ai.repairPlan||'',
-      studentGoal: r.goal||''
-    }})
-  });
-  const data = await res.json();
+  const data = await callBackend({ action: 'ai', type: 'parent_letter', payload: {
+    part1: r.part1_json||{}, part2: r.part2_json||{}, part3: r.part3_json||{},
+    insightLevel: r.insight_level||'Medium',
+    repairPlan: ai.repairPlan||'',
+    studentGoal: r.goal||''
+  }});
   document.getElementById('letter-loading').style.display = 'none';
   if (data?.subject && data?.body) {
     document.getElementById('letter-subject').value = data.subject;
@@ -1457,12 +1523,7 @@ async function runPatternAnalysis() {
   });
   const summaryStats = { total:data.length, insights:insCounts, topTraits: Object.entries(traitCounts).sort((a,b)=>b[1]-a[1]).slice(0,5), topEmotions: Object.entries(emoCounts).sort((a,b)=>b[1]-a[1]).slice(0,8) };
 
-  const res = await fetch(SB_URL + '/functions/v1/ai-proxy', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_ANON},
-    body: JSON.stringify({ type:'pattern_analysis', payload:{ submissions: summaryStats, dateRange: from + ' to ' + to }})
-  });
-  const result = await res.json();
+  const result = await callBackend({ action: 'ai', type: 'pattern_analysis', payload: { submissions: summaryStats, dateRange: from + ' to ' + to }});
   document.getElementById('pat-loading').style.display = 'none';
   if (result?.summary) {
     document.getElementById('pat-output').style.display = 'block';
