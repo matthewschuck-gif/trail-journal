@@ -1106,17 +1106,6 @@ input[type="range"]::-webkit-slider-thumb {
 .cc-thinking { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.8rem; font-family: 'Barlow', sans-serif; padding: 4px 0; }
 
 /* ── LOOPING PROMPT ── */
-.looping-block {
-  display: none; margin-top: 14px;
-  background: var(--trail-light); border: 2px solid var(--trail-mid);
-  border-radius: 10px; padding: 18px;
-}
-.looping-block.show { display: block; animation: trailIn 0.3s ease; }
-.lb-head { font-family: 'Walter Turncoat', cursive; font-size: 1rem; color: var(--trail); margin-bottom: 10px; }
-.lb-step { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
-.lb-num { width: 22px; height: 22px; border-radius: 50%; background: var(--trail); color: white; font-family: 'Walter Turncoat', cursive; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-.lb-text { font-family: 'Barlow', sans-serif; font-size: 0.83rem; color: var(--ink-mid); line-height: 1.55; }
-.lb-text strong { color: var(--trail); }
 
 /* ── WEEKLY PRACTICE PLAN ── */
 .practice-plan {
@@ -2171,23 +2160,6 @@ body.squad-purple {
     <div class="jcard-label">Why Did You Choose This Trait?</div>
     <textarea id="q-traitwhy" rows="3" placeholder="Explain the direct connection between this trait and what happened…"></textarea>
     <div class="val-msg" id="e-traitwhy">Explain the connection — why does this trait relate to what happened?</div>
-  </div>
-
-  <!-- LOOPING PROMPT — shows after CPS synthesis, surfaces here in Part 3 context -->
-  <div id="looping-card" class="jcard hidden">
-    <div class="jcard-label">🔄 Perspective Getting — The Looping Technique</div>
-    <div class="jcard-sub">When you're ready to have a conversation with the person affected, this technique helps you actually hear them — not just wait for your turn to talk.</div>
-    <div class="looping-block show">
-      <div class="lb-head">How to Loop</div>
-      <div class="lb-step"><div class="lb-num">1</div><div class="lb-text"><strong>Ask questions</strong> — "What's going on? Can you tell me more? How were you feeling when this happened?"</div></div>
-      <div class="lb-step"><div class="lb-num">2</div><div class="lb-text"><strong>Repeat back</strong> in your own words — "It sounds like you're saying… Let me see if I've got this right…"</div></div>
-      <div class="lb-step"><div class="lb-num">3</div><div class="lb-text"><strong>Ask if you got it right</strong> — "Did I miss anything? Is that what you meant?" If not, go back to step 1.</div></div>
-      <div class="lb-step"><div class="lb-num">4</div><div class="lb-text"><strong>Determine next step together</strong> — Do they want to be heard, helped, or supported? Follow their lead.</div></div>
-    </div>
-    <div style="margin-top:14px">
-      <div class="jcard-label" style="margin-bottom:8px">How will you use this in your situation?</div>
-      <textarea id="q-looping" rows="3" placeholder="In my situation, I could use looping by… The first thing I'd ask is…"></textarea>
-    </div>
   </div>
 
   <div id="creative-card" class="jcard hidden">
@@ -3421,7 +3393,7 @@ function pickTrait(btn) {
   document.getElementById('trait-spec-list').innerHTML = items.map(i =>
     `<label><input type="checkbox" class="tspec" value="${i}"> ${i}</label>`
   ).join('');
-  ['trait-spec-card','trait-why-card','looping-card','creative-card','submit-card']
+  ['trait-spec-card','trait-why-card','creative-card','submit-card']
     .forEach(id => document.getElementById(id).classList.remove('hidden'));
 }
 
@@ -3540,7 +3512,6 @@ function getPart2() {
     selectedConsequences: S.ranked.length ? S.ranked : Array.from(document.querySelectorAll('.cc:checked')).map(c=>c.value),
     bestIdea: gv('q-bestidea'), plan: gv('q-plan'), different: gv('q-diff'),
     creativeChallenge: gv('cc-answer'),
-    loopingPlan: gv('q-looping'),
   };
 }
 function getPart3() {
@@ -3549,7 +3520,6 @@ function getPart3() {
     traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c=>c.value),
     traitWhy: gv('q-traitwhy'),
     selectedSkill: S.selectedSkill || null,
-    loopingPlan: gv('q-looping'),
     creativeFormat: S.creative, creativePlan: gv('q-creative'),
     followThrough: {
       when: S.ftWhen || null,
