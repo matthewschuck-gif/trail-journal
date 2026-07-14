@@ -27,40 +27,29 @@ clicking through Google's UI and pasting a few URLs.
    | `RESEND_API_KEY` | your existing Resend key (same one Supabase was using, or a new one) |
    | `FROM_EMAIL` | `noreply@trailjournal.org` (or whatever you prefer) |
    | `APP_TOKEN` | any random string you make up — this is the shared token the frontend sends on every request |
-   | `ADMIN_DOMAIN` | your school's Workspace domain, e.g. `easdpa.org` |
+   | `ADMIN_PASSWORD` | any password you choose for staff access (replaces the old hardcoded password — this one lives only in Script Properties, never in frontend source) |
 6. In the function dropdown at the top, select `setupSpreadsheet`, click **Run**. Approve the
    permission prompts. This creates all 6 tabs with correct headers.
 7. **Go set sharing/protection on the `incident_reports` tab now** — it's the one with real
    student names, grades, and homerooms. Right-click the tab → Protect range → restrict to the
    same staff who'd have had admin access before.
-8. **Deploy twice** (Deploy → New deployment → type "Web app" each time):
-   - **Deployment 1 ("public")**: Execute as **Me**, Who has access **Anyone**.
-     → copy this URL, it goes in `index.html` and `respond/index.html`.
-   - **Deployment 2 ("admin")**: Execute as **Me**, Who has access **Anyone within `<your domain>`**.
-     → copy this URL, it goes in `admin/index.html`, `panel/index.html`, `panel/followup/index.html`.
+8. **Deploy once** (Deploy → New deployment → type "Web app"): Execute as **Me**, Who has access
+   **Anyone**. Copy this single URL — it's already wired into all 5 HTML files (see Part 2).
 
-   **Check this before relying on it:** when creating Deployment 2, confirm "Anyone within
-   [domain]" is actually selectable and not greyed out. If your district's Workspace admin has
-   disabled that option too (separate from the Cloud Console restriction you already hit), tell
-   me and I'll swap `05_AdminAuth.gs` for a Script-Properties-based password check instead —
-   less elegant, but doesn't depend on that setting.
+   **Why only one deployment:** an earlier version of this used a second, domain-restricted
+   ("Anyone within your domain") deployment for staff pages. That doesn't actually work — Apps
+   Script routes cross-origin requests to that deployment type through an extra Google
+   auth-check hop that never returns CORS headers, so `trailjournal.org` could never read the
+   response even when correctly signed in. Confirmed by real testing, not just a guess. The
+   single public deployment plus the `ADMIN_PASSWORD` server-side check (in `05_AdminAuth.gs`)
+   replaces it and actually works cross-origin.
 
 ## Part 2 — Point the frontend at your URLs
 
-In each of the 5 HTML files (on the `migration/google-appscript` branch), find and replace:
-
-| File | Replace | With |
-|---|---|---|
-| `index.html` | `PASTE_PUBLIC_DEPLOYMENT_URL_HERE` | Deployment 1 URL |
-| `index.html` | `PASTE_ADMIN_DEPLOYMENT_URL_HERE` | Deployment 2 URL |
-| `index.html` | `PASTE_APP_TOKEN_HERE` | your `APP_TOKEN` value |
-| `respond/index.html` | `PASTE_PUBLIC_DEPLOYMENT_URL_HERE` / `PASTE_APP_TOKEN_HERE` | Deployment 1 URL / token |
-| `admin/index.html` | `PASTE_ADMIN_DEPLOYMENT_URL_HERE` / `PASTE_APP_TOKEN_HERE` | Deployment 2 URL / token |
-| `panel/index.html` | `PASTE_ADMIN_DEPLOYMENT_URL_HERE` / `PASTE_APP_TOKEN_HERE` | Deployment 2 URL / token |
-| `panel/followup/index.html` | `PASTE_ADMIN_DEPLOYMENT_URL_HERE` / `PASTE_APP_TOKEN_HERE` | Deployment 2 URL / token |
-
-I can do this find/replace myself once you give me the 3 values (2 URLs + token) — just paste
-them here and I'll push the update, same as the rest of this build.
+**Already done** — all 5 HTML files are wired to your single public deployment URL and your
+`APP_TOKEN`, already pushed to the `migration/google-appscript` branch. Nothing to paste here
+anymore. The only thing left in this step is adding the `ADMIN_PASSWORD` Script Property from
+Part 1 — once that's set, staff pages will prompt for that password instead of Google sign-in.
 
 ## Part 3 — Test before touching production
 
@@ -74,9 +63,9 @@ Checklist:
       `reflections` tab and the AI reading/summary generates correctly.
 - [ ] Responder form ("Your Side of the Trail"): submit, confirm a row in `responder_reflections`
       and the AI note generates.
-- [ ] Staff section on the main journal page: sign into a school Google account, confirm the
-      password-replacement gate unlocks (and confirm it does *not* unlock in an incognito window
-      with no Google sign-in).
+- [ ] Staff section on the main journal page: enter the `ADMIN_PASSWORD` you set, confirm the
+      gate unlocks (and confirm a wrong password shows "Incorrect password. Try again." and
+      does not unlock).
 - [ ] Admin dashboard: sign in, confirm dashboard stats, submissions table, content editor,
       pattern analysis, and parent letter generator all work.
 - [ ] Trailback Panel: run through a full case, confirm `panel_sessions` row + `reflections`
