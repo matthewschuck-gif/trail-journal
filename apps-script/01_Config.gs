@@ -1,5 +1,5 @@
 /**
- * Trail Journal — Apps Script backend
+ * Trail Journal -- Apps Script backend
  * File 1 of N: Config + one-time spreadsheet provisioning
  *
  * SETUP STEPS (do these once, in order):
@@ -101,4 +101,20 @@ function setupSpreadsheet() {
 function getSheet_(tabName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(tabName);
-  if (!sheet) 
+  if (!sheet) throw new Error('Sheet tab not found: ' + tabName + ' -- run setupSpreadsheet() first.');
+  return sheet;
+}
+
+function getProp_(key) {
+  const v = PropertiesService.getScriptProperties().getProperty(key);
+  if (!v) throw new Error('Missing Script Property: ' + key + ' -- set it in Project Settings -> Script Properties.');
+  return v;
+}
+
+function newUuid_() {
+  return Utilities.getUuid();
+}
+
+function nowIso_() {
+  return new Date().toISOString();
+}
