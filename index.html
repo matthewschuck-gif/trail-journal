@@ -1040,36 +1040,29 @@ input[type="range"]::-webkit-slider-thumb {
 .r-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
 .r-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
 
-/* Bucket rows — single-column list, each row is its own card. Replaced the earlier
-   2-column card grid: with this content (a title, a full sentence of description, and
-   an example) two columns left everything cramped and the cards never lined up cleanly.
-   A stacked list reads more like a short reference sheet and scales to any screen width
-   without a mobile-only override. */
-.bucket-grid { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
-.bucket-card {
-  display: flex; gap: 14px;
-  border-radius: 12px; padding: 16px 18px; cursor: pointer; transition: all 0.2s;
-  border: 2px solid var(--border); background: var(--paper);
-}
-.bucket-card:hover { border-color: var(--trail-mid); box-shadow: var(--shadow-warm); }
-.bucket-card.selected { border-color: var(--trail); background: var(--trail-light); }
-.bucket-icon-badge {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; background: var(--paper-dark);
-  transition: background 0.2s;
-}
-.bucket-card.selected .bucket-icon-badge { background: var(--gold-light); }
-.bucket-body { min-width: 0; }
-.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1.1rem; margin-bottom: 5px; color: var(--ink); line-height: 1.3; }
-.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.85rem; color: var(--ink-mid); line-height: 1.6; }
+/* Bucket cards -- same recipe as .three-r-grid/.r-card just above (the sibling 'Three R's'
+   tab): full-bordered, centered, one distinct tint per card. The previous version (a
+   left-aligned list row with a colored left-border 'Example' box) didn't match that
+   established pattern and read as a generic AI-list layout rather than something that
+   belonged next to the rest of this tab group. auto-fit lets 4 cards sit two-by-two or
+   four-across depending on width with no separate mobile breakpoint needed. */
+.bucket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 16px 0; }
+.bucket-card { border-radius: 10px; padding: 18px; text-align: center; }
+.bucket-card:nth-child(1) { background: var(--gold-light); border: 1.5px solid var(--gold); }
+.bucket-card:nth-child(2) { background: var(--trail-light); border: 1.5px solid var(--trail-mid); }
+.bucket-card:nth-child(3) { background: #e8f0fb; border: 1.5px solid #5b8dd9; }
+.bucket-card:nth-child(4) { background: rgba(176,48,48,.07); border: 1.5px solid rgba(176,48,48,.4); }
+.bucket-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1.05rem; margin-bottom: 7px; color: var(--ink); }
+.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: var(--ink-mid); line-height: 1.6; }
 .bucket-example {
-  display: flex; gap: 8px; align-items: baseline;
-  font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--trail); line-height: 1.5;
-  margin-top: 10px; padding: 8px 12px;
-  background: rgba(44,74,53,0.06); border-left: 3px solid var(--trail-mid); border-radius: 0 6px 6px 0;
+  font-family: 'Barlow', sans-serif; font-size: 0.76rem; color: var(--ink-light); font-style: italic;
+  line-height: 1.55; margin-top: 10px;
 }
-.bucket-example strong { flex-shrink: 0; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em; font-family: 'Barlow', sans-serif; }
+.bucket-example strong {
+  display: block; font-style: normal; font-weight: 800; text-transform: uppercase;
+  font-size: 0.64rem; letter-spacing: 0.07em; margin-bottom: 3px; opacity: 0.8;
+}
 
 /* Checklist gate */
 .check-gate { margin: 16px 0; }
@@ -1802,39 +1795,31 @@ body.squad-purple {
 
     <!-- TAB 3: BUCKETS -->
     <div class="lc-panel" id="lcp-buckets">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories. Tap each one as you read it.</p>
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories — here's what each one means.</p>
       <div class="bucket-grid">
-        <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon-badge">🔧</div>
-          <div class="bucket-body">
-            <div class="bucket-title">You Break It, You Fix It</div>
-            <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
-            <div class="bucket-example"><strong>Example</strong><span>If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</span></div>
-          </div>
+        <div class="bucket-card">
+          <div class="bucket-icon">🔧</div>
+          <div class="bucket-title">You Break It, You Fix It</div>
+          <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
+          <div class="bucket-example"><strong>Example</strong>If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</div>
         </div>
-        <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon-badge">🎓</div>
-          <div class="bucket-body">
-            <div class="bucket-title">Practice Academy</div>
-            <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
-            <div class="bucket-example"><strong>Example</strong><span>If you were disruptive in class, you practice what respectful participation looks and sounds like.</span></div>
-          </div>
+        <div class="bucket-card">
+          <div class="bucket-icon">🎓</div>
+          <div class="bucket-title">Practice Academy</div>
+          <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
+          <div class="bucket-example"><strong>Example</strong>If you were disruptive in class, you practice what respectful participation looks and sounds like.</div>
         </div>
-        <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon-badge">⚖️</div>
-          <div class="bucket-body">
-            <div class="bucket-title">Restorative Practices</div>
-            <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
-            <div class="bucket-example"><strong>Example</strong><span>If you made a mess or damaged something, you clean it up and apologize to those affected.</span></div>
-          </div>
+        <div class="bucket-card">
+          <div class="bucket-icon">⚖️</div>
+          <div class="bucket-title">Restorative Practices</div>
+          <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
+          <div class="bucket-example"><strong>Example</strong>If you made a mess or damaged something, you clean it up and apologize to those affected.</div>
         </div>
-        <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon-badge">⛔</div>
-          <div class="bucket-body">
-            <div class="bucket-title">Loss of Privilege</div>
-            <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
-            <div class="bucket-example"><strong>Example</strong><span>If you misused technology, you lose tech access until trust is rebuilt.</span></div>
-          </div>
+        <div class="bucket-card">
+          <div class="bucket-icon">⛔</div>
+          <div class="bucket-title">Loss of Privilege</div>
+          <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
+          <div class="bucket-example"><strong>Example</strong>If you misused technology, you lose tech access until trust is rebuilt.</div>
         </div>
       </div>
       <div style="text-align:right;margin-top:14px">
@@ -3083,7 +3068,6 @@ function showLCTab(name, tabEl) {
   document.getElementById('lcp-' + name).classList.add('show');
 }
 
-function toggleBucket(el) { el.classList.toggle('selected'); }
 
 let lcChecked = 0;
 function toggleCheck(el) {
