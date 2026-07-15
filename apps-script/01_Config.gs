@@ -9,12 +9,18 @@
  *    (File -> New -> Script file, name it to match, e.g. "01_Config").
  * 4. In the Apps Script editor: Project Settings -> Script Properties -> add:
  *      ANTHROPIC_API_KEY   = sk-ant-...          (Matt adds this directly, never in chat)
- *      RESEND_API_KEY      = re_...              (existing Resend key from Supabase, or a new one)
- *      FROM_EMAIL           = noreply@trailjournal.org  (or your preferred sender)
  *      APP_TOKEN            = <any random string you make up> (shared token, see 03_Router.gs)
  *      ADMIN_PASSWORD       = <a password for staff> (checked server-side, see 05_AdminAuth.gs)
+ *    (No Resend key or FROM_EMAIL needed -- 04_FollowupEmails.gs sends via MailApp, Apps
+ *    Script's own mail service, using whichever Google account deploys this project. See
+ *    that file's header for why this replaced Resend.)
  * 5. Run `setupSpreadsheet` once from the editor (select it in the function dropdown, click Run).
- *    Approve the permission prompts. This creates all 6 tabs with correct header rows.
+ *    Approve the permission prompts -- this first run is also where you'll be asked to
+ *    authorize the "send email as you" permission MailApp needs. That consent screen is
+ *    shown ONLY to you, the developer, this one time; students and staff using the actual
+ *    site are never shown any Google sign-in or consent prompt -- the deployed Web App always
+ *    executes as your account automatically (see step 6), so the follow-up emails and
+ *    calendar invites go out with no login step for whoever's using the page.
  * 6. Deploy ONCE as a Web App: Execute as "Me", Who has access "Anyone".
  *    (An earlier version of this used two deployments -- one domain-restricted for staff --
  *    but Apps Script's domain-restricted deployments don't return CORS headers to

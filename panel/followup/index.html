@@ -893,7 +893,7 @@ async function scheduleAll() {
     showAlert('warn', `${successCount} of 3 emails sent. Check errors above.`);
     document.getElementById('btn-schedule').disabled = false;
   } else {
-    showAlert('error', 'Email sending failed. Check the Apps Script execution log and RESEND_API_KEY script property.');
+    showAlert('error', 'Email sending failed. Check the Apps Script execution log (Executions tab) for the error.');
     document.getElementById('btn-schedule').disabled = false;
   }
 }

@@ -6,28 +6,34 @@
  * sendFollowupEmails_ is a faithful port of the live Supabase edge function
  * `send-followup-emails` (v1) -- same three-interval schedule (2-day / 2-week / 2-month),
  * same grade-based time windows, same hand-built .ics attachment so staff on Outlook get a
- * normal calendar invite. Only the transport changed: UrlFetchApp instead of Deno's fetch.
+ * normal calendar invite.
  *
- * sendSummaryEmail_ is new: it replaces the old client-side mailto: link behind the main
- * journal's "Send Summary" button. A mailto: URL can only pre-fill plain text -- there is no
- * way to attach a file through it -- so it could never carry a calendar invite. This sends a
- * real email through the same Resend + .ics pipeline, with a single reminder for the 2-day
- * check-in attached.
+ * sendSingleFollowupEvent_ sends exactly one custom-dated invite (from the main journal's
+ * "Schedule Follow-Up Check-In" form) with the full AI plan summary bundled into the same
+ * email, replacing what used to be two separate emails.
  *
- * NOTE: both use Resend to actually send email (not Gmail/Calendar API), because the school's
- * Google Workspace account doesn't have Gmail enabled. Resend key lives in Script Properties,
- * never in code.
+ * TRANSPORT: this used to go through Resend (a third-party email API), which needed its own
+ * API key and a verified sending domain -- and even when Resend accepted the send, the mail
+ * still landed in spam for a real test (an unfamiliar external sender is exactly what mail
+ * security gateways are built to be suspicious of). Replaced with MailApp, Apps Script's own
+ * built-in mail service -- the same approach already working reliably in this district's MTSS
+ * Apps Script project. MailApp sends as the actual signed-in Google Workspace account running
+ * this script (Session.getEffectiveUser()), a real trusted internal easdpa.org sender, not an
+ * external one -- no API key, no domain verification, no separate account to set up at all.
+ * Only real constraint: MailApp's daily send quota (tied to the Workspace account), which is
+ * far more than this app's traffic needs.
  *
  * Called from the router as:
  *   sendFollowupEmails_(payload) -- { initials, squad, grade, triggerType, trigDateStr, outcome, attendees: [{name,email}] }
+ *                                    or, with payload.singleEvent = true: { ..., eventDate, eventTime, duration, summaryText }
  *   sendSummaryEmail_(payload)   -- { toEmail, subject, summaryText, studentLabel, grade, triggerDate }
  */
 
 // ── SHARED EMAIL LOOK ──────────────────────────────────────────────────────
 // One visual shell for every outgoing email, matching the app's own trail palette
-// (--trail #2c4a35 / --trail-deep #1a2e1f / --gold #c9a84c / --paper #fffbf5) instead of the
-// unrelated purple/yellow the first pass used. Georgia is used instead of the app's display
-// font (Walter Turncoat) because custom web fonts don't render reliably in email clients.
+// (--trail #2c4a35 / --trail-deep #1a2e1f / --gold #c9a84c / --paper #fffbf5).
+// Georgia is used instead of the app's display font (Walter Turncoat) because custom web
+// fonts don't render reliably in email clients.
 function emailShell_(icon, title, subtitle, bodyHtml) {
   return '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5">' +
     '<div style="background:linear-gradient(135deg,#2c4a35 0%,#1a2e1f 100%);padding:26px 24px;border-bottom:3px solid #c9a84c">' +
@@ -56,6 +62,22 @@ function emailCallout_(title, body, opts) {
 function icsFooterNote_(filename) {
   return '<p style="background:#faf6ec;border:1px solid #c9a84c;padding:10px 12px;font-size:12px;font-family:Verdana,sans-serif;border-radius:6px;color:#3a3a3a">' +
     '&#128197; A calendar file (' + filename + ') is attached below -- open it to add this reminder to Outlook.</p>';
+}
+
+// Strips the HTML shell down to a readable plain-text fallback. Mail clients that can't (or
+// won't) render HTML fall back to this -- and a body-less HTML-only email is itself a mild
+// spam signal, so every send below builds both.
+function htmlToPlainText_(html) {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>|<\/div>|<\/h[1-6]>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&middot;/g, '-').replace(/&mdash;/g, '--').replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#\d+;/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function icsNow_() {
@@ -94,24 +116,26 @@ function buildIcsVevent_(opts) {
     'STATUS:CONFIRMED\r\nBEGIN:VALARM\r\nTRIGGER:-PT60M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR';
 }
 
-function sendViaResend_(resendPayload) {
-  const RESEND_KEY = getProp_('RESEND_API_KEY');
-  const r = UrlFetchApp.fetch('https://api.resend.com/emails', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { Authorization: 'Bearer ' + RESEND_KEY },
-    payload: JSON.stringify(resendPayload),
-    muteHttpExceptions: true,
-  });
-  if (r.getResponseCode() >= 300) {
-    throw new Error('Resend ' + r.getResponseCode() + ': ' + r.getContentText());
+// Sends via MailApp (see file header for why). opts: { to, subject, html, icsString, icsFilename }
+function sendViaMail_(opts) {
+  const mailOptions = {
+    to: opts.to,
+    subject: opts.subject,
+    body: htmlToPlainText_(opts.html),
+    htmlBody: opts.html,
+    name: 'EMS Trail Journal',
+  };
+  if (opts.icsString) {
+    mailOptions.attachments = [
+      Utilities.newBlob(opts.icsString, 'text/calendar; charset=UTF-8; method=REQUEST', opts.icsFilename || 'invite.ics'),
+    ];
   }
-  return r;
+  MailApp.sendEmail(mailOptions);
 }
 
 // ── FOLLOW-UP CHECK-IN SEQUENCE (2-day / 2-week / 2-month) ─────────────────
 function sendFollowupEmails_(payload) {
-  const FROM_EMAIL = PropertiesService.getScriptProperties().getProperty('FROM_EMAIL') || 'noreply@trailjournal.org';
+  const ORGANIZER_EMAIL = Session.getEffectiveUser().getEmail();
 
   // singleEvent: true routes to a genuinely single, custom-dated calendar invite instead of
   // the fixed 2/14/60-day sequence below. This used to be silently ignored -- the frontend's
@@ -122,7 +146,7 @@ function sendFollowupEmails_(payload) {
   // summary (payload.summaryText) into that same email, per Matt's request to stop sending
   // the plan summary and the calendar invite as two separate emails.
   if (payload.singleEvent) {
-    return sendSingleFollowupEvent_(payload, FROM_EMAIL);
+    return sendSingleFollowupEvent_(payload, ORGANIZER_EMAIL);
   }
 
   const initials = payload.initials;
@@ -168,7 +192,7 @@ function sendFollowupEmails_(payload) {
 
         const ics = buildIcsVevent_({
           uid: uid, startISO: startISO, endISO: endISO, summary: subject, description: desc,
-          organizerEmail: FROM_EMAIL, attendeeEmail: att.email, attendeeName: att.name,
+          organizerEmail: ORGANIZER_EMAIL, attendeeEmail: att.email, attendeeName: att.name,
         });
 
         const body =
@@ -182,12 +206,12 @@ function sendFollowupEmails_(payload) {
 
         const html = emailShell_('&#127956;', interval.label, trigLabel + ' Follow-Up &middot; Grade ' + grade, body);
 
-        sendViaResend_({
-          from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
-          to: [att.email],
+        sendViaMail_({
+          to: att.email,
           subject: subject,
           html: html,
-          attachments: [{ filename: 'followup-' + interval.key + '.ics', content: Utilities.base64Encode(ics) }],
+          icsString: ics,
+          icsFilename: 'followup-' + interval.key + '.ics',
         });
       } catch (e) {
         errors.push(interval.label + ' -> ' + att.email + ': ' + e.message);
@@ -202,7 +226,7 @@ function sendFollowupEmails_(payload) {
 }
 
 // ── SINGLE CUSTOM FOLLOW-UP EVENT (with the plan summary bundled in) ───────
-function sendSingleFollowupEvent_(payload, FROM_EMAIL) {
+function sendSingleFollowupEvent_(payload, organizerEmail) {
   const initials = payload.initials;
   const squad = payload.squad;
   const eventDate = payload.eventDate;   // 'yyyy-MM-dd'
@@ -246,7 +270,7 @@ function sendSingleFollowupEvent_(payload, FROM_EMAIL) {
 
       const ics = buildIcsVevent_({
         uid: uid, startISO: startISO, endISO: endISO, summary: subject, description: desc,
-        organizerEmail: FROM_EMAIL, attendeeEmail: att.email, attendeeName: att.name,
+        organizerEmail: organizerEmail, attendeeEmail: att.email, attendeeName: att.name,
       });
 
       const body =
@@ -259,12 +283,12 @@ function sendSingleFollowupEvent_(payload, FROM_EMAIL) {
 
       const html = emailShell_('&#128197;', 'Follow-Up Check-In', initials + (squad ? ' &middot; ' + squad + ' Squad' : ''), body);
 
-      sendViaResend_({
-        from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
-        to: [att.email],
+      sendViaMail_({
+        to: att.email,
         subject: subject,
         html: html,
-        attachments: [{ filename: 'follow-up-checkin.ics', content: Utilities.base64Encode(ics) }],
+        icsString: ics,
+        icsFilename: 'follow-up-checkin.ics',
       });
     } catch (e) {
       errors.push('Follow-up check-in -> ' + att.email + ': ' + e.message);
@@ -282,9 +306,9 @@ function formatTimeLabel_(h, m) {
   return h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
 }
 
-// ── PLAN SUMMARY EMAIL (from the main journal's "Send Summary" button) ─────
+// ── PLAN SUMMARY EMAIL (currently unused by the frontend -- see 04's header) ────
 function sendSummaryEmail_(payload) {
-  const FROM_EMAIL = PropertiesService.getScriptProperties().getProperty('FROM_EMAIL') || 'noreply@trailjournal.org';
+  const ORGANIZER_EMAIL = Session.getEffectiveUser().getEmail();
 
   const toEmail = payload.toEmail;
   const subject = payload.subject || 'Trail Journal Summary';
@@ -306,7 +330,7 @@ function sendSummaryEmail_(payload) {
 
   const ics = buildIcsVevent_({
     uid: uid, startISO: startISO, endISO: endISO, summary: icsSummary, description: desc,
-    organizerEmail: FROM_EMAIL, attendeeEmail: toEmail, attendeeName: toEmail,
+    organizerEmail: ORGANIZER_EMAIL, attendeeEmail: toEmail, attendeeName: toEmail,
   });
 
   // summaryText is plain text built client-side (paragraphs separated by blank lines) --
@@ -325,12 +349,12 @@ function sendSummaryEmail_(payload) {
 
   const html = emailShell_('&#128220;', 'Trail Journal Summary', studentLabel, body);
 
-  sendViaResend_({
-    from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
-    to: [toEmail],
+  sendViaMail_({
+    to: toEmail,
     subject: subject,
     html: html,
-    attachments: [{ filename: 'trail-journal-checkin.ics', content: Utilities.base64Encode(ics) }],
+    icsString: ics,
+    icsFilename: 'trail-journal-checkin.ics',
   });
 
   return { ok: true, sent: true };

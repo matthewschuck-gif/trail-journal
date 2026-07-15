@@ -24,12 +24,19 @@ clicking through Google's UI and pasting a few URLs.
    | Property | Value |
    |---|---|
    | `ANTHROPIC_API_KEY` | your Claude API key (add this yourself, never share it in chat) |
-   | `RESEND_API_KEY` | your existing Resend key (same one Supabase was using, or a new one) |
-   | `FROM_EMAIL` | `noreply@trailjournal.org` (or whatever you prefer) |
    | `APP_TOKEN` | any random string you make up — this is the shared token the frontend sends on every request |
    | `ADMIN_PASSWORD` | any password you choose for staff access (replaces the old hardcoded password — this one lives only in Script Properties, never in frontend source) |
+
+   No Resend key or `FROM_EMAIL` needed — follow-up and calendar-invite emails send through
+   MailApp (Apps Script's own mail service, same approach as the MTSS project) instead of
+   Resend. See the comment at the top of `04_FollowupEmails.gs` for why.
 6. In the function dropdown at the top, select `setupSpreadsheet`, click **Run**. Approve the
-   permission prompts. This creates all 6 tabs with correct headers.
+   permission prompts — this first run is also where Google asks you to authorize the "send
+   email as you" permission MailApp needs. That prompt is shown only to you, the developer,
+   this one time. Students and staff using the actual site are never shown any Google sign-in
+   or consent screen — the deployed Web App always runs as your account automatically, so
+   follow-up emails and calendar invites go out with zero login step for whoever's using the
+   page, including on a student's own device. This creates all 6 tabs with correct headers.
 7. **Go set sharing/protection on the `incident_reports` tab now** — it's the one with real
    student names, grades, and homerooms. Right-click the tab → Protect range → restrict to the
    same staff who'd have had admin access before.
