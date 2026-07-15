@@ -1391,6 +1391,12 @@ body.squad-purple {
 }
 .location-btn .sq-icon { font-size: 1.3rem; }
 .location-btn.selected { border-color: var(--gold) !important; }
+.peak-btn {
+  width: auto; height: auto; min-width: 110px; min-height: 60px;
+  padding: 10px 14px; font-size: 0.66rem; line-height: 1.3;
+}
+.peak-btn .sq-icon { font-size: 1.4rem; }
+.peak-btn.selected { border-color: var(--gold) !important; }
 
 /* ── MISC ── */
 .hidden { display: none !important; }
@@ -1798,9 +1804,14 @@ body.squad-purple {
   </div>
 
   <div class="jcard">
+    <div class="jcard-label" id="peak-loc-label">What This Looks Like Where It Happened</div>
+    <div id="peak-loc-reference"></div>
+  </div>
+
+  <div class="jcard">
     <div class="jcard-label">Which Peak Connects to What Happened?</div>
-    <div class="jcard-sub" id="peak-ai-loading" style="display:flex;align-items:center;gap:10px">
-      <div class="spin"></div>Thinking about which Peak fits your situation…
+    <div class="jcard-sub" id="peak-ai-loading" style="display:flex;align-items:center;gap:10px;color:var(--ink-mid)">
+      <div class="spin" style="border-color:var(--border);border-top-color:var(--trail)"></div>Thinking about which Peak fits your situation…
     </div>
     <div id="peak-ai-guidance" style="display:none;background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-bottom:16px"></div>
     <div class="squad-picker" id="peak-picker">
@@ -3649,6 +3660,7 @@ function goTo(n) {
 function afterReading() {
   // Mountaineer Peaks now applies to every tier -- office included -- so this always
   // routes through screen-2p first. afterPeaks() handles the tier branch from there.
+  renderLocationReference();
   goTo('2p');
 }
 
@@ -3793,6 +3805,85 @@ async function doPart1() {
 // Renders the 'peak_guidance' AI result into screen-2p. Fired from doPart1() for every
 // tier -- Mountaineer Peaks applies regardless of consequence severity, so unlike
 // renderConsequenceIdea() there's no tier-based early exit here.
+// Mirrors the LOCATION_PEAKS_ lookup in 02_AIProxy.gs (same source: the EMS Mountaineer
+// Peaks universal expectations deck), structured per-Peak instead of one flat string so it
+// can render as a real reference card on screen-2p rather than only being fed to the AI.
+const LOCATION_PEAKS_DISPLAY_ = {
+  'Classroom': {
+    present: 'Arrive on time, stay engaged, minimize distractions, follow routines.',
+    personable: 'Communicate respectfully with peers and staff, participate appropriately.',
+    productive: 'Focus on the task/lesson, follow instructions, complete work with integrity.',
+  },
+  'Hallways': {
+    present: "Eyes up, be aware of your surroundings. Be where you're supposed to be — have a pass, arrive on time.",
+    personable: 'Communicate kindly — polite words and body language, conversational volume. Respect boundaries. Help others.',
+    productive: 'Use the fastest route straight to your destination. Stay with the flow of traffic.',
+  },
+  'Cafeteria': {
+    present: 'Be there — arrive on time, sit at a table, stay the whole period. Be prepared with your ID/lunch code.',
+    personable: 'Share the space, keep your area clean, honor personal space. Communicate kindly. Engage with peers, be friendly.',
+    productive: 'Eat and prioritize your nutritional needs. Clean up after yourself. Use time wisely.',
+  },
+  'Auditorium': {
+    present: 'Arrive on time, follow directions to your seating area. Practice active listening.',
+    personable: 'Respond appropriately — right time, right volume. Be friendly.',
+    productive: 'Follow instructions, wait for dismissal directions. Focus on learning.',
+  },
+  'Bathroom': {
+    present: 'Have a pass, check in with your teacher first. Use the nearest bathroom, keep trips short.',
+    personable: "Respect others' space — one person per stall. Stay tech-free.",
+    productive: 'Use it as intended, not a hangout spot. Keep it clean. Return promptly — 5 min or less. Report issues.',
+  },
+  'Media Center': {
+    present: 'Have a pass, arrive ready to work with a clear purpose.',
+    personable: "Share the space, be aware of others' need for quiet. Handle materials with care. Communicate kindly, low voices.",
+    productive: 'Focus on your purpose — research, read, study, create. Minimize distractions. Show integrity. Leave it better than you found it.',
+  },
+  'Traveling To & From School': {
+    present: 'Be on time, know your route/stop. Minimize distractions.',
+    personable: 'Communicate kindly with everyone around you. Respect property and boundaries.',
+    productive: "Plan ahead, follow laws and rules. Pay attention, maintain safety, get where you're going.",
+  },
+  'Digital Environment': {
+    present: 'Use your device as issued. Keep your phone stored and off.',
+    personable: "Communicate with intention — words carry weight and leave a record. Honor others' privacy.",
+    productive: 'Use technology with purpose. Show integrity — cite sources and AI tools used. Own your account. Protect yourself and speak up.',
+  },
+};
+
+// Renders the location-specific Peaks reference on screen-2p, keyed off Part 1's "Where
+// did it happen?" dropdown. Called from afterReading() right before goTo('2p') -- q-where
+// is still readable at that point since screen-1 stays in the DOM (just hidden), only its
+// 'active' class changes. Matt: "I wish more was done on this page with the location
+// information for reference" -- this was previously only fed silently to the AI prompt.
+function renderLocationReference() {
+  const label = document.getElementById('peak-loc-label');
+  const box = document.getElementById('peak-loc-reference');
+  if (!box) return;
+  const where = gv('q-where');
+  const ref = LOCATION_PEAKS_DISPLAY_[where];
+
+  if (!ref) {
+    label.textContent = 'What This Looks Like';
+    box.innerHTML = `<p style="font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-light);line-height:1.6;margin:0">No location-specific reference for this one — the general Peak descriptions above still apply.</p>`;
+    return;
+  }
+
+  label.textContent = 'What This Looks Like in ' + where;
+  const rows = [
+    { icon: '🧭', title: 'Be Present', text: ref.present },
+    { icon: '🤝', title: 'Be Personable', text: ref.personable },
+    { icon: '⛏', title: 'Be Productive', text: ref.productive },
+  ];
+  box.innerHTML = rows.map(r =>
+    `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)">` +
+      `<div style="font-size:1.3rem;flex-shrink:0">${r.icon}</div>` +
+      `<div><div style="font-family:'Barlow',sans-serif;font-size:.78rem;font-weight:700;color:var(--trail);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">${r.title}</div>` +
+      `<div style="font-family:'Barlow',sans-serif;font-size:.85rem;color:var(--ink-mid);line-height:1.55">${r.text}</div></div>` +
+    `</div>`
+  ).join('');
+}
+
 function renderPeakGuidance(result) {
   const loading = document.getElementById('peak-ai-loading');
   const box = document.getElementById('peak-ai-guidance');
