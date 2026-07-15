@@ -188,7 +188,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="login-logo">⛺</div>
     <h1>Trail Journal</h1>
     <p>Admin Dashboard — Staff Only</p>
-    <input type="password" class="login-inp" id="lpw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" class="login-inp" id="lpw" aria-label="Admin password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Sign In</button>
     <div class="login-err" id="lerr">Incorrect password. Try again.</div>
   </div>
@@ -203,21 +203,21 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
     <div style="flex:1;overflow-y:auto;padding-bottom:8px">
       <div class="sb-section">Overview</div>
-      <button class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="si">📊</span>Dashboard</button>
-      <button class="sb-item" onclick="showPage('submissions')" id="nav-submissions"><span class="si">📋</span>Submissions</button>
-      <button class="sb-item" onclick="showPage('import')" id="nav-import"><span class="si">📥</span>Import Entry</button>
+      <button class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="si" aria-hidden="true">📊</span>Dashboard</button>
+      <button class="sb-item" onclick="showPage('submissions')" id="nav-submissions"><span class="si" aria-hidden="true">📋</span>Submissions</button>
+      <button class="sb-item" onclick="showPage('import')" id="nav-import"><span class="si" aria-hidden="true">📥</span>Import Entry</button>
       <div class="sb-section">Configuration</div>
-      <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si">✏️</span>Content Editor</button>
-      <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si">🤖</span>AI Prompts</button>
-      <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si">🧩</span>Widgets</button>
+      <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si" aria-hidden="true">✏️</span>Content Editor</button>
+      <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si" aria-hidden="true">🤖</span>AI Prompts</button>
+      <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si" aria-hidden="true">🧩</span>Widgets</button>
       <div class="sb-section">Tools</div>
-      <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si">📬</span>Parent Letters</button>
-      <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si">📈</span>Pattern Analysis</button>
-      <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si">🏔️</span>Your Side of the Trail</button>
-      <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
-      <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si">📊</span>Export to Sheets</button>
-      <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si">📅</span>Follow-Ups</button>
-      <button class="sb-item" onclick="showPage('longitudinal')" id="nav-longitudinal"><span class="si">📈</span>Student Growth Arc</button>
+      <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si" aria-hidden="true">📬</span>Parent Letters</button>
+      <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si" aria-hidden="true">📈</span>Pattern Analysis</button>
+      <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si" aria-hidden="true">🏔️</span>Your Side of the Trail</button>
+      <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si" aria-hidden="true">🏆</span>Clash Flags</button>
+      <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si" aria-hidden="true">📊</span>Export to Sheets</button>
+      <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si" aria-hidden="true">📅</span>Follow-Ups</button>
+      <button class="sb-item" onclick="showPage('longitudinal')" id="nav-longitudinal"><span class="si" aria-hidden="true">📈</span>Student Growth Arc</button>
     </div>
     <div class="sb-footer">
       <div style="margin-bottom:10px">
@@ -266,7 +266,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
       <div class="tbl-wrap">
         <div class="tbl-controls">
-          <input type="text" class="tbl-search" id="tbl-search" placeholder="Search by initial, trait, or keywords…" oninput="filterTbl()">
+          <input type="text" class="tbl-search" id="tbl-search" aria-label="Search submissions" placeholder="Search by initial, trait, or keywords…" oninput="filterTbl()">
           <button class="flt-btn on" onclick="setFilter('all')" id="f-all">All</button>
           <button class="flt-btn" onclick="setFilter('Low')" id="f-Low">Low</button>
           <button class="flt-btn" onclick="setFilter('Medium')" id="f-Medium">Medium</button>
@@ -294,7 +294,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="ed-sec">
             <h4>Student &amp; Context</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="ed-field"><label class="ed-lbl">Student Name</label><input type="text" class="ed-inp" id="imp-name"></div>
+              <div class="ed-field"><label class="ed-lbl" for="imp-name">Student Name</label><input type="text" class="ed-inp" id="imp-name"></div>
               <div class="ed-field"><label class="ed-lbl">Grade</label>
                 <select class="ed-inp" id="imp-grade"><option value="">—</option><option>7</option><option>8</option></select>
               </div>
@@ -312,8 +312,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
                   <option value="full" selected>Full (Part 1 + 2 + 3)</option>
                 </select>
               </div>
-              <div class="ed-field"><label class="ed-lbl">Date of Reflection</label><input type="date" class="ed-inp" id="imp-date"></div>
-              <div class="ed-field"><label class="ed-lbl">Insight Level</label>
+              <div class="ed-field"><label class="ed-lbl" for="imp-date">Date of Reflection</label><input type="date" class="ed-inp" id="imp-date"></div>
+              <div class="ed-field"><label class="ed-lbl" for="imp-insight">Insight Level</label>
                 <select class="ed-inp" id="imp-insight"><option>Medium</option><option>High</option><option>Low</option></select>
               </div>
             </div>
@@ -323,11 +323,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="ed-panel" style="margin-bottom:16px">
           <div class="ed-sec">
             <h4>Part 1 — The Incident</h4>
-            <div class="ed-field"><label class="ed-lbl">What Happened</label><textarea class="ed-ta" id="imp-what" rows="3"></textarea></div>
-            <div class="ed-field"><label class="ed-lbl">Why</label><textarea class="ed-ta" id="imp-why" rows="2"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-what">What Happened</label><textarea class="ed-ta" id="imp-what" rows="3"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-why">Why</label><textarea class="ed-ta" id="imp-why" rows="2"></textarea></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="ed-field"><label class="ed-lbl">Where</label><input type="text" class="ed-inp" id="imp-where"></div>
-              <div class="ed-field"><label class="ed-lbl">Emotions (comma-separated)</label><input type="text" class="ed-inp" id="imp-emotions" placeholder="e.g. Frustrated, Anxious"></div>
+              <div class="ed-field"><label class="ed-lbl" for="imp-where">Where</label><input type="text" class="ed-inp" id="imp-where"></div>
+              <div class="ed-field"><label class="ed-lbl" for="imp-emotions">Emotions (comma-separated)</label><input type="text" class="ed-inp" id="imp-emotions" placeholder="e.g. Frustrated, Anxious"></div>
             </div>
           </div>
         </div>
@@ -335,16 +335,16 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="ed-panel" style="margin-bottom:16px">
           <div class="ed-sec">
             <h4>Part 2 — The Repair <span style="font-weight:400;color:var(--muted);font-size:.76rem">(leave blank for Office tier)</span></h4>
-            <div class="ed-field"><label class="ed-lbl">People Hurt (comma-separated)</label><input type="text" class="ed-inp" id="imp-hurt"></div>
-            <div class="ed-field"><label class="ed-lbl">What Student Thinks Should Happen</label><textarea class="ed-ta" id="imp-makeright" rows="2"></textarea></div>
-            <div class="ed-field"><label class="ed-lbl">Plan / What Will Be Different</label><textarea class="ed-ta" id="imp-plan" rows="2"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-hurt">People Hurt (comma-separated)</label><input type="text" class="ed-inp" id="imp-hurt"></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-makeright">What Student Thinks Should Happen</label><textarea class="ed-ta" id="imp-makeright" rows="2"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-plan">Plan / What Will Be Different</label><textarea class="ed-ta" id="imp-plan" rows="2"></textarea></div>
           </div>
         </div>
 
         <div class="ed-panel" style="margin-bottom:16px">
           <div class="ed-sec">
             <h4>Part 3 — The Path Forward <span style="font-weight:400;color:var(--muted);font-size:.76rem">(Full tier only)</span></h4>
-            <div class="ed-field"><label class="ed-lbl">LRG Trait</label>
+            <div class="ed-field"><label class="ed-lbl" for="imp-trait">LRG Trait</label>
               <select class="ed-inp" id="imp-trait">
                 <option value="">—</option>
                 <option>Communication &amp; Empathy</option>
@@ -359,14 +359,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
                 <option>Civics, Leadership, &amp; Service</option>
               </select>
             </div>
-            <div class="ed-field"><label class="ed-lbl">Community/Service Action</label><input type="text" class="ed-inp" id="imp-community"></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-community">Community/Service Action</label><input type="text" class="ed-inp" id="imp-community"></div>
           </div>
         </div>
 
         <div class="ed-panel" style="margin-bottom:16px">
           <div class="ed-sec">
             <h4>Staff Notes</h4>
-            <div class="ed-field"><label class="ed-lbl">Anything else worth recording (not shown to the student, this record has no login anyway)</label><textarea class="ed-ta" id="imp-notes" rows="3"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl" for="imp-notes">Anything else worth recording (not shown to the student, this record has no login anyway)</label><textarea class="ed-ta" id="imp-notes" rows="3"></textarea></div>
           </div>
         </div>
 
@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <div class="ed-sec">
             <h4>Paste a Full Record</h4>
             <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">For bulk backfills or when you need every field exactly right. Paste one JSON object shaped like a reflections row -- part1_json/part2_json/part3_json match the same keys the live journal itself writes (whatHappened, why, hurtPeople, trait, etc.).</p>
-            <textarea class="ed-ta" id="imp-json" rows="14" placeholder='{"student_name":"...","grade":"8","location":"Office","tier":"office","insight_level":"Medium","part1_json":{"whatHappened":"...","why":"..."},"part2_json":{},"part3_json":{}}'></textarea>
+            <textarea class="ed-ta" id="imp-json" aria-label="Paste reflection JSON" rows="14" placeholder='{"student_name":"...","grade":"8","location":"Office","tier":"office","insight_level":"Medium","part1_json":{"whatHappened":"...","why":"..."},"part2_json":{},"part3_json":{}}'></textarea>
           </div>
         </div>
         <div class="ed-actions">
@@ -1184,7 +1184,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
           <div class="ed-field" style="margin:0">
-            <label class="ed-lbl">Filter by Status</label>
+            <label class="ed-lbl" for="futj-filter">Filter by Status</label>
             <select class="ed-inp" id="futj-filter" style="width:160px" onchange="loadTjFollowUps()">
               <option value="">All</option>
               <option value="pending">Not yet completed</option>
@@ -1221,11 +1221,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <div class="ed-sec">
               <h4 id="futj-complete-title">Mark Follow-Up Complete</h4>
               <div class="ed-field">
-                <label class="ed-lbl">Your Email</label>
+                <label class="ed-lbl" for="futj-complete-by">Your Email</label>
                 <input type="email" class="ed-inp" id="futj-complete-by" placeholder="your@easdpa.org">
               </div>
               <div class="ed-field">
-                <label class="ed-lbl">Notes From the Conversation</label>
+                <label class="ed-lbl" for="futj-complete-notes">Notes From the Conversation</label>
                 <textarea class="ed-ta" id="futj-complete-notes" rows="4" placeholder="What came up, how the student is doing, any next steps…"></textarea>
               </div>
               <div class="ed-actions">
@@ -1250,7 +1250,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="ed-sec">
           <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
             <div class="ed-field" style="margin:0">
-              <label class="ed-lbl">Student Name (or Initial)</label>
+              <label class="ed-lbl" for="lg-initial">Student Name (or Initial)</label>
               <input type="text" class="ed-inp" id="lg-initial" placeholder="e.g. Jordan Smith" style="width:220px" onkeydown="if(event.key==='Enter')loadLongitudinal()">
             </div>
             <button class="save-btn" onclick="loadLongitudinal()">Load Growth Arc</button>
