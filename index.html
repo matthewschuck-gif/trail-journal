@@ -1878,11 +1878,33 @@ body.squad-purple {
   <div class="ai-journal" id="ai-article">
     <div class="ai-thinking" id="ai-thinking-1"><div class="spin"></div>Writing your personalized entry…</div>
   </div>
-  <div class="pause-block">
+
+  <div class="jcard" id="jc-part1-takeaway">
+    <div class="jcard-label">Your Takeaway</div>
+    <div class="jcard-sub">Based on what you just read, what's the one thing you want to remember or do differently?</div>
+    <textarea id="q-part1-takeaway" rows="3" placeholder="My biggest takeaway is…"></textarea>
+    <div class="val-msg" id="e-part1-takeaway">Write at least a sentence about what you're taking away from this.</div>
+  </div>
+
+  <div class="pause-block" id="pause-block-1">
     <div class="pause-icon">✋</div>
     <h3>Time to Check In</h3>
     <p>Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</p>
-    <button class="pause-btn" onclick="afterReading()">Check-in done — continue →</button>
+    <button class="pause-btn" onclick="submitPart1Takeaway()">Continue →</button>
+  </div>
+
+  <!-- STAFF PASSWORD GATE -- only for tiers that continue into Part 2/3 (office tier has
+       nothing further to click ahead into, so it skips straight through). Confirms an
+       adult actually did the Part 1 check-in before the student can continue. -->
+  <div class="pw-gate" id="pw-gate-1" style="display:none">
+    <div class="pg-icon">🔐</div>
+    <h3>Staff Check-In Required</h3>
+    <p>Before continuing to Part 2, the adult in the room needs to enter the staff password to confirm the Part 1 check-in happened.</p>
+    <div class="pw-input-row">
+      <input type="password" class="pw-input" id="pw-input-1" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
+      <button class="pw-btn" onclick="checkGatePassword('1')">Unlock</button>
+    </div>
+    <div class="pw-error" id="pw-error-1">Incorrect password. Try again.</div>
   </div>
 </div>
 
@@ -2331,7 +2353,7 @@ body.squad-purple {
 
 <!-- ═══ SCREEN 3b: PAUSE BETWEEN PARTS 2 AND 3 ═══ -->
 <div class="screen" id="screen-3b">
-  <div class="pause-screen-hero">
+  <div class="pause-screen-hero" id="pause-block-2">
     <div class="ps-icon">✋</div>
     <h2>Time to Check In</h2>
     <p>Before moving to Part 3, raise your hand and let the adult in the room know you've finished Part 2. They need to review your repair plan with you before you continue.</p>
@@ -2342,7 +2364,20 @@ body.squad-purple {
       <div class="checklist-item"><span class="ci">✅</span>Once they agree, you'll move to Part 3 together</div>
     </div>
     <p style="font-size:0.82rem;color:var(--gold-dark);font-weight:600">Do not click the button below until you have had this conversation.</p>
-    <button class="pause-btn" onclick="goTo(4)" style="margin-top:14px">Conference done — continue to Part 3 →</button>
+    <button class="pause-btn" onclick="revealGate2()" style="margin-top:14px">Conference done — continue to Part 3 →</button>
+  </div>
+
+  <!-- STAFF PASSWORD GATE -- screen-3b only exists for the full tier, so this always
+       applies here (unlike gate 1, which is conditional on tier). -->
+  <div class="pw-gate" id="pw-gate-2" style="display:none">
+    <div class="pg-icon">🔐</div>
+    <h3>Staff Check-In Required</h3>
+    <p>Enter the staff password to confirm the Part 2 conference happened and unlock Part 3.</p>
+    <div class="pw-input-row">
+      <input type="password" class="pw-input" id="pw-input-2" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
+      <button class="pw-btn" onclick="checkGatePassword('2')">Unlock</button>
+    </div>
+    <div class="pw-error" id="pw-error-2">Incorrect password. Try again.</div>
   </div>
 </div>
 
@@ -2521,6 +2556,13 @@ body.squad-purple {
   <div class="email-form" id="email-form">
     <div class="jcard" style="background:var(--trail-light);border:2px solid var(--trail-mid)">
       <div class="jcard-label" style="color:var(--trail)">🔓 Staff Access Unlocked</div>
+
+      <!-- SESSION ACTIONS -- once you're done with this student, use one of these to
+           reset the device for the next journal rather than leaving this one on screen. -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <button onclick="startNewJournal()" style="flex:1;padding:10px 12px;background:var(--trail);color:white;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer">🔄 Start New Journal</button>
+        <button onclick="closeOutJournal()" style="flex:1;padding:10px 12px;background:var(--paper);border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:.82rem;color:var(--ink-mid);cursor:pointer">✅ Close Out</button>
+      </div>
 
       <!-- Loading state -->
       <div id="staff-loading" style="display:flex;align-items:center;gap:10px;padding:8px 0 14px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid)">
@@ -3280,7 +3322,6 @@ const EMOTIONS = {
     { name:'Tense', emoji:'😤', def:'A tight, coiled feeling — like your body is waiting for something to happen.', msg:'Tension means your nervous system is on guard.' },
     { name:'Stressed', emoji:'🤯', def:'Feeling like there\'s too much to handle and not enough resources to handle it.', msg:'Stress is telling you that demands feel bigger than your capacity right now.' },
     { name:'Overwhelmed', emoji:'😵', def:'So much coming at you at once that you can\'t process it all — like a flood.', msg:'Overwhelm means you\'ve hit your limit. Your brain is asking for a pause.' },
-    { name:'Disgusted', emoji:'🤢', def:'A strong feeling of repulsion — something felt deeply wrong or offensive.', msg:'Disgust protects your values. It means something crossed a line for you.' },
     { name:'Repulsed', emoji:'😖', def:'An even stronger version of disgust — you want to get away from something.', msg:'Repulsion is a signal that something violated something you hold important.' },
     { name:'Contempt', emoji:'😏', def:'Feeling superior to someone in a way that makes you dismiss them. (Atlas of the Heart)', msg:'Contempt is worth examining — it can damage relationships and shut down empathy.' },
     { name:'Schadenfreude', emoji:'😈', def:'Feeling a secret pleasure when something bad happens to someone else. (Tiffany Watt Smith)', msg:'Schadenfreude is a messenger worth listening to — it often reveals envy, competition, or hurt underneath.' },
@@ -3309,7 +3350,6 @@ const EMOTIONS = {
     { name:'Surprised', emoji:'😲', def:'Caught off guard — but by something neutral or positive.', msg:'Surprise means your brain got information it wasn\'t expecting.' },
     { name:'Curious', emoji:'🤔', def:'Drawn toward something unknown — wanting to explore or understand.', msg:'Curiosity is one of the most powerful messengers — follow it.' },
     { name:'Energized', emoji:'⚡', def:'Feeling full of power and ready to move.', msg:'Energy is telling you your body and mind are charged up.' },
-    { name:'Grateful', emoji:'🙏', def:'Feeling thankful for something or someone.', msg:'Gratitude is a sign you recognize something good — hold onto it.' },
     { name:'Freudenfreude', emoji:'🫶', def:'Feeling genuine joy in someone else\'s happiness or success. (Tiffany Watt Smith — opposite of schadenfreude)', msg:'Freudenfreude deepens connection and is one of the most prosocial feelings we have.' },
   ],
   blue: [
@@ -3320,6 +3360,7 @@ const EMOTIONS = {
     { name:'Hopeless', emoji:'😶', def:'Unable to imagine things getting better. A very heavy feeling.', msg:'Hopelessness is a signal to reach out — you don\'t have to carry this alone.' },
     { name:'Bored', emoji:'😑', def:'Lacking stimulation or purpose — nothing feels engaging or meaningful.', msg:'Boredom is a signal that you need challenge, meaning, or connection.' },
     { name:'Apathetic', emoji:'😐', def:'Not caring about much — emotionally flat, disconnected from outcomes.', msg:'Apathy can be a form of protection after repeated hurt. It\'s worth paying attention to.' },
+    { name:'Disgusted', emoji:'🤢', def:'A strong feeling of repulsion — something felt deeply wrong or offensive.', msg:'Disgust protects your values. It means something crossed a line for you.' },
     { name:'Tired', emoji:'😴', def:'Physically or emotionally exhausted — running low.', msg:'Tiredness is your body asking for rest. Emotional exhaustion is real.' },
     { name:'Drained', emoji:'😮‍💨', def:'Empty — like everything has been used up.', msg:'Feeling drained means you\'ve been carrying a lot. You need to refuel.' },
     { name:'Numb', emoji:'😶', def:'Feeling nothing — like emotions have gone quiet or shut off.', msg:'Numbness can be a protective response. It means something may have been too much.' },
@@ -3948,6 +3989,55 @@ function goTo(n) {
   document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
 }
 
+// ─── PART 1 TAKEAWAY + STAFF CHECK-IN GATES ────────────────────────────────
+// Prevents a student from clicking straight through Part 1 -> Part 2 -> Part 3
+// unsupervised. Office tier has no Part 2/3 to click ahead into, so it skips the
+// password step entirely and goes straight through once the takeaway is written.
+function submitPart1Takeaway() {
+  const el = document.getElementById('q-part1-takeaway');
+  if (!IS_PREVIEW && thin(el.value)) {
+    el.classList.add('field-error'); showErr('e-part1-takeaway'); doShake(el);
+    return;
+  }
+  el.classList.remove('field-error'); hideErr('e-part1-takeaway');
+  if (IS_PREVIEW || S.tier === 'office') { afterReading(); return; }
+  document.getElementById('pause-block-1').style.display = 'none';
+  document.getElementById('pw-gate-1').style.display = 'block';
+}
+
+function revealGate2() {
+  document.getElementById('pause-block-2').style.display = 'none';
+  document.getElementById('pw-gate-2').style.display = 'block';
+}
+
+// Shared staff check-in gate for both the Part1->Part2 and Part2->Part3 transitions.
+// Verified server-side the same way the final screen's checkPW() already does --
+// never compared client-side. gateNum is a string ('1' or '2') matching the ids above.
+async function checkGatePassword(gateNum) {
+  const err = document.getElementById('pw-error-' + gateNum);
+  const input = document.getElementById('pw-input-' + gateNum);
+  const pw = input.value;
+  if (IS_PREVIEW && pw === 'preview') { onGatePassed(gateNum); return; }
+  const prevPw = ADMIN_PW_VALUE;
+  ADMIN_PW_VALUE = pw;
+  try {
+    await callBackend({ action: 'query', table: 'site_config', filters: {} }, true);
+    onGatePassed(gateNum);
+  } catch (e) {
+    ADMIN_PW_VALUE = prevPw;
+    err.textContent = 'Incorrect password. Try again.';
+    err.style.display = 'block';
+    doShake(input);
+    input.value = '';
+    setTimeout(() => err.style.display = 'none', 4000);
+  }
+}
+
+function onGatePassed(gateNum) {
+  if (gateNum === '1') { afterReading(); return; }
+  if (gateNum === '2') { goTo(4); return; }
+}
+
 // ─── TIER-AWARE NAVIGATION ─────────────────────────────────────────────────
 // Where the student is completing the journal (S.tier, from S.location) decides how far
 // past Part 1 the journal goes. See LOCATION_TIER_ for the location -> tier mapping.
@@ -3997,6 +4087,7 @@ function getPart1() {
     intensityNow: S.enow.length ? Math.round(S.enow.reduce((a,e)=>a+(e.intensity||3),0)/S.enow.length) : 3,
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
+    takeaway: gv('q-part1-takeaway'),
   };
 }
 function getPart2() {
@@ -4249,6 +4340,24 @@ async function checkPW() {
   }
 }
 
+// Full page reload is the most reliable way to guarantee a completely clean slate for
+// the next student -- resetting the S object and every form field by hand risks missing
+// something (zone grids, flip cards, checklists, etc. all carry their own DOM state).
+// Both buttons do the same underlying reset; they're offered as two labeled options
+// because staff think of "starting the next student" and "ending this session" as two
+// different moments, even though technically it's one action.
+function startNewJournal() {
+  if (confirm('Start a fresh journal for the next student? This clears this session.')) {
+    window.location.href = window.location.pathname + window.location.search;
+  }
+}
+
+function closeOutJournal() {
+  if (confirm('Close out this journal? This clears this session.')) {
+    window.location.href = window.location.pathname + window.location.search;
+  }
+}
+
 function unlockStaffSection() {
   document.getElementById('pw-gate').style.display = 'none';
   document.getElementById('email-form').classList.add('show');
@@ -4468,6 +4577,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'CPS — What was going on before: ' + (p1.cpsUnsolvedProblem || '—'),
     'CPS — What they cared about: ' + (p1.cpsMyConcern || '—'),
     'CPS — What the other person cared about: ' + (p1.cpsTheirConcern || '—'),
+    'Part 1 Takeaway: ' + (p1.takeaway || '—'),
   ].join('\n');
 
   const blockMakingRight = [

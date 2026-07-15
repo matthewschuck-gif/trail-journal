@@ -80,7 +80,8 @@ function buildAiPrompt_(type, payload) {
       'CPS before: ' + p.cpsUnsolvedProblem + '\n' +
       'My concern: ' + p.cpsMyConcern + '\n' +
       'Their concern: ' + p.cpsTheirConcern + '\n\n' +
-      '3-4 warm paragraphs: (1) validate emotions without excusing, (2) brain science in accessible language, (3) connect to CPS insights, (4) forward-looking trail metaphor. ' +
+      '3-4 warm paragraphs: (1) validate emotions without excusing, (2) brain science in accessible language, (3) connect to CPS insights while keeping the focus on the student\'s own choices, (4) forward-looking trail metaphor. ' +
+      'OWNERSHIP CHECK: if the student\'s own words (why/thinking/CPS answers) blame someone else, minimize their own role, or make excuses ("they made me," "it wasn\'t my fault," "everyone else was doing it"), gently but clearly name that and redirect the reading toward what THEY chose and can control -- do not just validate the blame. Acknowledge the other person\'s role if relevant, but the throughline stays on the student\'s own actions. Do not shame them -- redirect, don\'t scold.\n\n' +
       'Return ONLY valid JSON: {"title":"trail-themed title","body":"paragraphs separated by \\n\\n"}';
   }
 
@@ -90,6 +91,7 @@ function buildAiPrompt_(type, payload) {
       'What happened: ' + payload.whatHappened + '\n' +
       'Emotions: ' + ((payload.emotions || []).join(', ')) + '\n\n' +
       "2-3 warm paragraphs meeting them at their level, connecting hope to emotions, ending with one concrete action they can take right now. Be honest -- if they're at 1, honor that. " +
+      "If \"what happened\" reads as blaming someone else rather than owning their part, gently redirect -- the concrete action should be something THEY control, not something that depends on someone else changing. " +
       'Return ONLY valid JSON: {"reflection":"paragraphs separated by \\n\\n"}';
   }
 
@@ -100,7 +102,7 @@ function buildAiPrompt_(type, payload) {
       'Their concern: ' + payload.theirConcern + '\n' +
       'What happened: ' + payload.whatHappened + '\n' +
       'Why: ' + payload.why + '\n\n' +
-      '3-5 sentence paragraph acknowledging both sides, framing as two paths crossing, forward-looking end. ' +
+      '3-5 sentence paragraph acknowledging both sides, framing as two paths crossing -- but if "my concern" reads as blaming the other person entirely with no ownership of their own part, gently name that and bring the paragraph back to what the student themselves chose and can control. Forward-looking end. ' +
       'Return ONLY valid JSON: {"synthesis":"paragraph"}';
   }
 
@@ -327,7 +329,8 @@ function buildAiPrompt_(type, payload) {
       ((p2.selectedConsequences || []).join('-')) + ' | Plan: ' + p2.plan + ' | Different: ' + p2.different + '\n' +
       'PART 3: Trait: ' + p3.trait + ' | Specifics: ' + ((p3.traitSpecifics || []).join(',')) + ' | Why trait: ' + p3.traitWhy + ' | Creative: ' + p3.creativeFormat + ' | Community/service action: ' + (p3.communityAction || 'n/a') + '\n\n' +
       tierNote + '\n\n' +
-      'INSIGHT LEVEL: HIGH = honest effort throughout + named someone hurt + any self-awareness + non-dismissive. Short honest answers count as High. MEDIUM = partial/thin engagement. LOW = clearly avoidant/dismissive throughout only. Default strongly toward HIGH.\n\n' +
+      'INSIGHT LEVEL: HIGH = honest effort throughout + named someone hurt + any self-awareness + non-dismissive. Short honest answers count as High. MEDIUM = partial/thin engagement, OR effort is present but the account exclusively blames others with zero ownership of their own role. LOW = clearly avoidant/dismissive throughout only. Default strongly toward HIGH.\n\n' +
+      'OWNERSHIP: if the student\'s account (why/thinking/makeRight/different) blames others without acknowledging their own part, do not let insightReason validate the blame -- name the pattern plainly for staff (e.g. "student attributes the incident primarily to [person/group] with limited ownership of their own actions") so it surfaces in the follow-up conversation.\n\n' +
       'Return this exact JSON:\n' +
       '{"summary":"2-3 sentences","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
       '"practicePlan":{"title":"Your Practice Plan","days":[{"day":"Today","task":"action"},{"day":"Day 2-3","task":"next"},{"day":"Day 4-5","task":"building"},{"day":"By Friday","task":"measurable"}]},' +
