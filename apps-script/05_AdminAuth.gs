@@ -48,6 +48,12 @@ function requireStaffPassword_(providedPassword) {
  *     student's own form builds -- as opposed to the staff Trailback Panel's batch 3-interval
  *     reminder run, which never sets singleEvent and stays fully gated below)
  * Bulk read-back of followup_records (a 'query') stays staff-only, same as reflections.
+ *
+ * The admin dashboard's "mark this follow-up complete" action (page-followup's Trail
+ * Journal Follow-Ups section) ALSO calls update on followup_records, but that one is a real
+ * staff-only action -- it's gated separately below by checking for the completion fields in
+ * the patch, rather than widening the table-level exemption above (which must stay narrow
+ * so it keeps covering only the student's own zero-login calendar_status update).
  */
 function enforceAdminGate_(body) {
   const needsAdmin =
@@ -59,7 +65,11 @@ function enforceAdminGate_(body) {
     // reading them back in bulk (the admin dashboard listing/export) is staff-only.
     ((body.table === 'reflections' || body.table === 'responder_reflections') && body.action === 'query' && !body.filters) ||
     // followup_records: bulk read-back only, not the student's own insert/update (see note above).
-    (body.table === 'followup_records' && body.action === 'query');
+    (body.table === 'followup_records' && body.action === 'query') ||
+    // followup_records: the staff "mark complete" action, identified by its patch touching
+    // the completion columns -- gated even though table+action alone (update) is otherwise
+    // exempt for the student's own calendar_status update.
+    (body.table === 'followup_records' && body.action === 'update' && body.patch && Object.prototype.hasOwnProperty.call(body.patch, 'completed'));
 
   if (!needsAdmin) return null;
   return requireStaffPassword_(body.adminPassword);

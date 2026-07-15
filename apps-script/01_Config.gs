@@ -108,6 +108,14 @@ const SCHEMA = {
     'panel_session_id', 'attendee_emails',
     'checkin_2day_date', 'checkin_2week_date', 'checkin_2month_date', 'calendar_status',
     'submitted_by', 'squad', 'notes',
+    // Added so single-event Trail Journal follow-ups (trigger_type = 'trail-journal',
+    // scheduled from scheduleFuCheckin() in index.html) can actually be closed out --
+    // previously there was no admin UI for these at all (the existing Panel Follow-Up
+    // Tracker page only ever queried panel_sessions, a different table). See the
+    // Trail Journal Follow-Ups section in admin/index.html (page-followup) for the UI
+    // that reads/writes these. Appended at the end -- see
+    // migrateAddFollowupCompletionColumns_() below.
+    'completed', 'completed_at', 'completed_by', 'completion_notes',
   ],
   [TABS.INCIDENT_REPORTS]: [
     'id', 'created_at', 'student_name', 'grade', 'homeroom',
@@ -154,6 +162,15 @@ function migrateAddLocationPeakColumns_() {
  */
 function migrateAddCampMountaineerColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['cm_reason', 'cm_initiated_by', 'cm_why', 'cm_effort_agreed', 'cm_checklist_confirmed']);
+  SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before the follow-up
+ * completion-tracking columns were added to the followup_records schema above.
+ */
+function migrateAddFollowupCompletionColumns_() {
+  const result = addMissingColumns_(TABS.FOLLOWUP_RECORDS, ['completed', 'completed_at', 'completed_by', 'completion_notes']);
   SpreadsheetApp.getUi().alert(result);
 }
 

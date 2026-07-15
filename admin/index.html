@@ -205,6 +205,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="sb-section">Overview</div>
       <button class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="si">📊</span>Dashboard</button>
       <button class="sb-item" onclick="showPage('submissions')" id="nav-submissions"><span class="si">📋</span>Submissions</button>
+      <button class="sb-item" onclick="showPage('import')" id="nav-import"><span class="si">📥</span>Import Entry</button>
       <div class="sb-section">Configuration</div>
       <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si">✏️</span>Content Editor</button>
       <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si">🤖</span>AI Prompts</button>
@@ -215,7 +216,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si">🏔️</span>Your Side of the Trail</button>
       <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si">🏆</span>Clash Flags</button>
       <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si">📊</span>Export to Sheets</button>
-      <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si">📅</span>Panel Follow-Ups</button>
+      <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si">📅</span>Follow-Ups</button>
       <button class="sb-item" onclick="showPage('longitudinal')" id="nav-longitudinal"><span class="si">📈</span>Student Growth Arc</button>
     </div>
     <div class="sb-footer">
@@ -272,6 +273,122 @@ tr:hover td{background:rgba(255,255,255,.02);}
           <button class="flt-btn" onclick="setFilter('High')" id="f-High">High</button>
         </div>
         <div id="tbl-body"><div class="empty"><div class="ei">📋</div><p>Loading…</p></div></div>
+      </div>
+    </div>
+
+    <!-- IMPORT / MANUAL ENTRY -->
+    <div class="page" id="page-import">
+      <div class="page-hd">
+        <h2>Import / Manual Entry</h2>
+        <p>Add a Trail Journal record that wasn't completed through the live site -- a paper reflection done on paper, a make-up entry, or historical data being backfilled. This inserts directly into the same reflections table the live journal writes to, so it shows up everywhere else (Submissions, Growth Arc, exports) immediately.</p>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--border)">
+        <div class="ed-nav-item active" id="imp-tab-btn-form" onclick="showImportMode('form')" style="padding:9px 16px;border-radius:7px 7px 0 0">Quick Form</div>
+        <div class="ed-nav-item" id="imp-tab-btn-json" onclick="showImportMode('json')" style="padding:9px 16px;border-radius:7px 7px 0 0">Paste JSON</div>
+      </div>
+
+      <!-- QUICK FORM -->
+      <div id="imp-tab-form">
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Student &amp; Context</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="ed-field"><label class="ed-lbl">Student Name</label><input type="text" class="ed-inp" id="imp-name"></div>
+              <div class="ed-field"><label class="ed-lbl">Grade</label>
+                <select class="ed-inp" id="imp-grade"><option value="">—</option><option>7</option><option>8</option></select>
+              </div>
+              <div class="ed-field"><label class="ed-lbl">Location</label>
+                <select class="ed-inp" id="imp-location" onchange="document.getElementById('imp-tier').value = ({'Office':'office','ISS':'full','Camp Mountaineer':'full'})[this.value] || document.getElementById('imp-tier').value">
+                  <option value="">—</option>
+                  <option>Lunch Detention</option><option>Morning Detention</option><option>Afterschool Detention</option>
+                  <option>Office</option><option>ISS</option><option>Camp Mountaineer</option><option>Other</option>
+                </select>
+              </div>
+              <div class="ed-field"><label class="ed-lbl">Tier (which parts were completed)</label>
+                <select class="ed-inp" id="imp-tier">
+                  <option value="office">Office (Part 1 only)</option>
+                  <option value="detention">Detention (Part 1 + 2)</option>
+                  <option value="full" selected>Full (Part 1 + 2 + 3)</option>
+                </select>
+              </div>
+              <div class="ed-field"><label class="ed-lbl">Date of Reflection</label><input type="date" class="ed-inp" id="imp-date"></div>
+              <div class="ed-field"><label class="ed-lbl">Insight Level</label>
+                <select class="ed-inp" id="imp-insight"><option>Medium</option><option>High</option><option>Low</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Part 1 — The Incident</h4>
+            <div class="ed-field"><label class="ed-lbl">What Happened</label><textarea class="ed-ta" id="imp-what" rows="3"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl">Why</label><textarea class="ed-ta" id="imp-why" rows="2"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="ed-field"><label class="ed-lbl">Where</label><input type="text" class="ed-inp" id="imp-where"></div>
+              <div class="ed-field"><label class="ed-lbl">Emotions (comma-separated)</label><input type="text" class="ed-inp" id="imp-emotions" placeholder="e.g. Frustrated, Anxious"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Part 2 — The Repair <span style="font-weight:400;color:var(--muted);font-size:.76rem">(leave blank for Office tier)</span></h4>
+            <div class="ed-field"><label class="ed-lbl">People Hurt (comma-separated)</label><input type="text" class="ed-inp" id="imp-hurt"></div>
+            <div class="ed-field"><label class="ed-lbl">What Student Thinks Should Happen</label><textarea class="ed-ta" id="imp-makeright" rows="2"></textarea></div>
+            <div class="ed-field"><label class="ed-lbl">Plan / What Will Be Different</label><textarea class="ed-ta" id="imp-plan" rows="2"></textarea></div>
+          </div>
+        </div>
+
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Part 3 — The Path Forward <span style="font-weight:400;color:var(--muted);font-size:.76rem">(Full tier only)</span></h4>
+            <div class="ed-field"><label class="ed-lbl">LRG Trait</label>
+              <select class="ed-inp" id="imp-trait">
+                <option value="">—</option>
+                <option>Communication &amp; Empathy</option>
+                <option>Honesty, Integrity, &amp; Responsibility</option>
+                <option>Critical Thinking &amp; Problem Solving</option>
+                <option>Healthy Living, Wellness, &amp; Self-Awareness</option>
+                <option>Adaptability &amp; Flexibility</option>
+                <option>Resilience &amp; Grit</option>
+                <option>Collaborative &amp; Teamwork</option>
+                <option>Continual Learning &amp; Growth Mindset</option>
+                <option>Creativity &amp; Innovation</option>
+                <option>Civics, Leadership, &amp; Service</option>
+              </select>
+            </div>
+            <div class="ed-field"><label class="ed-lbl">Community/Service Action</label><input type="text" class="ed-inp" id="imp-community"></div>
+          </div>
+        </div>
+
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Staff Notes</h4>
+            <div class="ed-field"><label class="ed-lbl">Anything else worth recording (not shown to the student, this record has no login anyway)</label><textarea class="ed-ta" id="imp-notes" rows="3"></textarea></div>
+          </div>
+        </div>
+
+        <div class="ed-actions">
+          <button class="save-btn" onclick="submitImportForm()">Add Record</button>
+          <div class="save-ok" id="imp-form-ok">✓ Added</div>
+        </div>
+      </div>
+
+      <!-- PASTE JSON -->
+      <div id="imp-tab-json" style="display:none">
+        <div class="ed-panel" style="margin-bottom:16px">
+          <div class="ed-sec">
+            <h4>Paste a Full Record</h4>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">For bulk backfills or when you need every field exactly right. Paste one JSON object shaped like a reflections row -- part1_json/part2_json/part3_json match the same keys the live journal itself writes (whatHappened, why, hurtPeople, trait, etc.).</p>
+            <textarea class="ed-ta" id="imp-json" rows="14" placeholder='{"student_name":"...","grade":"8","location":"Office","tier":"office","insight_level":"Medium","part1_json":{"whatHappened":"...","why":"..."},"part2_json":{},"part3_json":{}}'></textarea>
+          </div>
+        </div>
+        <div class="ed-actions">
+          <button class="save-btn" onclick="submitImportJson()">Add Record</button>
+          <div class="save-ok" id="imp-json-ok">✓ Added</div>
+        </div>
       </div>
     </div>
 
@@ -992,69 +1109,137 @@ Required structure:
     <!-- PANEL FOLLOW-UP TRACKER -->
     <div class="page" id="page-followup">
       <div class="page-hd">
-        <h2>Panel Follow-Up Tracker</h2>
-        <p>All active panel sessions with upcoming check-in dates. Sorted by soonest check-in. Click a row to view the full recommendation.</p>
+        <h2>Follow-Up Tracker</h2>
+        <p>Two separate follow-up workflows live here: Trailback Panel sessions (2-day/2-week/2-month check-ins) and single-event Trail Journal follow-ups (scheduled from the student's own final screen). They're tracked in different tables, so they get their own tabs below.</p>
       </div>
 
-      <!-- ── SCHEDULER LAUNCH BANNER ── -->
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(92,61,143,.1) 0%,rgba(201,168,76,.08) 100%);border:1.5px solid rgba(92,61,143,.3);border-radius:12px;padding:14px 18px;margin-bottom:20px">
-        <div style="flex:1;min-width:180px">
-          <div style="font-weight:700;font-size:.9rem;color:var(--text)">📅 Outlook Check-In Scheduler</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule 2-day, 2-week &amp; 2-month Outlook calendar events — workday-snapped, grade-timed. Or click any row below to schedule from an existing session.</div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--border)">
+        <div class="ed-nav-item active" id="fu-tab-btn-panel" onclick="showFuTab('panel')" style="padding:9px 16px;border-radius:7px 7px 0 0">Panel Sessions</div>
+        <div class="ed-nav-item" id="fu-tab-btn-tj" onclick="showFuTab('tj')" style="padding:9px 16px;border-radius:7px 7px 0 0">Trail Journal Follow-Ups</div>
+      </div>
+
+      <!-- ═══ TAB: PANEL SESSIONS (existing) ═══ -->
+      <div id="fu-tab-panel">
+        <!-- ── SCHEDULER LAUNCH BANNER ── -->
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(92,61,143,.1) 0%,rgba(201,168,76,.08) 100%);border:1.5px solid rgba(92,61,143,.3);border-radius:12px;padding:14px 18px;margin:16px 0 20px">
+          <div style="flex:1;min-width:180px">
+            <div style="font-weight:700;font-size:.9rem;color:var(--text)">📅 Outlook Check-In Scheduler</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule 2-day, 2-week &amp; 2-month Outlook calendar events — workday-snapped, grade-timed. Or click any row below to schedule from an existing session.</div>
+          </div>
+          <a href="/panel/followup" target="_blank" style="display:inline-block;padding:9px 18px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;box-shadow:0 2px 10px rgba(92,61,143,.3);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Open Scheduler →</a>
         </div>
-        <a href="/panel/followup" target="_blank" style="display:inline-block;padding:9px 18px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;box-shadow:0 2px 10px rgba(92,61,143,.3);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Open Scheduler →</a>
-      </div>
 
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
-        <div class="ed-field" style="margin:0">
-          <label class="ed-lbl">Filter by Status</label>
-          <select class="ed-inp" id="fu-filter" style="width:160px" onchange="loadFollowUps()">
-            <option value="">All</option>
-            <option value="upcoming">Due within 7 days</option>
-            <option value="overdue">Overdue</option>
-            <option value="complete">Completed</option>
-          </select>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
+          <div class="ed-field" style="margin:0">
+            <label class="ed-lbl">Filter by Status</label>
+            <select class="ed-inp" id="fu-filter" style="width:160px" onchange="loadFollowUps()">
+              <option value="">All</option>
+              <option value="upcoming">Due within 7 days</option>
+              <option value="overdue">Overdue</option>
+              <option value="complete">Completed</option>
+            </select>
+          </div>
+          <div class="ed-field" style="margin:0">
+            <label class="ed-lbl">Squad</label>
+            <select class="ed-inp" id="fu-squad-filter" style="width:130px" onchange="loadFollowUps()">
+              <option value="">All squads</option>
+              <option>Gold</option><option>Grey</option>
+              <option>Black</option><option>Purple</option>
+            </select>
+          </div>
+          <button class="save-btn" onclick="loadFollowUps()">↻ Refresh</button>
         </div>
-        <div class="ed-field" style="margin:0">
-          <label class="ed-lbl">Squad</label>
-          <select class="ed-inp" id="fu-squad-filter" style="width:130px" onchange="loadFollowUps()">
-            <option value="">All squads</option>
-            <option>Gold</option><option>Grey</option>
-            <option>Black</option><option>Purple</option>
-          </select>
+
+        <!-- Summary chips -->
+        <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap" id="fu-summary-chips"></div>
+
+        <div id="fu-table-wrap">
+          <table class="dash-table" id="fu-table" style="display:none">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Squad</th>
+                <th>Panel Date</th>
+                <th>Check-In Person</th>
+                <th>Next Check-In</th>
+                <th>Status</th>
+                <th>Recommendation</th>
+                <th>TJ Linked</th>
+              </tr>
+            </thead>
+            <tbody id="fu-body"></tbody>
+          </table>
+          <div id="fu-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No panel sessions found.</div>
+          <div id="fu-loading" style="font-size:.84rem;color:var(--muted);padding:20px 0">Loading panel sessions…</div>
         </div>
-        <button class="save-btn" onclick="loadFollowUps()">↻ Refresh</button>
+
+        <!-- Detail drawer -->
+        <div id="fu-detail" style="display:none;margin-top:20px">
+          <div class="ed-panel">
+            <div class="ed-sec">
+              <h4 id="fu-detail-title">Session Detail</h4>
+              <div id="fu-detail-body" style="font-size:.84rem;color:var(--text);line-height:1.7"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Summary chips -->
-      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap" id="fu-summary-chips"></div>
+      <!-- ═══ TAB: TRAIL JOURNAL FOLLOW-UPS (new) ═══ -->
+      <div id="fu-tab-tj" style="display:none">
+        <p style="font-size:.82rem;color:var(--muted);margin:16px 0">Single-event follow-ups scheduled from a student's Trail Journal final screen. Mark one complete once the actual conversation has happened, with a quick note for the record.</p>
 
-      <div id="fu-table-wrap">
-        <table class="dash-table" id="fu-table" style="display:none">
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Squad</th>
-              <th>Panel Date</th>
-              <th>Check-In Person</th>
-              <th>Next Check-In</th>
-              <th>Status</th>
-              <th>Recommendation</th>
-              <th>TJ Linked</th>
-            </tr>
-          </thead>
-          <tbody id="fu-body"></tbody>
-        </table>
-        <div id="fu-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No panel sessions found.</div>
-        <div id="fu-loading" style="font-size:.84rem;color:var(--muted);padding:20px 0">Loading panel sessions…</div>
-      </div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
+          <div class="ed-field" style="margin:0">
+            <label class="ed-lbl">Filter by Status</label>
+            <select class="ed-inp" id="futj-filter" style="width:160px" onchange="loadTjFollowUps()">
+              <option value="">All</option>
+              <option value="pending">Not yet completed</option>
+              <option value="complete">Completed</option>
+            </select>
+          </div>
+          <button class="save-btn" onclick="loadTjFollowUps()">↻ Refresh</button>
+        </div>
 
-      <!-- Detail drawer -->
-      <div id="fu-detail" style="display:none;margin-top:20px">
-        <div class="ed-panel">
-          <div class="ed-sec">
-            <h4 id="fu-detail-title">Session Detail</h4>
-            <div id="fu-detail-body" style="font-size:.84rem;color:var(--text);line-height:1.7"></div>
+        <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap" id="futj-summary-chips"></div>
+
+        <div id="futj-table-wrap">
+          <table class="dash-table" id="futj-table" style="display:none">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Squad</th>
+                <th>Scheduled For</th>
+                <th>Submitted By</th>
+                <th>Status</th>
+                <th>Outcome / Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="futj-body"></tbody>
+          </table>
+          <div id="futj-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No Trail Journal follow-ups found.</div>
+          <div id="futj-loading" style="font-size:.84rem;color:var(--muted);padding:20px 0">Loading follow-ups…</div>
+        </div>
+
+        <!-- Mark-complete drawer -->
+        <div id="futj-complete" style="display:none;margin-top:20px">
+          <div class="ed-panel">
+            <div class="ed-sec">
+              <h4 id="futj-complete-title">Mark Follow-Up Complete</h4>
+              <div class="ed-field">
+                <label class="ed-lbl">Your Email</label>
+                <input type="email" class="ed-inp" id="futj-complete-by" placeholder="your@easdpa.org">
+              </div>
+              <div class="ed-field">
+                <label class="ed-lbl">Notes From the Conversation</label>
+                <textarea class="ed-ta" id="futj-complete-notes" rows="4" placeholder="What came up, how the student is doing, any next steps…"></textarea>
+              </div>
+              <div class="ed-actions">
+                <button class="save-btn" onclick="submitFollowupComplete()">Save Completion</button>
+                <button class="save-btn" style="background:var(--navy3);color:var(--muted)" onclick="document.getElementById('futj-complete').style.display='none'">Cancel</button>
+                <div class="save-ok" id="futj-complete-ok">✓ Saved</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1064,15 +1249,15 @@ Required structure:
     <div class="page" id="page-longitudinal">
       <div class="page-hd">
         <h2>Student Growth Arc</h2>
-        <p>Enter a student initial to see their full history — all Trail Journal reflections, panel sessions, insight trend, and trait pattern over time.</p>
+        <p>Enter a student's name to see their full history — all Trail Journal reflections, panel sessions, insight trend, and trait pattern over time. (A single letter still works for older records that only ever had an initial on file.)</p>
       </div>
 
       <div class="ed-panel" style="margin-bottom:20px">
         <div class="ed-sec">
           <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
             <div class="ed-field" style="margin:0">
-              <label class="ed-lbl">Student Initial</label>
-              <input type="text" class="ed-inp" id="lg-initial" placeholder="e.g. J" maxlength="2" style="width:80px;text-transform:uppercase">
+              <label class="ed-lbl">Student Name (or Initial)</label>
+              <input type="text" class="ed-inp" id="lg-initial" placeholder="e.g. Jordan Smith" style="width:220px" onkeydown="if(event.key==='Enter')loadLongitudinal()">
             </div>
             <button class="save-btn" onclick="loadLongitudinal()">Load Growth Arc</button>
           </div>
@@ -1115,7 +1300,7 @@ Required structure:
           </div>
         </div>
       </div>
-      <div id="lg-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No records found for that initial.</div>
+      <div id="lg-empty" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">No records found for that name.</div>
       <div id="lg-loading" style="display:none;font-size:.84rem;color:var(--muted);padding:20px 0">Loading…</div>
     </div>
 
@@ -1932,19 +2117,220 @@ function showFUDetail(sessionId) {
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+// ── FOLLOW-UP TABS ─────────────────────────────────────────────────────────
+function showFuTab(name) {
+  document.getElementById('fu-tab-btn-panel').classList.toggle('active', name === 'panel');
+  document.getElementById('fu-tab-btn-tj').classList.toggle('active', name === 'tj');
+  document.getElementById('fu-tab-panel').style.display = name === 'panel' ? 'block' : 'none';
+  document.getElementById('fu-tab-tj').style.display = name === 'tj' ? 'block' : 'none';
+  if (name === 'tj' && !window._futjLoaded) { window._futjLoaded = true; loadTjFollowUps(); }
+}
+
+// ── TRAIL JOURNAL FOLLOW-UPS (single-event, scheduled from the student's final screen) ──
+// Previously invisible in the admin dashboard entirely -- these get inserted into
+// followup_records with trigger_type='trail-journal' by scheduleFuCheckin() in
+// index.html, but nothing here ever read them back. completed/completed_at/completed_by/
+// completion_notes are the new columns (see migrateAddFollowupCompletionColumns_() in
+// 01_Config.gs) that let a real conversation get logged and closed out.
+async function loadTjFollowUps() {
+  document.getElementById('futj-loading').style.display = 'block';
+  document.getElementById('futj-table').style.display = 'none';
+  document.getElementById('futj-empty').style.display = 'none';
+
+  const statusFilter = document.getElementById('futj-filter').value;
+  const data = await sb('followup_records?select=*&trigger_type=eq.trail-journal&order=created_at.desc&limit=300');
+  document.getElementById('futj-loading').style.display = 'none';
+
+  if (!data?.length) { document.getElementById('futj-empty').style.display = 'block'; return; }
+
+  const filtered = statusFilter
+    ? data.filter(r => statusFilter === 'complete' ? !!r.completed : !r.completed)
+    : data;
+
+  const completeCount = data.filter(r => r.completed).length;
+  const pendingCount = data.length - completeCount;
+  document.getElementById('futj-summary-chips').innerHTML = [
+    pendingCount ? `<span style="background:#fdf5df;color:#8a6820;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">📅 ${pendingCount} not yet completed</span>` : '',
+    `<span style="background:var(--navy3);color:var(--muted);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">${data.length} total</span>`,
+  ].filter(Boolean).join('');
+
+  if (!filtered.length) { document.getElementById('futj-empty').style.display = 'block'; return; }
+
+  const sqColor = {Gold:'#c9a84c',Grey:'#6b7280',Black:'#aaa',Purple:'#9f7aea'};
+  document.getElementById('futj-body').innerHTML = filtered.map(r => {
+    const badge = r.completed
+      ? `<span style="background:var(--navy3);color:var(--green);padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">✓ Completed</span>`
+      : `<span style="background:#fdf5df;color:#8a6820;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">📅 Pending</span>`;
+    const scheduledFor = r.checkin_2day_date || '—';
+    const noteOrOutcome = r.completed
+      ? (r.completion_notes || '—')
+      : (r.outcome_summary || '—').slice(0, 100);
+    return `<tr>
+      <td><strong>${r.student_initials || '—'}</strong></td>
+      <td style="color:${sqColor[r.squad]||'var(--text)'};font-weight:700">${r.squad || '—'}</td>
+      <td>${scheduledFor}</td>
+      <td>${r.submitted_by || '—'}</td>
+      <td>${badge}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${noteOrOutcome}</td>
+      <td>${r.completed ? '' : `<button class="save-btn" style="padding:6px 12px;font-size:.76rem" onclick="openFollowupComplete('${r.id}')">Mark Complete</button>`}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('futj-table').style.display = 'table';
+  window._futjData = data;
+}
+
+function openFollowupComplete(id) {
+  window._futjTargetId = id;
+  document.getElementById('futj-complete-by').value = '';
+  document.getElementById('futj-complete-notes').value = '';
+  const drawer = document.getElementById('futj-complete');
+  drawer.style.display = 'block';
+  drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function submitFollowupComplete() {
+  const id = window._futjTargetId;
+  if (!id) return;
+  const completedBy = document.getElementById('futj-complete-by').value.trim();
+  const notes = document.getElementById('futj-complete-notes').value.trim();
+  if (!completedBy) { alert('Enter your email so there\'s a record of who closed this out.'); return; }
+  try {
+    await sb('followup_records?id=eq.' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        completed: true,
+        completed_at: new Date().toISOString(),
+        completed_by: completedBy,
+        completion_notes: notes,
+      }),
+    });
+    showOk('futj-complete-ok');
+    document.getElementById('futj-complete').style.display = 'none';
+    loadTjFollowUps();
+  } catch (e) {
+    alert('Could not save: ' + e.message);
+  }
+}
+
+// ── IMPORT / MANUAL ENTRY ──────────────────────────────────────────────────
+// Inserts straight into the same reflections table the live journal writes to (via the
+// same genericInsert_ path in 03_Router.gs), so an imported record shows up in
+// Submissions, the Growth Arc, and exports immediately, exactly like a real submission.
+function showImportMode(mode) {
+  document.getElementById('imp-tab-btn-form').classList.toggle('active', mode === 'form');
+  document.getElementById('imp-tab-btn-json').classList.toggle('active', mode === 'json');
+  document.getElementById('imp-tab-form').style.display = mode === 'form' ? 'block' : 'none';
+  document.getElementById('imp-tab-json').style.display = mode === 'json' ? 'block' : 'none';
+}
+
+function importSessionId_() {
+  return (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : 'import-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+}
+
+async function submitImportForm() {
+  const gv = id => ((document.getElementById(id) || {}).value || '').trim();
+  const splitList = s => s.split(',').map(x => x.trim()).filter(Boolean);
+
+  const name = gv('imp-name');
+  if (!name) { alert('Enter a student name.'); return; }
+
+  const part1_json = {
+    whatHappened: gv('imp-what'),
+    why: gv('imp-why'),
+    where: gv('imp-where'),
+    emotionsDuring: splitList(gv('imp-emotions')),
+  };
+  const part2_json = {
+    hurtPeople: splitList(gv('imp-hurt')),
+    makeRight: gv('imp-makeright'),
+    plan: gv('imp-plan'),
+  };
+  const part3_json = {
+    trait: gv('imp-trait'),
+    communityAction: gv('imp-community'),
+  };
+
+  const row = {
+    session_id: importSessionId_(),
+    initial: name[0].toUpperCase(),
+    student_name: name,
+    grade: gv('imp-grade'),
+    location: gv('imp-location'),
+    insight_level: gv('imp-insight') || 'Medium',
+    status: 'submitted',
+    part1_json, part2_json, part3_json,
+    goal: gv('imp-notes') ? ('[Manually imported] ' + gv('imp-notes')) : '[Manually imported entry -- not from the live journal]',
+  };
+  const dateVal = gv('imp-date');
+  if (dateVal) row.created_at = new Date(dateVal + 'T12:00:00').toISOString();
+
+  try {
+    await callBackend({ action: 'insert', table: 'reflections', row }, true);
+    showOk('imp-form-ok');
+    ['imp-name','imp-what','imp-why','imp-where','imp-emotions','imp-hurt','imp-makeright','imp-plan','imp-community','imp-notes','imp-date'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+  } catch (e) {
+    alert('Could not add record: ' + e.message);
+  }
+}
+
+async function submitImportJson() {
+  const raw = document.getElementById('imp-json').value.trim();
+  if (!raw) { alert('Paste a JSON object first.'); return; }
+  let row;
+  try {
+    row = JSON.parse(raw);
+  } catch (e) {
+    alert('That\'s not valid JSON: ' + e.message);
+    return;
+  }
+  if (!row.session_id) row.session_id = importSessionId_();
+  if (!row.status) row.status = 'submitted';
+  if (!row.initial && row.student_name) row.initial = row.student_name[0].toUpperCase();
+
+  try {
+    await callBackend({ action: 'insert', table: 'reflections', row }, true);
+    showOk('imp-json-ok');
+    document.getElementById('imp-json').value = '';
+  } catch (e) {
+    alert('Could not add record: ' + e.message);
+  }
+}
+
 // ── LONGITUDINAL VIEW ─────────────────────────────────────────────────────
 async function loadLongitudinal() {
-  const initial = document.getElementById('lg-initial').value.trim().toUpperCase();
-  if (!initial) return;
+  if (!document.getElementById('lg-initial').value.trim()) return;
   document.getElementById('lg-loading').style.display = 'block';
   document.getElementById('lg-content').style.display = 'none';
   document.getElementById('lg-empty').style.display = 'none';
 
-  const [reflections, panels] = await Promise.all([
-    sb(`reflections?select=*&initial=eq.${initial}&order=created_at.asc`),
-    sb(`panel_sessions?select=*&student_initial=eq.${initial}&order=created_at.asc`),
+  const query = document.getElementById('lg-initial').value.trim();
+  const isSingleInitial = query.length === 1;
+  const needle = query.toLowerCase();
+
+  const [allReflections, allPanels] = await Promise.all([
+    sb('reflections?select=*&order=created_at.asc&limit=500'),
+    sb('panel_sessions?select=*&order=created_at.asc&limit=500'),
   ]);
   document.getElementById('lg-loading').style.display = 'none';
+
+  // Match by full name (case-insensitive substring) when more than one character is
+  // typed -- name is the specific, reliable identifier now that the journal collects
+  // full names. A bare single letter falls back to matching the 'initial' column, for
+  // any older records that never had a name on file.
+  const reflections = (allReflections || []).filter(r => isSingleInitial
+    ? (r.initial || '').toUpperCase() === needle.toUpperCase()
+    : (r.student_name || '').toLowerCase().includes(needle));
+  // panel_sessions repurposes 'student_initial' to actually hold the full name (see the
+  // comment on that schema field in 01_Config.gs) -- so the same substring match applies,
+  // just against a differently-named column.
+  const panels = (allPanels || []).filter(p => isSingleInitial
+    ? (p.student_initial || '').toUpperCase() === needle.toUpperCase()
+    : (p.student_initial || '').toLowerCase().includes(needle));
 
   if (!reflections?.length && !panels?.length) {
     document.getElementById('lg-empty').style.display = 'block'; return;
