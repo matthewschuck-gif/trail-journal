@@ -42,6 +42,7 @@ function enforceAdminGate_(body) {
     (ADMIN_ONLY_TABLES_.indexOf(body.table) !== -1) ||
     (body.action === 'ai' && ADMIN_ONLY_AI_TYPES_.indexOf(body.type) !== -1) ||
     (body.action === 'sendFollowupEmails') ||
+    (body.action === 'sendSummaryEmail') ||
     // reflections/responder_reflections are open for insert (students submitting), but
     // reading them back in bulk (the admin dashboard listing/export) is staff-only.
     ((body.table === 'reflections' || body.table === 'responder_reflections') && body.action === 'query' && !body.filters);

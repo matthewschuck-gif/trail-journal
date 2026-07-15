@@ -68,6 +68,9 @@ function handleRequest_(e, method) {
       case 'sendFollowupEmails':
         result = sendFollowupEmails_(body.payload);
         break;
+      case 'sendSummaryEmail':
+        result = sendSummaryEmail_(body.payload);
+        break;
       default:
         throw new Error('Unknown action: ' + body.action);
     }

@@ -1,27 +1,116 @@
 /**
  * Trail Journal -- Apps Script backend
- * File 4 of N: Follow-up check-in emails + Outlook-compatible calendar invites.
+ * File 4 of N: Follow-up check-in emails, the one-time plan-summary email, and
+ * Outlook-compatible calendar invites (.ics).
  *
- * Faithful port of the live Supabase edge function `send-followup-emails` (v1), pulled
- * directly from the Supabase project. Same three-interval schedule (2-day / 2-week / 2-month),
+ * sendFollowupEmails_ is a faithful port of the live Supabase edge function
+ * `send-followup-emails` (v1) -- same three-interval schedule (2-day / 2-week / 2-month),
  * same grade-based time windows, same hand-built .ics attachment so staff on Outlook get a
  * normal calendar invite. Only the transport changed: UrlFetchApp instead of Deno's fetch.
  *
- * NOTE: this still uses Resend to actually send the email (not Gmail/Calendar API), because
- * the school's Google Workspace account doesn't have Gmail enabled -- see the "Follow-up
- * emails" decision from the requirements pass. Resend key lives in Script Properties, never
- * in code.
+ * sendSummaryEmail_ is new: it replaces the old client-side mailto: link behind the main
+ * journal's "Send Summary" button. A mailto: URL can only pre-fill plain text -- there is no
+ * way to attach a file through it -- so it could never carry a calendar invite. This sends a
+ * real email through the same Resend + .ics pipeline, with a single reminder for the 2-day
+ * check-in attached.
  *
- * Called from the router as: sendFollowupEmails_(payload)
- * Expected payload shape (matches the original request body exactly):
- * {
- *   initials, squad, grade, triggerType, trigDateStr, outcome,
- *   attendees: [{ name, email }, ...]
- * }
+ * NOTE: both use Resend to actually send email (not Gmail/Calendar API), because the school's
+ * Google Workspace account doesn't have Gmail enabled. Resend key lives in Script Properties,
+ * never in code.
+ *
+ * Called from the router as:
+ *   sendFollowupEmails_(payload) -- { initials, squad, grade, triggerType, trigDateStr, outcome, attendees: [{name,email}] }
+ *   sendSummaryEmail_(payload)   -- { toEmail, subject, summaryText, studentLabel, grade, triggerDate }
  */
 
-function sendFollowupEmails_(payload) {
+// ── SHARED EMAIL LOOK ──────────────────────────────────────────────────────
+// One visual shell for every outgoing email, matching the app's own trail palette
+// (--trail #2c4a35 / --trail-deep #1a2e1f / --gold #c9a84c / --paper #fffbf5) instead of the
+// unrelated purple/yellow the first pass used. Georgia is used instead of the app's display
+// font (Walter Turncoat) because custom web fonts don't render reliably in email clients.
+function emailShell_(icon, title, subtitle, bodyHtml) {
+  return '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5">' +
+    '<div style="background:linear-gradient(135deg,#2c4a35 0%,#1a2e1f 100%);padding:26px 24px;border-bottom:3px solid #c9a84c">' +
+      '<div style="font-size:26px;margin-bottom:6px">' + icon + '</div>' +
+      '<h2 style="margin:0;color:#fff;font-weight:normal;font-size:20px">' + title + '</h2>' +
+      (subtitle ? '<p style="margin:6px 0 0;color:rgba(255,255,255,.72);font-size:13px;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '') +
+    '</div>' +
+    '<div style="padding:22px 24px;background:#fffbf5">' + bodyHtml + '</div>' +
+    '<div style="background:#1a2e1f;padding:14px;text-align:center;font-size:11px;color:rgba(255,255,255,.5);font-family:Verdana,sans-serif">Camp Mountaineer &middot; Trail Journal</div>' +
+  '</div>';
+}
+
+function emailInfoRow_(label, value) {
+  return '<p style="margin:0 0 10px;font-family:Verdana,sans-serif;font-size:13px;color:#3a3a3a"><strong style="color:#2c4a35">' + label + ':</strong> ' + value + '</p>';
+}
+
+function emailCallout_(title, body, opts) {
+  opts = opts || {};
+  const bg = opts.bg || '#faf6ec';
+  const border = opts.border || '#c9a84c';
+  return '<div style="background:' + bg + ';border-left:4px solid ' + border + ';padding:12px 14px;margin:14px 0;border-radius:0 8px 8px 0;font-family:Verdana,sans-serif">' +
+    (title ? '<strong style="color:#2c4a35;font-size:13px">' + title + '</strong><br/>' : '') +
+    '<span style="font-size:13px;color:#3a3a3a;line-height:1.6">' + body + '</span></div>';
+}
+
+function icsFooterNote_(filename) {
+  return '<p style="background:#faf6ec;border:1px solid #c9a84c;padding:10px 12px;font-size:12px;font-family:Verdana,sans-serif;border-radius:6px;color:#3a3a3a">' +
+    '&#128197; A calendar file (' + filename + ') is attached below -- open it to add this reminder to Outlook.</p>';
+}
+
+function icsNow_() {
+  return Utilities.formatDate(new Date(), 'Etc/UTC', "yyyyMMdd'T'HHmmss'Z'");
+}
+
+function icsDate_(ds, h, m) {
+  return ds.replace(/-/g, '') + 'T' + String(h).padStart(2, '0') + String(m).padStart(2, '0') + '00';
+}
+
+function fmtDate_(ds) {
+  const d = new Date(ds + 'T12:00:00');
+  return Utilities.formatDate(d, 'America/New_York', 'EEEE, MMMM d, yyyy');
+}
+
+function addAndSnap_(ds, days) {
+  const d = new Date(ds + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Sun -> Mon
+  if (d.getDay() === 6) d.setDate(d.getDate() + 2); // Sat -> Mon
+  return Utilities.formatDate(d, 'America/New_York', 'yyyy-MM-dd');
+}
+
+const GRADE_WINDOWS_ = {
+  8: { startH: 8, startM: 15, endH: 8, endM: 45, label: '8:15 - 8:45 AM' },
+  7: { startH: 9, startM: 50, endH: 10, endM: 20, label: '9:50 - 10:20 AM' },
+};
+
+function buildIcsVevent_(opts) {
+  // opts: { uid, startISO, endISO, summary, description, organizerEmail, attendeeEmail, attendeeName }
+  return 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//EMS Trail Journal//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:REQUEST\r\n' +
+    'BEGIN:VEVENT\r\nUID:' + opts.uid + '\r\nDTSTAMP:' + icsNow_() + '\r\n' +
+    'DTSTART;TZID=America/New_York:' + opts.startISO + '\r\nDTEND;TZID=America/New_York:' + opts.endISO + '\r\n' +
+    'SUMMARY:' + opts.summary + '\r\nDESCRIPTION:' + opts.description + '\r\nORGANIZER:mailto:' + opts.organizerEmail + '\r\n' +
+    'ATTENDEE;CN=' + (opts.attendeeName || opts.attendeeEmail) + ';RSVP=TRUE:mailto:' + opts.attendeeEmail + '\r\n' +
+    'STATUS:CONFIRMED\r\nBEGIN:VALARM\r\nTRIGGER:-PT60M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR';
+}
+
+function sendViaResend_(resendPayload) {
   const RESEND_KEY = getProp_('RESEND_API_KEY');
+  const r = UrlFetchApp.fetch('https://api.resend.com/emails', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + RESEND_KEY },
+    payload: JSON.stringify(resendPayload),
+    muteHttpExceptions: true,
+  });
+  if (r.getResponseCode() >= 300) {
+    throw new Error('Resend ' + r.getResponseCode() + ': ' + r.getContentText());
+  }
+  return r;
+}
+
+// ── FOLLOW-UP CHECK-IN SEQUENCE (2-day / 2-week / 2-month) ─────────────────
+function sendFollowupEmails_(payload) {
   const FROM_EMAIL = PropertiesService.getScriptProperties().getProperty('FROM_EMAIL') || 'noreply@trailjournal.org';
 
   const initials = payload.initials;
@@ -32,35 +121,13 @@ function sendFollowupEmails_(payload) {
   const outcome = payload.outcome;
   const attendees = payload.attendees || [];
   const trigLabel = triggerType === 'intervention' ? 'Intervention' : 'Trailback Panel';
-
-  const GRADE_WINDOWS = {
-    8: { startH: 8, startM: 15, endH: 8, endM: 45, label: '8:15 - 8:45 AM' },
-    7: { startH: 9, startM: 50, endH: 10, endM: 20, label: '9:50 - 10:20 AM' },
-  };
-  const win = GRADE_WINDOWS[grade] || GRADE_WINDOWS[8];
+  const win = GRADE_WINDOWS_[grade] || GRADE_WINDOWS_[8];
 
   const GUIDES = {
     2: { title: 'Early Pulse', detail: 'Keep it brief and relational. Ask: How are you doing? Look for re-engagement. Duration: 5-10 minutes.' },
     14: { title: 'First Assessment', detail: 'Grades, attendance, relationships. Is the intervention holding? Duration: 10-20 minutes.' },
     60: { title: 'Long-Term Accountability', detail: 'Pull the data. Has behavior changed? Celebrate growth. Determine if more support needed. Duration: 15-30 minutes.' },
   };
-
-  function addAndSnap(ds, days) {
-    const d = new Date(ds + 'T12:00:00');
-    d.setDate(d.getDate() + days);
-    if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Sun -> Mon
-    if (d.getDay() === 6) d.setDate(d.getDate() + 2); // Sat -> Mon
-    return Utilities.formatDate(d, 'America/New_York', 'yyyy-MM-dd');
-  }
-
-  function toICSDate(ds, h, m) {
-    return ds.replace(/-/g, '') + 'T' + String(h).padStart(2, '0') + String(m).padStart(2, '0') + '00';
-  }
-
-  function fmtDate(ds) {
-    const d = new Date(ds + 'T12:00:00');
-    return Utilities.formatDate(d, 'America/New_York', 'EEEE, MMMM d, yyyy');
-  }
 
   const intervals = [
     { days: 2, label: '2-Day Check-In', key: 'day2' },
@@ -72,12 +139,11 @@ function sendFollowupEmails_(payload) {
   const errors = [];
 
   intervals.forEach(function (interval) {
-    const dateStr = addAndSnap(trigDateStr, interval.days);
+    const dateStr = addAndSnap_(trigDateStr, interval.days);
     const guide = GUIDES[interval.days];
-    const startISO = toICSDate(dateStr, win.startH, win.startM);
-    const endISO = toICSDate(dateStr, win.endH, win.endM);
+    const startISO = icsDate_(dateStr, win.startH, win.startM);
+    const endISO = icsDate_(dateStr, win.endH, win.endM);
     const subject = '[EMS Follow-Up] ' + initials + ' - ' + interval.label + ' (Grade ' + grade + ', ' + trigLabel + ')';
-    const now = Utilities.formatDate(new Date(), 'Etc/UTC', "yyyyMMdd'T'HHmmss'Z'");
 
     let intervalFailed = false;
 
@@ -85,48 +151,32 @@ function sendFollowupEmails_(payload) {
       try {
         const uid = 'fu-' + interval.key + '-' + new Date().getTime() + '@trailjournal.org';
         const desc = interval.label + ' - ' + trigLabel + '\\nStudent: ' + initials + '\\nGrade: ' + grade +
-          '\\nDate: ' + fmtDate(trigDateStr) + '\\nTime: ' + win.label + '\\nPurpose: ' + guide.title + ' - ' + guide.detail +
+          '\\nDate: ' + fmtDate_(trigDateStr) + '\\nTime: ' + win.label + '\\nPurpose: ' + guide.title + ' - ' + guide.detail +
           (outcome ? '\\nOutcome: ' + outcome : '');
 
-        const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//EMS Trail Journal//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:REQUEST\r\n' +
-          'BEGIN:VEVENT\r\nUID:' + uid + '\r\nDTSTAMP:' + now + '\r\n' +
-          'DTSTART;TZID=America/New_York:' + startISO + '\r\nDTEND;TZID=America/New_York:' + endISO + '\r\n' +
-          'SUMMARY:' + subject + '\r\nDESCRIPTION:' + desc + '\r\nORGANIZER:mailto:' + FROM_EMAIL + '\r\n' +
-          'ATTENDEE;CN=' + (att.name || att.email) + ';RSVP=TRUE:mailto:' + att.email + '\r\n' +
-          'STATUS:CONFIRMED\r\nBEGIN:VALARM\r\nTRIGGER:-PT60M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR';
+        const ics = buildIcsVevent_({
+          uid: uid, startISO: startISO, endISO: endISO, summary: subject, description: desc,
+          organizerEmail: FROM_EMAIL, attendeeEmail: att.email, attendeeName: att.name,
+        });
 
-        const html = '<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto">' +
-          '<div style="background:#490e6f;padding:24px;color:#ffe100"><h2 style="margin:0">' + interval.label + '</h2>' +
-          '<p style="margin:4px 0 0;color:rgba(255,255,255,.75);font-size:13px">' + trigLabel + ' Follow-Up - Grade ' + grade + '</p></div>' +
-          '<div style="padding:20px;background:#fff"><p><strong>Student:</strong> ' + initials + (squad ? ' - ' + squad + ' Squad' : '') + '</p>' +
-          '<p><strong>' + trigLabel + ' Date:</strong> ' + fmtDate(trigDateStr) + '</p>' +
-          '<p><strong>Check-In Date:</strong> ' + fmtDate(dateStr) + '</p>' +
-          '<p><strong>Time:</strong> ' + win.label + '</p>' +
-          '<div style="background:#faf7f2;border-left:4px solid #490e6f;padding:12px;margin:16px 0"><strong>' + guide.title + '</strong><br/>' +
-          '<span style="font-size:13px">' + guide.detail + '</span></div>' +
-          (outcome ? '<div style="background:#f0ebf8;padding:12px;border-radius:8px;margin-bottom:12px"><strong>Outcome:</strong> ' + outcome + '</div>' : '') +
-          '<p style="background:#fdf5df;border:1px solid #c9a84c;padding:10px;font-size:13px;border-radius:6px">A .ics file is attached - open it to add to your Outlook calendar.</p></div>' +
-          '<div style="background:#1a2e1f;padding:12px;text-align:center;font-size:11px;color:rgba(255,255,255,.5)">EMS Mountaineers - Trail Journal</div></div>';
+        const body =
+          emailInfoRow_('Student', initials + (squad ? ' &mdash; ' + squad + ' Squad' : '')) +
+          emailInfoRow_(trigLabel + ' Date', fmtDate_(trigDateStr)) +
+          emailInfoRow_('Check-In Date', fmtDate_(dateStr)) +
+          emailInfoRow_('Time', win.label) +
+          emailCallout_(guide.title, guide.detail) +
+          (outcome ? emailCallout_('Outcome', outcome, { bg: '#f0ebe0', border: '#8a6820' }) : '') +
+          icsFooterNote_('followup-' + interval.key + '.ics');
 
-        const resendPayload = {
+        const html = emailShell_('&#127956;', interval.label, trigLabel + ' Follow-Up &middot; Grade ' + grade, body);
+
+        sendViaResend_({
           from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
           to: [att.email],
           subject: subject,
           html: html,
           attachments: [{ filename: 'followup-' + interval.key + '.ics', content: Utilities.base64Encode(ics) }],
-        };
-
-        const r = UrlFetchApp.fetch('https://api.resend.com/emails', {
-          method: 'post',
-          contentType: 'application/json',
-          headers: { Authorization: 'Bearer ' + RESEND_KEY },
-          payload: JSON.stringify(resendPayload),
-          muteHttpExceptions: true,
         });
-
-        if (r.getResponseCode() >= 300) {
-          throw new Error('Resend ' + r.getResponseCode() + ': ' + r.getContentText());
-        }
       } catch (e) {
         errors.push(interval.label + ' -> ' + att.email + ': ' + e.message);
         intervalFailed = true;
@@ -137,4 +187,58 @@ function sendFollowupEmails_(payload) {
   });
 
   return { ok: true, results: results, errors: errors };
+}
+
+// ── PLAN SUMMARY EMAIL (from the main journal's "Send Summary" button) ─────
+function sendSummaryEmail_(payload) {
+  const FROM_EMAIL = PropertiesService.getScriptProperties().getProperty('FROM_EMAIL') || 'noreply@trailjournal.org';
+
+  const toEmail = payload.toEmail;
+  const subject = payload.subject || 'Trail Journal Summary';
+  const summaryText = payload.summaryText || '';
+  const studentLabel = payload.studentLabel || 'Student';
+  const grade = payload.grade;
+  const triggerDate = payload.triggerDate || Utilities.formatDate(new Date(), 'America/New_York', 'yyyy-MM-dd');
+
+  if (!toEmail) throw new Error('toEmail is required.');
+
+  const win = GRADE_WINDOWS_[grade] || GRADE_WINDOWS_[8];
+  const checkinDate = addAndSnap_(triggerDate, 2);
+  const startISO = icsDate_(checkinDate, win.startH, win.startM);
+  const endISO = icsDate_(checkinDate, win.endH, win.endM);
+  const uid = 'summary-checkin-' + new Date().getTime() + '@trailjournal.org';
+  const icsSummary = '[EMS Follow-Up] ' + studentLabel + ' - 2-Day Check-In';
+  const desc = '2-Day Check-In\\nStudent: ' + studentLabel + '\\nDate: ' + fmtDate_(checkinDate) + '\\nTime: ' + win.label +
+    '\\nPurpose: Early pulse check -- keep it brief and relational.';
+
+  const ics = buildIcsVevent_({
+    uid: uid, startISO: startISO, endISO: endISO, summary: icsSummary, description: desc,
+    organizerEmail: FROM_EMAIL, attendeeEmail: toEmail, attendeeName: toEmail,
+  });
+
+  // summaryText is plain text built client-side (paragraphs separated by blank lines) --
+  // convert to simple HTML paragraphs so it reads cleanly in an email client.
+  const escaped = summaryText
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const summaryHtml = escaped.split(/\n\n+/)
+    .map(function (para) { return '<p style="margin:0 0 12px;font-size:13px;line-height:1.7;color:#3a3a3a;font-family:Verdana,sans-serif;white-space:pre-line">' + para + '</p>'; })
+    .join('');
+
+  const body =
+    emailInfoRow_('Student', studentLabel) +
+    emailCallout_('2-Day Check-In Reminder', 'Scheduled for ' + fmtDate_(checkinDate) + ', ' + win.label + '.') +
+    icsFooterNote_('trail-journal-checkin.ics') +
+    '<div style="margin-top:18px;padding-top:16px;border-top:1px solid #e5ddc8">' + summaryHtml + '</div>';
+
+  const html = emailShell_('&#128220;', 'Trail Journal Summary', studentLabel, body);
+
+  sendViaResend_({
+    from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
+    to: [toEmail],
+    subject: subject,
+    html: html,
+    attachments: [{ filename: 'trail-journal-checkin.ics', content: Utilities.base64Encode(ics) }],
+  });
+
+  return { ok: true, sent: true };
 }

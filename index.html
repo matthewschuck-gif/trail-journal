@@ -1046,27 +1046,36 @@ input[type="range"]::-webkit-slider-thumb {
 .r-title { font-family: 'Walter Turncoat', cursive; font-size: 1rem; margin-bottom: 6px; }
 .r-desc { font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--ink-mid); line-height: 1.5; }
 
-/* Bucket cards */
-.bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; align-items: stretch; }
+/* Bucket rows — single-column list, each row is its own card. Replaced the earlier
+   2-column card grid: with this content (a title, a full sentence of description, and
+   an example) two columns left everything cramped and the cards never lined up cleanly.
+   A stacked list reads more like a short reference sheet and scales to any screen width
+   without a mobile-only override. */
+.bucket-grid { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
 .bucket-card {
-  display: flex; flex-direction: column;
-  border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.2s;
+  display: flex; gap: 14px;
+  border-radius: 12px; padding: 16px 18px; cursor: pointer; transition: all 0.2s;
   border: 2px solid var(--border); background: var(--paper);
 }
-.bucket-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-warm); }
+.bucket-card:hover { border-color: var(--trail-mid); box-shadow: var(--shadow-warm); }
 .bucket-card.selected { border-color: var(--trail); background: var(--trail-light); }
-.bucket-icon { font-size: 1.8rem; margin-bottom: 10px; }
-.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1.05rem; margin-bottom: 8px; color: var(--ink); line-height: 1.3; }
-.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.8rem; color: var(--ink-mid); line-height: 1.6; }
+.bucket-icon-badge {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; background: var(--paper-dark);
+  transition: background 0.2s;
+}
+.bucket-card.selected .bucket-icon-badge { background: var(--gold-light); }
+.bucket-body { min-width: 0; }
+.bucket-title { font-family: 'Walter Turncoat', cursive; font-size: 1.1rem; margin-bottom: 5px; color: var(--ink); line-height: 1.3; }
+.bucket-desc { font-family: 'Barlow', sans-serif; font-size: 0.85rem; color: var(--ink-mid); line-height: 1.6; }
 .bucket-example {
-  font-family: 'Barlow', sans-serif; font-size: 0.76rem; color: var(--trail); font-style: italic;
-  margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border);
-  /* margin-top: auto pins this to the bottom of the card regardless of description length,
-     so all 4 cards in the grid line up evenly instead of looking staggered/jagged. */
+  display: flex; gap: 8px; align-items: baseline;
+  font-family: 'Barlow', sans-serif; font-size: 0.78rem; color: var(--trail); line-height: 1.5;
+  margin-top: 10px; padding: 8px 12px;
+  background: rgba(44,74,53,0.06); border-left: 3px solid var(--trail-mid); border-radius: 0 6px 6px 0;
 }
-@media (max-width: 580px) {
-  .bucket-grid { grid-template-columns: 1fr; }
-}
+.bucket-example strong { flex-shrink: 0; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em; font-family: 'Barlow', sans-serif; }
 
 /* Checklist gate */
 .check-gate { margin: 16px 0; }
@@ -1799,31 +1808,39 @@ body.squad-purple {
 
     <!-- TAB 3: BUCKETS -->
     <div class="lc-panel" id="lcp-buckets">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories. Tap each one to learn more about it.</p>
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories. Tap each one as you read it.</p>
       <div class="bucket-grid">
         <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon">🔧</div>
-          <div class="bucket-title">You Break It, You Fix It</div>
-          <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
-          <div class="bucket-example">Example: If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</div>
+          <div class="bucket-icon-badge">🔧</div>
+          <div class="bucket-body">
+            <div class="bucket-title">You Break It, You Fix It</div>
+            <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
+            <div class="bucket-example"><strong>Example</strong><span>If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</span></div>
+          </div>
         </div>
         <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon">🎓</div>
-          <div class="bucket-title">Practice Academy</div>
-          <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
-          <div class="bucket-example">Example: If you were disruptive in class, you practice what respectful participation looks and sounds like.</div>
+          <div class="bucket-icon-badge">🎓</div>
+          <div class="bucket-body">
+            <div class="bucket-title">Practice Academy</div>
+            <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
+            <div class="bucket-example"><strong>Example</strong><span>If you were disruptive in class, you practice what respectful participation looks and sounds like.</span></div>
+          </div>
         </div>
         <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon">⚖️</div>
-          <div class="bucket-title">Restorative Justice</div>
-          <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
-          <div class="bucket-example">Example: If you made a mess or damaged something, you clean it up and apologize to those affected.</div>
+          <div class="bucket-icon-badge">⚖️</div>
+          <div class="bucket-body">
+            <div class="bucket-title">Restorative Practices</div>
+            <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
+            <div class="bucket-example"><strong>Example</strong><span>If you made a mess or damaged something, you clean it up and apologize to those affected.</span></div>
+          </div>
         </div>
         <div class="bucket-card" onclick="toggleBucket(this)">
-          <div class="bucket-icon">⛔</div>
-          <div class="bucket-title">Loss of Privilege</div>
-          <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
-          <div class="bucket-example">Example: If you misused technology, you lose tech access until trust is rebuilt.</div>
+          <div class="bucket-icon-badge">⛔</div>
+          <div class="bucket-body">
+            <div class="bucket-title">Loss of Privilege</div>
+            <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
+            <div class="bucket-example"><strong>Example</strong><span>If you misused technology, you lose tech access until trust is rebuilt.</span></div>
+          </div>
         </div>
       </div>
       <div style="text-align:right;margin-top:14px">
@@ -2303,7 +2320,7 @@ body.squad-purple {
 
         <!-- EMAIL SEND -->
         <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:14px">
-          Enter your email address and the full plan summary will open in your email app ready to send.
+          Enter your email address — the full plan summary will be emailed to you, with a calendar reminder attached for your first follow-up check-in.
         </p>
         <div class="email-row" style="margin-bottom:6px">
           <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
@@ -3581,7 +3598,12 @@ async function doPart1() {
 }
 
 // ─── EMAIL SUMMARY ────────────────────────────────────────────────────────
-function sendSummaryPDF() {
+// Sent directly from the backend (Resend), with a .ics calendar reminder attached for the
+// first (2-day) follow-up check-in -- replaced the old mailto: link, which opened the
+// staff member's own email app but could never carry a file attachment (a mailto: URL is
+// plain text only; there is no way to attach an .ics through it). See sendSummaryEmail_
+// in 04_FollowupEmails.gs.
+async function sendSummaryPDF() {
   const email = document.getElementById('staff-email').value.trim();
   if (!email || !email.includes('@')) {
     doShake(document.getElementById('staff-email'));
@@ -3592,13 +3614,30 @@ function sendSummaryPDF() {
     setEmailStatus('Summary is still generating — please wait a moment.', 'orange');
     return;
   }
+  const btn = document.getElementById('send-btn');
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
   const body = buildEmailBody(S_RESULT, p1, p2, p3);
   const date = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-  const subject = encodeURIComponent(`Trail Journal Summary — ${S.initial}${S.squad ? ' (' + S.squad + ')' : ''} — ${date}`);
-  const bodyEncoded = encodeURIComponent(body);
-  window.location.href = `mailto:${email}?subject=${subject}&body=${bodyEncoded}`;
-  setEmailStatus('✓ Email client opened — complete sending from your email app.', 'var(--trail)');
+  const subject = `Trail Journal Summary — ${S.initial}${S.squad ? ' (' + S.squad + ')' : ''} — ${date}`;
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+  setEmailStatus('Sending summary and calendar reminder…', 'var(--ink-light)');
+  try {
+    await callBackend({ action: 'sendSummaryEmail', payload: {
+      toEmail: email,
+      subject,
+      summaryText: body,
+      studentLabel: S.initial + (S.squad ? ' (' + S.squad + ' Squad)' : ''),
+      grade: S.grade,
+      triggerDate: new Date().toISOString().split('T')[0],
+    } }, true);
+    setEmailStatus('✓ Summary emailed to ' + email + ', with a calendar invite for the 2-day check-in.', 'var(--trail)');
+    btn.textContent = '✓ Sent';
+  } catch (e) {
+    console.error('Send summary error:', e);
+    setEmailStatus('Could not send — ' + (e.message || 'check the connection and try again.'), 'var(--red)');
+    btn.disabled = false; btn.textContent = 'Send Summary →';
+  }
 }
 // Password checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
@@ -3800,7 +3839,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Civics, Leadership, & Service': {
       lookFors: ['Community awareness', 'Taking initiative', 'Service orientation'],
       prompts: ["What does leadership mean to you?", "How can one person make a difference?", "What would you change about your school or community?"],
-      strategies: ['Restorative justice approach — repair through service', 'Pro-Social Regulation — empathizing and acting on it (Brummer)', 'Affective statements directed at community members'],
+      strategies: ['Restorative practices approach — repair through service', 'Pro-Social Regulation — empathizing and acting on it (Brummer)', 'Affective statements directed at community members'],
       bucket: 'Connection — Authenticity & Respect (Creekmore & Creekmore)',
       bucketSkill: 'Pro-Social Regulation — capacity to empathize and act in caring ways toward others distress (Brummer/Sorrels)',
     },
