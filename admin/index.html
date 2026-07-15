@@ -1346,8 +1346,8 @@ function openModal(r) {
       ${r.cm_reason ? `<div class="di"><div class="di-lbl">Camp Mountaineer Pathway</div><div class="di-val">${r.cm_reason}</div></div>` : ''}
       ${r.cm_initiated_by ? `<div class="di"><div class="di-lbl">Initiated By</div><div class="di-val">${r.cm_initiated_by}</div></div>` : ''}
       ${r.cm_why ? `<div class="di"><div class="di-lbl">Camp Mountaineer Reason Given</div><div class="di-val">${r.cm_why}</div></div>` : ''}
-      ${r.cm_reason ? `<div class="di"><div class="di-lbl">Student Checklist Confirmed</div><div class="di-val">${r.cm_checklist_confirmed ? 'Yes' : 'No'}</div></div>` : ''}
-      ${r.cm_reason && String(r.cm_reason).indexOf('Alternative to ISS') !== -1 ? `<div class="di"><div class="di-lbl">Effort Agreement Confirmed</div><div class="di-val">${r.cm_effort_agreed ? 'Yes' : 'No'}</div></div>` : ''}
+      ${r.cm_reason === 'ISS' ? `<div class="di"><div class="di-lbl">Student Checklist Confirmed</div><div class="di-val">${r.cm_checklist_confirmed ? 'Yes' : 'No'}</div></div>` : ''}
+      ${r.cm_reason === 'ISS' ? `<div class="di"><div class="di-lbl">Effort Agreement Confirmed</div><div class="di-val">${r.cm_effort_agreed ? 'Yes' : 'No'}</div></div>` : ''}
       <div class="di"><div class="di-lbl">Situation</div><div class="di-val">${p1.whatHappened||'—'}</div></div>
       <div class="di"><div class="di-lbl">Why</div><div class="di-val">${p1.why||'—'}</div></div>
       <div class="di"><div class="di-lbl">Thinking at the time</div><div class="di-val">${p1.thinking||'—'}</div></div>

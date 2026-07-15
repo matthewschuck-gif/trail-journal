@@ -1563,17 +1563,26 @@ body.squad-purple {
     <div class="jcard-label">What Brought You to Camp Mountaineer?</div>
     <div class="jcard-sub">Pick the one that matches your sign-up reason for today.</div>
     <div class="squad-picker" id="cm-reason-picker">
-      <button class="squad-btn cm-reason-btn" data-reason="Behavior Reflection (Time in Office)" onclick="selectCmReason('Behavior Reflection (Time in Office)',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
-        <span class="sq-icon">🏫</span>Behavior Reflection — Time in Office
+      <button class="squad-btn cm-reason-btn" data-reason="Break" onclick="selectCmReason('Break',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+        <span class="sq-icon">🌤</span>Break
       </button>
-      <button class="squad-btn cm-reason-btn" data-reason="Behavior Reflection (Alternative to ISS)" onclick="selectCmReason('Behavior Reflection (Alternative to ISS)',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
-        <span class="sq-icon">🧭</span>Behavior Reflection — Alternative to ISS
+      <button class="squad-btn cm-reason-btn" data-reason="Re-entry" onclick="selectCmReason('Re-entry',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
+        <span class="sq-icon">🔁</span>Re-entry
       </button>
-      <button class="squad-btn cm-reason-btn" data-reason="Scheduled Break / Counselor Check-In" onclick="selectCmReason('Scheduled Break / Counselor Check-In',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
-        <span class="sq-icon">🌤</span>Scheduled Break / Counselor Check-In
+      <button class="squad-btn cm-reason-btn" data-reason="ISS" onclick="selectCmReason('ISS',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+        <span class="sq-icon">🧭</span>ISS
       </button>
-      <button class="squad-btn cm-reason-btn" data-reason="Re-Entry (Suspension / Extended Absence)" onclick="selectCmReason('Re-Entry (Suspension / Extended Absence)',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
-        <span class="sq-icon">🔁</span>Re-Entry — Suspension / Extended Absence
+      <button class="squad-btn cm-reason-btn" data-reason="New Student" onclick="selectCmReason('New Student',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
+        <span class="sq-icon">🆕</span>New Student
+      </button>
+      <button class="squad-btn cm-reason-btn" data-reason="Privilege" onclick="selectCmReason('Privilege',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+        <span class="sq-icon">🎫</span>Privilege
+      </button>
+      <button class="squad-btn cm-reason-btn" data-reason="Conference / Meeting" onclick="selectCmReason('Conference / Meeting',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
+        <span class="sq-icon">🗣️</span>Conference / Meeting
+      </button>
+      <button class="squad-btn cm-reason-btn" data-reason="Removed from Class" onclick="selectCmReason('Removed from Class',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+        <span class="sq-icon">🚪</span>Removed from Class
       </button>
     </div>
     <div class="val-msg" id="e-cm-reason">Pick the reason that matches why you're here today.</div>
@@ -1600,9 +1609,9 @@ body.squad-purple {
     <div class="val-msg" id="e-cm-why">This needs something written in — even one sentence helps.</div>
   </div>
 
-  <div class="jcard" id="cm-checklist-wrap">
+  <div class="jcard" id="cm-checklist-wrap" style="display:none">
     <div class="jcard-label">✅ Camp Mountaineer Student Checklist</div>
-    <div class="jcard-sub">Start-of-day steps — check each one off as you complete it. Wording pulled directly from the Camp Mountaineer Student Checklist; edit CM_STUDENT_CHECKLIST_ITEMS_ near the top of the script below to tweak it.</div>
+    <div class="jcard-sub">Start-of-day steps for the ISS-alternative pathway — check each one off as you complete it. Wording pulled directly from the Camp Mountaineer Student Checklist; edit CM_STUDENT_CHECKLIST_ITEMS_ near the top of the script below to tweak it.</div>
     <div class="check-gate" id="cm-checklist-items"></div>
     <div class="gate-unlock" id="cm-checklist-unlock">
       <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
@@ -2774,19 +2783,22 @@ function selectPeak(peak, btn) {
   hideErr('e-peak');
 }
 
-// Camp Mountaineer pre-page: which of the 4 real sign-up reasons (see the Camp
-// Mountaineer Cheat Sheet: Time in Office Reflection / ISS Reflection / Counselor Break
-// Check-In / Re-entry Reflection) determines the tier the same way LOCATION_TIER_ does
-// for every other location. Only the ISS-alternative (Boot Camp) pathway requires the
-// Effort Agreement checklist below -- it's the only pathway that's a structured,
-// full-day alternative to a suspension-level consequence.
+// Camp Mountaineer pre-page: which of the 7 real sign-up reasons determines the tier
+// the same way LOCATION_TIER_ does for every other location. Only ISS (the Boot Camp /
+// alternative-to-ISS pathway) is a structured, full-day behavior consequence -- it's the
+// only pathway that requires the Student Checklist AND the Effort Agreement below.
+// Everything else is a shorter, log-only visit (office tier -- Part 1 + one-line repair
+// note), matching how Office/detention locations work elsewhere in the journal.
 const CM_REASON_TIER_ = {
-  'Behavior Reflection (Time in Office)': 'office',
-  'Behavior Reflection (Alternative to ISS)': 'full',
-  'Scheduled Break / Counselor Check-In': 'office',
-  'Re-Entry (Suspension / Extended Absence)': 'office',
+  'Break': 'office',
+  'Re-entry': 'office',
+  'ISS': 'full',
+  'New Student': 'office',
+  'Privilege': 'office',
+  'Conference / Meeting': 'office',
+  'Removed from Class': 'office',
 };
-const CM_REASON_REQUIRES_EFFORT_ = 'Behavior Reflection (Alternative to ISS)';
+const CM_REASON_REQUIRES_EFFORT_ = 'ISS';
 
 // ─── EDITABLE CONTENT: Camp Mountaineer checklists ────────────────────────
 // Both arrays below are transcribed directly from Camp Mountaineer Updates.docx (the
@@ -2895,11 +2907,17 @@ function selectCmReason(reason, btn) {
   document.querySelectorAll('.cm-reason-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   hideErr('e-cm-reason');
-  const wrap = document.getElementById('cm-effort-wrap');
+  // Student Checklist and Effort Agreement are both ISS-alternative-only -- shown and
+  // required together, hidden and cleared together for every other pathway.
+  const checklistWrap = document.getElementById('cm-checklist-wrap');
+  const effortWrap = document.getElementById('cm-effort-wrap');
   if (reason === CM_REASON_REQUIRES_EFFORT_) {
-    wrap.style.display = 'block';
+    checklistWrap.style.display = 'block';
+    effortWrap.style.display = 'block';
   } else {
-    wrap.style.display = 'none';
+    checklistWrap.style.display = 'none';
+    effortWrap.style.display = 'none';
+    S.cmChecklistAgreed = null;
     S.cmEffortAgreed = null;
   }
 }
@@ -2948,11 +2966,10 @@ function afterCm() {
   if (thin(whyEl.value)) {
     whyEl.classList.add('field-error'); showErr('e-cm-why'); doShake(whyEl); ok = false;
   } else { whyEl.classList.remove('field-error'); hideErr('e-cm-why'); }
-  // Student Checklist applies to every Camp Mountaineer visit, any pathway.
-  if (!S.cmChecklistAgreed) {
+  // Student Checklist and Effort Agreement are both ISS-alternative-only.
+  if (S.cmReason === CM_REASON_REQUIRES_EFFORT_ && !S.cmChecklistAgreed) {
     showErr('e-cm-checklist'); doShake(document.getElementById('cm-checklist-wrap')); ok = false;
   } else { hideErr('e-cm-checklist'); }
-  // Effort Agreement only applies to the ISS-alternative (Boot Camp) pathway.
   if (S.cmReason === CM_REASON_REQUIRES_EFFORT_ && !S.cmEffortAgreed) {
     showErr('e-cm-effort'); doShake(document.getElementById('cm-effort-wrap')); ok = false;
   } else { hideErr('e-cm-effort'); }
@@ -4422,7 +4439,7 @@ function buildEmailBody(result, p1, p2, p3) {
     (S.cmReason ? 'Camp Mountaineer Pathway: ' + S.cmReason : ''),
     (S.cmInitiatedBy ? 'Initiated By: ' + S.cmInitiatedBy : ''),
     (S.cmWhy ? 'Reason Given: ' + S.cmWhy : ''),
-    (S.cmReason ? 'Student Checklist Confirmed: ' + (S.cmChecklistAgreed ? 'Yes' : 'No') : ''),
+    (S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? 'Student Checklist Confirmed: ' + (S.cmChecklistAgreed ? 'Yes' : 'No') : ''),
     (S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? 'Effort Agreement Confirmed: ' + (S.cmEffortAgreed ? 'Yes' : 'No') : ''),
   ].filter(Boolean).join('\n');
 
@@ -4562,7 +4579,7 @@ async function doSubmit() {
     location: S.location, peak: S.peak,
     cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
     cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
-    cm_checklist_confirmed: S.cmReason ? !!S.cmChecklistAgreed : null,
+    cm_checklist_confirmed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmChecklistAgreed : null,
     part1_json: p1, part2_json: p2, part3_json: p3,
     prior_count: S.priorCount || 0, status: 'submitted'
   });
@@ -4572,7 +4589,7 @@ async function doSubmit() {
     location: S.location, peak: S.peak, tier: S.tier,
     cmReason: S.cmReason, cmInitiatedBy: S.cmInitiatedBy, cmWhy: S.cmWhy,
     cmEffortAgreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
-    cmChecklistAgreed: S.cmReason ? !!S.cmChecklistAgreed : null,
+    cmChecklistAgreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmChecklistAgreed : null,
     sessionId: S.sessionId,
     priorCount: S.priorCount || 0,
     priorReflections: (S.priorReflections || []).map(r => ({
