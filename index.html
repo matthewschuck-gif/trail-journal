@@ -1600,59 +1600,40 @@ body.squad-purple {
     <div class="val-msg" id="e-cm-why">This needs something written in — even one sentence helps.</div>
   </div>
 
-  <div class="jcard" id="cm-effort-wrap" style="display:none">
-    <div class="jcard-label">📜 Camp Mountaineer Effort Agreement</div>
-    <div class="jcard-sub">Camp Mountaineer is a structured time to reset, reflect, and make things right. Before you continue, confirm with the adult in the room that you understand and agree to each expectation below.</div>
-    <div class="check-gate" id="cm-effort-checklist">
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Complete all assigned academic work to the best of my ability.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Remain on task and use my time productively.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Follow all adult directions the first time they are given.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Accept feedback respectfully and make adjustments when asked.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Work to the best of my ability, even when the work feels challenging.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Respect personal space and the learning environment, including the space of others.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Remain seated in my assigned area unless given permission to move.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Turn in all personal electronic devices to the office or Camp facilitator for the duration of Camp Mountaineer.
-      </div>
-      <div class="check-gate-item" onclick="toggleCmEffort(this)">
-        <div class="cg-box"></div>
-        Use this time for reflection, taking responsibility for the actions that led me here, and working to make things right.
+  <div class="jcard" id="cm-checklist-wrap">
+    <div class="jcard-label">✅ Camp Mountaineer Student Checklist</div>
+    <div class="jcard-sub">Start-of-day steps — check each one off as you complete it. Wording pulled directly from the Camp Mountaineer Student Checklist; edit CM_STUDENT_CHECKLIST_ITEMS_ near the top of the script below to tweak it.</div>
+    <div class="check-gate" id="cm-checklist-items"></div>
+    <div class="gate-unlock" id="cm-checklist-unlock">
+      <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
+        ✅ Checklist confirmed. Let's continue.
       </div>
     </div>
+    <div id="cm-checklist-progress-hint" style="margin-top:16px;font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);text-align:center">
+      Check all <span id="cm-checklist-total">0</span> boxes above to continue — <span id="cm-checklist-checked-count">0</span> checked
+    </div>
+    <div id="cm-checklist-preview-bypass" style="display:none;margin-top:12px;text-align:center">
+      <button class="pause-btn" style="background:var(--purple);font-size:.8rem;padding:8px 20px" onclick="S.cmChecklistAgreed = true;">Preview: Skip checklist →</button>
+    </div>
+    <div class="val-msg" id="e-cm-checklist">Check off every item on the checklist before continuing.</div>
+  </div>
+
+  <div class="jcard" id="cm-effort-wrap" style="display:none">
+    <div class="jcard-label">📜 Camp Mountaineer Effort Agreement</div>
+    <div class="jcard-sub">Camp Mountaineer is a structured time to reset, reflect, and make things right. Before you continue, confirm with the adult in the room that you understand and agree to each expectation below. Wording pulled directly from the Camp Mountaineer Effort Agreement; edit CM_EFFORT_AGREEMENT_ITEMS_ near the top of the script below to tweak it.</div>
+    <div class="check-gate" id="cm-effort-checklist"></div>
     <div class="gate-unlock" id="cm-effort-unlock">
       <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
         ✅ You've confirmed the Effort Agreement with the adult in the room. Let's continue.
       </div>
     </div>
     <div id="cm-effort-progress-hint" style="margin-top:16px;font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);text-align:center">
-      Check all 9 boxes above, with the adult in the room, to continue — <span id="cm-effort-checked-count">0</span> of 9 checked
+      Check all <span id="cm-effort-total">0</span> boxes above, with the adult in the room, to continue — <span id="cm-effort-checked-count">0</span> checked
     </div>
     <div id="cm-preview-bypass" style="display:none;margin-top:12px;text-align:center">
       <button class="pause-btn" style="background:var(--purple);font-size:.8rem;padding:8px 20px" onclick="S.cmEffortAgreed = true;">Preview: Skip effort agreement →</button>
     </div>
-    <div class="val-msg" id="e-cm-effort">Check off all 9 items with the adult in the room before continuing.</div>
+    <div class="val-msg" id="e-cm-effort">Check off every item with the adult in the room before continuing.</div>
   </div>
 
   <div class="nav-row">
@@ -2708,6 +2689,8 @@ if (IS_PREVIEW) {
     if (bypass) bypass.style.display = 'block';
     const cmBypass = document.getElementById('cm-preview-bypass');
     if (cmBypass) cmBypass.style.display = 'block';
+    const cmChecklistBypass = document.getElementById('cm-checklist-preview-bypass');
+    if (cmChecklistBypass) cmChecklistBypass.style.display = 'block';
   });
 }
 
@@ -2716,7 +2699,7 @@ const S = {
   name: '',
   grade: null,
   location: null, tier: null, peak: null,
-  cmReason: null, cmInitiatedBy: null, cmWhy: '', cmEffortAgreed: null,
+  cmReason: null, cmInitiatedBy: null, cmWhy: '', cmEffortAgreed: null, cmChecklistAgreed: null,
   sessionId: generateUUID(),
   squad: null,
   eduring: [], enow: [],
@@ -2805,6 +2788,107 @@ const CM_REASON_TIER_ = {
 };
 const CM_REASON_REQUIRES_EFFORT_ = 'Behavior Reflection (Alternative to ISS)';
 
+// ─── EDITABLE CONTENT: Camp Mountaineer checklists ────────────────────────
+// Both arrays below are transcribed directly from Camp Mountaineer Updates.docx (the
+// "Camp Mountaineer Student Checklist" table and the "Camp Mountaineer Effort
+// Agreement" section). To tweak wording, add, or remove an item, just edit the array --
+// the checklist UI, counting, and unlock logic below render whatever is in these
+// arrays and don't need to change.
+const CM_STUDENT_CHECKLIST_ITEMS_ = [
+  'Report to the Camp Mountaineer space.',
+  'Have your computer charger with you.',
+  'Turn your phone off and hand in your phone and all other electronic devices to the facilitator.',
+  'Sign the Effort Agreement.',
+  'Sit in your assigned area.',
+  'Begin Camp Mountaineer Reflection Part 1.',
+  'Complete all portions of your reflections and work. Accept all feedback and redirection from adults.',
+];
+const CM_EFFORT_AGREEMENT_ITEMS_ = [
+  'Complete all assigned academic work to the best of my ability.',
+  'Remain on task and use my time productively.',
+  'Follow all adult directions the first time they are given.',
+  'Accept feedback respectfully and make adjustments when asked.',
+  'Work to the best of my ability, even when the work feels challenging.',
+  'Respect personal space and the learning environment, including the space of others.',
+  'Remain seated in my assigned area unless given permission to move.',
+  'Turn in all personal electronic devices to the office or Camp facilitator for the duration of Camp Mountaineer.',
+  'Use this time for reflection, taking responsibility for the actions that led me here, and working to make things right.',
+];
+
+// Generic renderer used for both Camp Mountaineer checklists: builds check-gate-item
+// rows from a plain string array (avoids inline-onclick string escaping issues with
+// apostrophes/quotes in the wording) and wires each one to a shared counter/unlock
+// callback so cm-effort-* and cm-checklist-* behave identically but stay independent.
+function renderCmCheckGate(containerId, items, onToggle) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  items.forEach(text => {
+    const row = document.createElement('div');
+    row.className = 'check-gate-item';
+    const box = document.createElement('div');
+    box.className = 'cg-box';
+    row.appendChild(box);
+    row.appendChild(document.createTextNode(text));
+    row.addEventListener('click', () => {
+      const wasChecked = row.classList.contains('checked');
+      row.classList.toggle('checked');
+      box.textContent = wasChecked ? '' : '✓';
+      onToggle();
+    });
+    container.appendChild(row);
+  });
+}
+
+function updateCmChecklistProgress() {
+  const total = CM_STUDENT_CHECKLIST_ITEMS_.length;
+  const checked = document.querySelectorAll('#cm-checklist-items .check-gate-item.checked').length;
+  const countEl = document.getElementById('cm-checklist-checked-count');
+  const totalEl = document.getElementById('cm-checklist-total');
+  if (countEl) countEl.textContent = checked;
+  if (totalEl) totalEl.textContent = total;
+  const unlock = document.getElementById('cm-checklist-unlock');
+  const progressHint = document.getElementById('cm-checklist-progress-hint');
+  if (checked >= total) {
+    S.cmChecklistAgreed = true;
+    unlock.classList.add('show');
+    if (progressHint) progressHint.style.display = 'none';
+    hideErr('e-cm-checklist');
+    setTimeout(() => unlock.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  } else {
+    S.cmChecklistAgreed = false;
+    unlock.classList.remove('show');
+    if (progressHint) progressHint.style.display = 'block';
+  }
+}
+
+function updateCmEffortProgress() {
+  const total = CM_EFFORT_AGREEMENT_ITEMS_.length;
+  const checked = document.querySelectorAll('#cm-effort-checklist .check-gate-item.checked').length;
+  const countEl = document.getElementById('cm-effort-checked-count');
+  const totalEl = document.getElementById('cm-effort-total');
+  if (countEl) countEl.textContent = checked;
+  if (totalEl) totalEl.textContent = total;
+  const unlock = document.getElementById('cm-effort-unlock');
+  const progressHint = document.getElementById('cm-effort-progress-hint');
+  if (checked >= total) {
+    S.cmEffortAgreed = true;
+    unlock.classList.add('show');
+    if (progressHint) progressHint.style.display = 'none';
+    hideErr('e-cm-effort');
+    setTimeout(() => unlock.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  } else {
+    S.cmEffortAgreed = false;
+    unlock.classList.remove('show');
+    if (progressHint) progressHint.style.display = 'block';
+  }
+}
+
+renderCmCheckGate('cm-checklist-items', CM_STUDENT_CHECKLIST_ITEMS_, updateCmChecklistProgress);
+renderCmCheckGate('cm-effort-checklist', CM_EFFORT_AGREEMENT_ITEMS_, updateCmEffortProgress);
+updateCmChecklistProgress();
+updateCmEffortProgress();
+
 function selectCmReason(reason, btn) {
   S.cmReason = reason;
   S.tier = CM_REASON_TIER_[reason] || 'full';
@@ -2855,29 +2939,6 @@ function begin() {
   goTo(1);
 }
 
-function toggleCmEffort(el) {
-  const box = el.querySelector('.cg-box');
-  const wasChecked = el.classList.contains('checked');
-  el.classList.toggle('checked');
-  box.textContent = wasChecked ? '' : '✓';
-  let checked = document.querySelectorAll('#cm-effort-checklist .check-gate-item.checked').length;
-  const hint = document.getElementById('cm-effort-checked-count');
-  if (hint) hint.textContent = checked;
-  const unlock = document.getElementById('cm-effort-unlock');
-  const progressHint = document.getElementById('cm-effort-progress-hint');
-  if (checked >= 9) {
-    S.cmEffortAgreed = true;
-    unlock.classList.add('show');
-    if (progressHint) progressHint.style.display = 'none';
-    hideErr('e-cm-effort');
-    setTimeout(() => unlock.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-  } else {
-    S.cmEffortAgreed = false;
-    unlock.classList.remove('show');
-    if (progressHint) progressHint.style.display = 'block';
-  }
-}
-
 function afterCm() {
   if (IS_PREVIEW) { S.tier = S.tier || 'full'; goTo(1); return; }
   let ok = true;
@@ -2887,6 +2948,11 @@ function afterCm() {
   if (thin(whyEl.value)) {
     whyEl.classList.add('field-error'); showErr('e-cm-why'); doShake(whyEl); ok = false;
   } else { whyEl.classList.remove('field-error'); hideErr('e-cm-why'); }
+  // Student Checklist applies to every Camp Mountaineer visit, any pathway.
+  if (!S.cmChecklistAgreed) {
+    showErr('e-cm-checklist'); doShake(document.getElementById('cm-checklist-wrap')); ok = false;
+  } else { hideErr('e-cm-checklist'); }
+  // Effort Agreement only applies to the ISS-alternative (Boot Camp) pathway.
   if (S.cmReason === CM_REASON_REQUIRES_EFFORT_ && !S.cmEffortAgreed) {
     showErr('e-cm-effort'); doShake(document.getElementById('cm-effort-wrap')); ok = false;
   } else { hideErr('e-cm-effort'); }
@@ -4356,6 +4422,7 @@ function buildEmailBody(result, p1, p2, p3) {
     (S.cmReason ? 'Camp Mountaineer Pathway: ' + S.cmReason : ''),
     (S.cmInitiatedBy ? 'Initiated By: ' + S.cmInitiatedBy : ''),
     (S.cmWhy ? 'Reason Given: ' + S.cmWhy : ''),
+    (S.cmReason ? 'Student Checklist Confirmed: ' + (S.cmChecklistAgreed ? 'Yes' : 'No') : ''),
     (S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? 'Effort Agreement Confirmed: ' + (S.cmEffortAgreed ? 'Yes' : 'No') : ''),
   ].filter(Boolean).join('\n');
 
@@ -4495,6 +4562,7 @@ async function doSubmit() {
     location: S.location, peak: S.peak,
     cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
     cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
+    cm_checklist_confirmed: S.cmReason ? !!S.cmChecklistAgreed : null,
     part1_json: p1, part2_json: p2, part3_json: p3,
     prior_count: S.priorCount || 0, status: 'submitted'
   });
@@ -4504,6 +4572,7 @@ async function doSubmit() {
     location: S.location, peak: S.peak, tier: S.tier,
     cmReason: S.cmReason, cmInitiatedBy: S.cmInitiatedBy, cmWhy: S.cmWhy,
     cmEffortAgreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
+    cmChecklistAgreed: S.cmReason ? !!S.cmChecklistAgreed : null,
     sessionId: S.sessionId,
     priorCount: S.priorCount || 0,
     priorReflections: (S.priorReflections || []).map(r => ({

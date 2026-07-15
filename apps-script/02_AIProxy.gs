@@ -311,6 +311,7 @@ function buildAiPrompt_(type, payload) {
     const cmNote = payload.cmReason ?
       ('CAMP MOUNTAINEER CONTEXT: Pathway: ' + payload.cmReason + ' | Initiated by: ' + (payload.cmInitiatedBy || 'not stated') +
        ' | Student-reported reason: ' + (payload.cmWhy || 'not stated') +
+       ' | Student Checklist confirmed: ' + (payload.cmChecklistAgreed ? 'Yes' : 'No') +
        (payload.cmReason.indexOf('Alternative to ISS') !== -1 ? ' | Effort Agreement confirmed: ' + (payload.cmEffortAgreed ? 'Yes' : 'No') : '') + '\n') : '';
     return 'Experienced middle school AP reviewing a completed Camp Mountaineer Trail Journal. Uses CPS, restorative practices, logical consequences.\n\n' +
       'STUDENT (initial: ' + payload.initial + '):\n' +
