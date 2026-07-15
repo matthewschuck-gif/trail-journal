@@ -71,6 +71,9 @@ function handleRequest_(e, method) {
       case 'sendSummaryEmail':
         result = sendSummaryEmail_(body.payload);
         break;
+      case 'sendOfficeRecordEmail':
+        result = sendOfficeRecordEmail_(body.payload);
+        break;
       default:
         throw new Error('Unknown action: ' + body.action);
     }

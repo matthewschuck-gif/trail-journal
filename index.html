@@ -4302,6 +4302,16 @@ async function doSubmit() {
   // Hide thinking indicator
   document.getElementById('ai-final-thinking').classList.add('hidden');
 
+  // Automatic record email -- fires on every submission, every tier/pathway, no staff
+  // login or manual step (in addition to, not instead of, the staff-scheduled follow-up
+  // email below and the manual plan-summary send). Fire-and-forget: this is a record copy
+  // for the office, not something the student's screen should ever wait on or show an
+  // error for.
+  callBackend({ action: 'sendOfficeRecordEmail', payload: {
+    studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier,
+    summaryText: buildEmailBody(result || {}, p1, p2, p3),
+  }}).catch(e => console.error('Office record email error:', e));
+
   if (result) {
     S_RESULT = result; // store for PDF/BIC
 

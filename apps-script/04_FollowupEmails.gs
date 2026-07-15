@@ -403,6 +403,48 @@ function formatTimeLabel_(h, m) {
 }
 
 // ── PLAN SUMMARY EMAIL (currently unused by the frontend -- see 04's header) ────
+// Fixed archival recipient for the automatic "every submission gets emailed" record --
+// separate from, and in addition to, the staff-scheduled follow-up email (sendFollowupEmails_
+// above) and the manual plan-summary send (sendSummaryEmail_ below). Matt: "no matter what
+// is selected I want the final piece to be a submission and a summary email for the data to
+// be stored" -- this fires automatically from doSubmit() on every tier/pathway, no staff
+// login or manual step involved. Recipient is resolved server-side (never trusts a
+// client-supplied address) so a submission can't redirect its own copy elsewhere. Override
+// by setting the OFFICE_NOTIFY_EMAIL Script Property; falls back to the address Matt gave.
+function getOfficeNotifyEmail_() {
+  try {
+    const v = getProp_('OFFICE_NOTIFY_EMAIL');
+    if (v) return v;
+  } catch (e) {
+    // getProp_ throws when the property isn't set -- that's expected until Matt adds one.
+  }
+  return 'emsoffice@easdpa.org';
+}
+
+function sendOfficeRecordEmail_(payload) {
+  const studentLabel = payload.studentLabel || 'Student';
+  const grade = payload.grade;
+  const location = payload.location;
+  const tier = payload.tier;
+  const summaryText = payload.summaryText || '';
+  const toEmail = getOfficeNotifyEmail_();
+
+  const subject = '[Trail Journal] New submission -- ' + studentLabel + (location ? ' (' + location + ')' : '');
+  const summaryHtml = formatSummaryHtml_(summaryText);
+
+  const body =
+    emailInfoRow_('Student', studentLabel + (grade ? ' (Grade ' + grade + ')' : '')) +
+    (location ? emailInfoRow_('Location', location) : '') +
+    (tier ? emailInfoRow_('Journal Length', tier.charAt(0).toUpperCase() + tier.slice(1) + ' tier') : '') +
+    '<div style="margin-top:16px;padding-top:14px;border-top:2px solid ' + BRAND_GOLD_ + '">' + summaryHtml + '</div>';
+
+  const html = emailShell_('&#128220;', 'Trail Journal Submission', studentLabel, body);
+
+  sendViaMail_({ to: toEmail, subject: subject, html: html });
+
+  return { ok: true, sent: true };
+}
+
 function sendSummaryEmail_(payload) {
   const ORGANIZER_EMAIL = Session.getEffectiveUser().getEmail();
 

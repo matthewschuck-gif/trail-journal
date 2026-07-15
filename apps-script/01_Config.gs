@@ -11,6 +11,12 @@
  *      ANTHROPIC_API_KEY   = sk-ant-...          (Matt adds this directly, never in chat)
  *      APP_TOKEN            = <any random string you make up> (shared token, see 03_Router.gs)
  *      ADMIN_PASSWORD       = <a password for staff> (checked server-side, see 05_AdminAuth.gs)
+ *      OFFICE_NOTIFY_EMAIL  = <office/record-keeping inbox> (OPTIONAL -- every submission,
+ *                             every tier/pathway, automatically emails a summary copy here
+ *                             for the record. Defaults to emsoffice@easdpa.org if unset --
+ *                             see getOfficeNotifyEmail_() in 04_FollowupEmails.gs. This is
+ *                             separate from, and in addition to, the staff-scheduled
+ *                             follow-up email.)
  *    (No Resend key or FROM_EMAIL needed -- 04_FollowupEmails.gs sends via MailApp, Apps
  *    Script's own mail service, using whichever Google account deploys this project. See
  *    that file's header for why this replaced Resend.)
