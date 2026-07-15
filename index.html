@@ -4170,7 +4170,7 @@ async function doPart1() {
   }
 
   const result = await callEdge('article', {
-    initial: S.initial, part1: p1,
+    initial: S.initial, grade: S.grade, part1: p1,
     priorCount: S.priorCount,
     priorSummary: S.priorCount > 0
       ? `This student has completed ${S.priorCount} prior reflection(s). Last insight level: ${priorReflections[0]?.insight_level || 'unknown'}. Last trait: ${priorReflections[0]?.part3_json?.trait || 'unknown'}.`

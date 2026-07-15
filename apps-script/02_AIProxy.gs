@@ -70,7 +70,16 @@ function callAiProxy_(type, payload) {
 function buildAiPrompt_(type, payload) {
   if (type === 'article') {
     const p = payload.part1;
+    // Grade 7 and grade 8 read at meaningfully different levels at this age -- keep the
+    // same warmth and content, just adjust vocabulary/sentence complexity so a 7th grader
+    // isn't handed an 8th-grade reading level (or an 8th grader something that reads down).
+    const gradeNote = payload.grade === '7'
+      ? 'READING LEVEL: this student is in 7th grade. Use shorter sentences, everyday vocabulary, and concrete language. Avoid abstract or clinical phrasing.'
+      : payload.grade === '8'
+      ? 'READING LEVEL: this student is in 8th grade. Slightly more complex sentence structure and vocabulary is fine, but keep it warm and direct, not academic.'
+      : 'READING LEVEL: grade not specified -- write at a general middle-school reading level.';
     return 'You are a compassionate school counselor writing a short personalized reading for a middle school student at Camp Mountaineer. Trail/outdoor metaphors throughout.\n\n' +
+      gradeNote + '\n\n' +
       'Student: ' + payload.initial + '\n' +
       'What happened: ' + p.whatHappened + '\n' +
       'Why: ' + p.why + '\n' +
