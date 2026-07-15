@@ -494,3 +494,87 @@ function sendSummaryEmail_(payload) {
 
   return { ok: true, sent: true };
 }
+
+// ── WEEKLY DIGEST ───────────────────────────────────────────────────────────
+// Rolls up the past 7 days of Trail Journal activity into one email: total submissions,
+// breakdown by location and insight level, Mountaineer Peaks area distribution, and how
+// many were flagged for follow-up. Run via a time-driven trigger, NOT called from the
+// router -- see setupWeeklyDigestTrigger_() in 01_Config.gs, which you run ONCE from the
+// Apps Script editor to install it (fires every Monday around 6am). Safe to re-run;
+// deletes any existing trigger for this function first so you never get duplicates.
+function getWeeklyDigestEmail_() {
+  try {
+    const v = getProp_('WEEKLY_DIGEST_EMAIL');
+    if (v) return v;
+  } catch (e) {
+    // getProp_ throws when unset -- falls back to the same inbox as the per-submission
+    // office record email unless a dedicated digest recipient is configured.
+  }
+  return getOfficeNotifyEmail_();
+}
+
+function sendWeeklyDigest_() {
+  const sheet = getSheet_(TABS.REFLECTIONS);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const col = {};
+  headers.forEach(function (h, i) { col[h] = i; });
+
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
+  const now = new Date();
+
+  const rows = [];
+  for (let i = 1; i < data.length; i++) {
+    const createdAt = new Date(data[i][col['created_at']]);
+    if (createdAt >= since && createdAt <= now) rows.push(data[i]);
+  }
+
+  const periodLabel = since.toLocaleDateString() + ' – ' + now.toLocaleDateString();
+
+  if (!rows.length) {
+    // A missing email is indistinguishable from a broken trigger -- a genuinely quiet
+    // week should still say so, rather than silently sending nothing.
+    const html = emailShell_('📊', 'Weekly Trail Journal Digest', periodLabel,
+      emailCallout_('No submissions this week', 'No Trail Journal reflections were submitted in the past 7 days.'));
+    sendViaMail_({ to: getWeeklyDigestEmail_(), subject: '[Trail Journal] Weekly Digest — no activity this week', html: html });
+    return;
+  }
+
+  function tally(colName) {
+    const counts = {};
+    rows.forEach(function (r) {
+      const v = r[col[colName]] || '(not set)';
+      counts[v] = (counts[v] || 0) + 1;
+    });
+    return counts;
+  }
+
+  function tallyToHtml(counts) {
+    const entries = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+    return entries.map(function (k) { return '&bull; ' + k + ': ' + counts[k]; }).join('<br/>');
+  }
+
+  const byLocation = tally('location');
+  const byInsight = tally('insight_level');
+  const byPeak = tally('peak');
+  const flaggedCount = rows.filter(function (r) {
+    const v = r[col['has_flags']];
+    return v === true || v === 'TRUE';
+  }).length;
+
+  const bodyHtml =
+    emailInfoRow_('Period', periodLabel) +
+    emailInfoRow_('Total Submissions', String(rows.length)) +
+    emailInfoRow_('Flagged for Follow-Up', String(flaggedCount)) +
+    emailCallout_('By Location', tallyToHtml(byLocation)) +
+    emailCallout_('By Insight Level', tallyToHtml(byInsight)) +
+    (Object.keys(byPeak).length ? emailCallout_('By Mountaineer Peaks Area', tallyToHtml(byPeak)) : '');
+
+  const html = emailShell_('📊', 'Weekly Trail Journal Digest', periodLabel, bodyHtml);
+  sendViaMail_({
+    to: getWeeklyDigestEmail_(),
+    subject: '[Trail Journal] Weekly Digest — ' + rows.length + ' submission(s) this week',
+    html: html,
+  });
+}

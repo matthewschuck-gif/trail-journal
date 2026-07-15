@@ -174,6 +174,24 @@ function migrateAddFollowupCompletionColumns_() {
   SpreadsheetApp.getUi().alert(result);
 }
 
+/**
+ * Run this ONCE from the Apps Script editor to turn on the Monday-morning weekly
+ * digest email (see sendWeeklyDigest_() in 04_FollowupEmails.gs). Safe to re-run --
+ * deletes any existing trigger for sendWeeklyDigest_ first, so you never end up with
+ * duplicate triggers firing multiple emails.
+ */
+function setupWeeklyDigestTrigger_() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendWeeklyDigest_') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendWeeklyDigest_')
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.MONDAY)
+    .atHour(6)
+    .create();
+  SpreadsheetApp.getUi().alert('Weekly digest trigger installed: sendWeeklyDigest_ will run every Monday around 6am. Optionally set a WEEKLY_DIGEST_EMAIL script property to send it somewhere other than the office notify address.');
+}
+
 function addMissingColumns_(tabName, cols) {
   const sheet = getSheet_(tabName);
   const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());

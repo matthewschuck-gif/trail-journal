@@ -817,36 +817,30 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <!-- AI PROMPTS -->
     <div class="page" id="page-prompts">
       <div class="page-hd">
-        <h2>AI Prompts</h2>
-        <p>Edit the system prompts sent to Claude for each AI call. Changes save to Google Sheets and are used by the Apps Script backend.</p>
+        <h2>AI Prompts (Reference)</h2>
+        <p>This page used to be editable and save to Google Sheets, back when the site read its prompts from there at runtime. That's no longer how this works -- the real prompts now live as code in <code>02_AIProxy.gs</code>'s <code>buildAiPrompt_()</code> function, each one built dynamically per submission (tier, location, Camp Mountaineer pathway, prior visit history, and an ownership-check that redirects blame-shifting language all get woven in automatically). A static saved template can't reproduce that, so editing here would silently do nothing to the live AI behavior -- which is exactly what made the old version of this page misleading. To actually change AI behavior, edit <code>buildAiPrompt_()</code> in <code>02_AIProxy.gs</code> directly and redeploy.</p>
       </div>
-      <div class="ed-panel" style="margin-bottom:18px">
+      <div class="ed-panel" id="ai-types-panel">
         <div class="ed-sec">
-          <h4>Article Prompt — After Part 1</h4>
-          <div class="ed-field">
-            <label class="ed-lbl">Sent to Claude when generating the personalized student reading. Available variables: {initial}, {situation}, {emotions}, {cps}</label>
-            <textarea class="ed-ta" id="prompt-article" rows="12">You are a compassionate school counselor writing a short personalized reading for a middle school student at Camp Mountaineer.
-
-Student initial: {initial}. What they shared: {situation}. Emotions: {emotions}. CPS insights: {cps}.
-
-Write 3-4 warm paragraphs: (1) validate emotions without excusing the behavior, (2) explain brain science of impulse in accessible language — downstairs brain, fight/flight/freeze, (3) connect directly to their specific situation and CPS insights, (4) forward-looking message connecting to collaborative problem solving — both concerns can be addressed together.
-
-Format: title on first line, then paragraphs separated by blank lines. No markdown.</textarea>
-          </div>
-        </div>
-        <div class="ed-sec">
-          <h4>Summary Prompt — After Final Submit</h4>
-          <div class="ed-field">
-            <label class="ed-lbl">Sent to Claude when generating the staff JSON summary</label>
-            <textarea class="ed-ta" id="prompt-summary" rows="12">You are an experienced middle school assistant principal reviewing a Camp Mountaineer Trail Journal. The school uses Collaborative Problem Solving (CPS), restorative practices, and logical consequences. Return ONLY valid JSON.
-
-Required structure:
-{"summary":"...","insightLevel":"Low|Medium|High","insightReason":"...","recommendedConsequences":[{"type":"Primary — Logical Consequence","description":"...","rationale":"..."},{"type":"Supporting — Skill Building","description":"...","rationale":"..."}],"repairPlan":"...","restorativeQuestions":["...","...","..."],"cpsScript":[{"speaker":"Adult","text":"..."}],"followUpFlags":["..."],"studentReadingList":[{"title":"...","topic":"...","whyRelevant":"..."},{"title":"...","topic":"...","whyRelevant":"..."},{"title":"...","topic":"...","whyRelevant":"..."}]}</textarea>
-          </div>
-        </div>
-        <div class="ed-actions">
-          <button class="save-btn" onclick="savePrompts()">Save Prompts</button>
-          <div class="save-ok" id="sok-prompts">✓ Saved</div>
+          <h4>Call Types</h4>
+          <table class="dash-table">
+            <thead><tr><th>Type</th><th>Where it's used</th><th>Student or staff facing</th></tr></thead>
+            <tbody>
+              <tr><td><code>article</code></td><td>Reading screen, right after Part 1</td><td>Student</td></tr>
+              <tr><td><code>hope_reflection</code></td><td>"What Is Fair?" hope-level screen</td><td>Student</td></tr>
+              <tr><td><code>cps_synthesis</code></td><td>Part 1 Crossing Paths flip cards</td><td>Student</td></tr>
+              <tr><td><code>peak_guidance</code></td><td>Mountaineer Peaks screen</td><td>Student</td></tr>
+              <tr><td><code>consequence_idea</code></td><td>Logical Consequences education screen</td><td>Student</td></tr>
+              <tr><td><code>ripple_suggest</code></td><td>Part 2 Impact Trail</td><td>Student</td></tr>
+              <tr><td><code>creative_challenge</code></td><td>Part 2 creative consequence challenge</td><td>Student</td></tr>
+              <tr><td><code>build-plan</code></td><td>Part 3, building the practice plan</td><td>Staff (shown after password unlock)</td></tr>
+              <tr><td><code>summary</code></td><td>Final submit -- staff record + email</td><td>Staff only</td></tr>
+              <tr><td><code>parent_letter</code></td><td>Parent Letters page</td><td>Staff only</td></tr>
+              <tr><td><code>pattern_analysis</code></td><td>Pattern Analysis page</td><td>Staff only</td></tr>
+              <tr><td><code>panel_inquiry_analysis</code>, <code>panel_recommendation_draft</code></td><td>Trailback Panel</td><td>Staff only</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Note: the Content Editor and Widgets pages in this dashboard have the same issue this page had -- they save to <code>site_config</code>, but the live student site's actual copy is hardcoded in <code>index.html</code>, not read from there. Worth a similar pass if you want those to actually drive the live site, or to be relabeled the same way.</p>
         </div>
       </div>
     </div>
@@ -1619,16 +1613,6 @@ async function saveEd(section) {
     body: JSON.stringify({key:'content_'+section, value:JSON.stringify(fields), updated_at:new Date().toISOString()})
   });
   showOk('sok-' + section);
-}
-
-async function savePrompts() {
-  const prompts = { article: document.getElementById('prompt-article').value, summary: document.getElementById('prompt-summary').value };
-  await sb('site_config?key=eq.ai_prompts', {
-    method: 'POST',
-    headers: { Prefer: 'resolution=merge-duplicates' },
-    body: JSON.stringify({key:'ai_prompts', value:JSON.stringify(prompts), updated_at:new Date().toISOString()})
-  });
-  showOk('sok-prompts');
 }
 
 async function saveWidgets() {
