@@ -55,6 +55,14 @@ const SCHEMA = {
     // already-provisioned Sheet are not shifted. See migrateAddNameGradeColumns_() below
     // if you already ran setupSpreadsheet() before this change.
     'student_name', 'grade',
+    // Added for the tiered-journal-by-consequence-severity feature: 'location' is where
+    // the student is completing the journal (Lunch Detention / Afterschool Detention /
+    // Time in Office / ISS / Camp Mountaineer -- see LOCATION_TIER_ in index.html), which
+    // determines whether they get the full 3-part journal, the 2-part version, or the
+    // shortest office version. 'peak' is which Mountaineer Peaks universal expectation
+    // (Be Present / Be Personable / Be Productive) the incident relates to most. Both
+    // appended at the end -- see migrateAddLocationPeakColumns_() below.
+    'location', 'peak',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -107,6 +115,16 @@ function migrateAddNameGradeColumns_() {
   results.push(addMissingColumns_(TABS.REFLECTIONS, ['student_name', 'grade']));
   results.push(addMissingColumns_(TABS.PANEL_SESSIONS, ['grade']));
   SpreadsheetApp.getUi().alert(results.join('\n'));
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before location/peak were
+ * added to the reflections schema above. Same safe append-only behavior as
+ * migrateAddNameGradeColumns_().
+ */
+function migrateAddLocationPeakColumns_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['location', 'peak']);
+  SpreadsheetApp.getUi().alert(result);
 }
 
 function addMissingColumns_(tabName, cols) {

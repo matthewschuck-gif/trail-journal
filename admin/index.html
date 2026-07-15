@@ -920,6 +920,8 @@ Required structure:
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="date" checked> Submission Date</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="name" checked> Student Name</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="grade" checked> Grade</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="location" checked> Location</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="peak"> Mountaineer Peaks Area</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial"> Student Initial</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="insight" checked> Insight Level</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait" checked> LRG Trait</label>
@@ -938,6 +940,7 @@ Required structure:
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="plan"> Repair Plan</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="different"> Will Do Differently</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="creative_format"> Creative Format</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="community_action"> Community/Service Action</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="goal" checked> Student Goal</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="hope_level"> Hope Level</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="agency"> Agency Choice</label>
@@ -1331,9 +1334,10 @@ function openModal(r) {
   const ins = r.insight_level||'—';
   const ibcls = {Low:'dflag',Medium:'dgold',High:'dgreen'}[ins]||'';
   const ibadge = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins]||'';
-  document.getElementById('modal-title').textContent = `${r.student_name||('Initial: '+(r.initial||'?'))}${r.grade?' · Grade '+r.grade:''}  ·  ${d}`;
+  document.getElementById('modal-title').textContent = `${r.student_name||('Initial: '+(r.initial||'?'))}${r.grade?' · Grade '+r.grade:''}${r.location?' · '+r.location:''}  ·  ${d}`;
   document.getElementById('modal-body').innerHTML = `
     <div class="ds"><h4>Part 1 — What Happened</h4>
+      ${r.peak ? `<div class="di"><div class="di-lbl">Mountaineer Peaks Area</div><div class="di-val">${r.peak}</div></div>` : ''}
       <div class="di"><div class="di-lbl">Situation</div><div class="di-val">${p1.whatHappened||'—'}</div></div>
       <div class="di"><div class="di-lbl">Why</div><div class="di-val">${p1.why||'—'}</div></div>
       <div class="di"><div class="di-lbl">Thinking at the time</div><div class="di-val">${p1.thinking||'—'}</div></div>
@@ -1356,6 +1360,7 @@ function openModal(r) {
       <div class="di"><div class="di-lbl">Specific areas</div><div class="di-val">${(p3.traitSpecifics||[]).join('<br>')||'—'}</div></div>
       <div class="di"><div class="di-lbl">Why this trait</div><div class="di-val">${p3.traitWhy||'—'}</div></div>
       <div class="di"><div class="di-lbl">Creative format</div><div class="di-val">${p3.creativeFormat||'—'}${p3.creativePlan?' — '+p3.creativePlan:''}</div></div>
+      ${p3.communityAction ? `<div class="di"><div class="di-lbl">Community/Service Action</div><div class="di-val">${p3.communityAction}</div></div>` : ''}
     </div>
     ${Object.keys(ai).length ? `<div class="ds"><h4>AI Staff Summary</h4>
       <div class="di ${ibcls}"><div class="di-lbl">Insight Level</div><div class="di-val"><span class="badge ${ibadge}">${ins}</span>  ${ai.insightReason||''}</div></div>
@@ -1664,6 +1669,8 @@ const EXPORT_COLS = {
   date:           { label: 'Date',                  fn: r => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
   name:           { label: 'Student Name',          fn: r => r.student_name || '' },
   grade:          { label: 'Grade',                 fn: r => r.grade || '' },
+  location:       { label: 'Location',              fn: r => r.location || '' },
+  peak:           { label: 'Mountaineer Peaks Area', fn: r => r.peak || '' },
   initial:        { label: 'Initial',               fn: r => r.initial || '' },
   insight:        { label: 'Insight Level',         fn: r => r.insight_level || '' },
   trait:          { label: 'LRG Trait',             fn: r => r.part3_json?.trait || '' },
@@ -1682,6 +1689,7 @@ const EXPORT_COLS = {
   plan:           { label: 'Plan',                  fn: r => r.part2_json?.plan || '' },
   different:      { label: 'Will Do Differently',   fn: r => r.part2_json?.different || '' },
   creative_format:{ label: 'Creative Format',       fn: r => r.part3_json?.creativeFormat || '' },
+  community_action:{ label: 'Community/Service Action', fn: r => r.part3_json?.communityAction || '' },
   goal:           { label: 'Student Goal',          fn: r => r.goal || '' },
   hope_level:     { label: 'Hope Level (1-4)',      fn: r => r.part3_json?.hopeLevel || '' },
   agency:         { label: 'Agency Choice',         fn: r => r.part3_json?.agencyChoice || '' },

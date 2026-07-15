@@ -1471,6 +1471,27 @@ body.squad-purple {
       <div class="squad-hint">Select your grade level</div>
     </div>
     <div style="margin-top:18px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Where Are You Completing This?</div>
+      <div class="squad-picker" id="location-picker">
+        <button class="squad-btn location-btn" data-loc="Lunch Detention" onclick="selectLocation('Lunch Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+          <span class="sq-icon">🍽</span>Lunch Detention
+        </button>
+        <button class="squad-btn location-btn" data-loc="Afterschool Detention" onclick="selectLocation('Afterschool Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+          <span class="sq-icon">🕓</span>Afterschool Detention
+        </button>
+        <button class="squad-btn location-btn" data-loc="Time in Office" onclick="selectLocation('Time in Office',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
+          <span class="sq-icon">🏢</span>Time in Office
+        </button>
+        <button class="squad-btn location-btn" data-loc="ISS" onclick="selectLocation('ISS',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+          <span class="sq-icon">🧭</span>ISS
+        </button>
+        <button class="squad-btn location-btn" data-loc="Camp Mountaineer" onclick="selectLocation('Camp Mountaineer',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+          <span class="sq-icon">⛺</span>Camp Mountaineer
+        </button>
+      </div>
+      <div class="squad-hint">This determines which parts of the journal you'll complete</div>
+    </div>
+    <div style="margin-top:18px">
       <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Clash of Classes Squad</div>
       <div class="squad-picker">
         <button class="squad-btn sq-black" onclick="selectSquad('Black',this)">
@@ -1696,6 +1717,23 @@ body.squad-purple {
     <div class="emo-messenger" id="edp-msg"></div>
   </div>
 
+  <div class="jcard">
+    <div class="jcard-label">Which Mountaineer Peak Does This Relate To?</div>
+    <div class="jcard-sub">Every day at EMS we climb together by Being Present, Being Personable, and Being Productive. Which one connects most to what happened?</div>
+    <div class="squad-picker" id="peak-picker">
+      <button class="squad-btn peak-btn" data-peak="Be Present" onclick="selectPeak('Be Present',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+        <span class="sq-icon">🧭</span>Be Present
+      </button>
+      <button class="squad-btn peak-btn" data-peak="Be Personable" onclick="selectPeak('Be Personable',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+        <span class="sq-icon">🤝</span>Be Personable
+      </button>
+      <button class="squad-btn peak-btn" data-peak="Be Productive" onclick="selectPeak('Be Productive',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
+        <span class="sq-icon">⛏</span>Be Productive
+      </button>
+    </div>
+    <div class="val-msg" id="e-peak">Pick the Peak that fits best — even if more than one feels true.</div>
+  </div>
+
   <div class="nav-row">
     <button class="btn-back" onclick="goTo(0)">← Back</button>
     <button class="btn-next" onclick="doPart1()">Continue to Reading →</button>
@@ -1716,7 +1754,26 @@ body.squad-purple {
     <div class="pause-icon">✋</div>
     <h3>Time to Check In</h3>
     <p>Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</p>
-    <button class="pause-btn" onclick="goTo('2b')">Check-in done — continue →</button>
+    <button class="pause-btn" onclick="afterReading()">Check-in done — continue →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN OFFICE: SHORTEST TIER (Time in Office) ═══ -->
+<div class="screen" id="screen-office">
+  <div class="section-head">
+    <div class="trail-marker marker-gold">✍️ Quick Reflection</div>
+    <h2>Making It <em>Right</em></h2>
+    <p>You've already told us what happened. One more thing before you're done.</p>
+  </div>
+  <div class="jcard">
+    <div class="jcard-label">What Will You Do to Make This Right?</div>
+    <div class="jcard-sub">Even one specific, honest sentence is enough.</div>
+    <textarea id="q-office-repair" rows="4" placeholder="Write what you'll do to make this right…"></textarea>
+    <div class="val-msg" id="e-office-repair">This needs something written in — even one sentence is enough.</div>
+  </div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-next" onclick="doOfficeSubmit()">Finish →</button>
   </div>
 </div>
 
@@ -1732,7 +1789,7 @@ body.squad-purple {
     <div class="lc-tabs">
       <button class="lc-tab active" onclick="showLCTab('vs',this)">Punishment vs. Consequence</button>
       <button class="lc-tab" onclick="showLCTab('3r',this)">The 3 R's</button>
-      <button class="lc-tab" onclick="showLCTab('buckets',this)">The Four Buckets</button>
+      <button class="lc-tab" onclick="showLCTab('buckets',this)">Your Consequence Idea</button>
       <button class="lc-tab" onclick="showLCTab('check',this)">The Checklist</button>
     </div>
 
@@ -1789,39 +1846,20 @@ body.squad-purple {
         🏔 <strong>Trail test:</strong> Before picking a consequence, ask — is it related to what I did? Is it respectful? Can I actually do it?
       </div>
       <div style="text-align:right;margin-top:14px">
-        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('buckets',document.querySelectorAll('.lc-tab')[2])">Next: The Four Buckets →</button>
+        <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('buckets',document.querySelectorAll('.lc-tab')[2])">Next: Your Consequence Idea →</button>
       </div>
     </div>
 
-    <!-- TAB 3: BUCKETS -->
+    <!-- TAB 3: AI-GENERATED CONSEQUENCE IDEA (was a static "Four Buckets" explainer shown
+         to every student regardless of situation -- replaced with a recommendation built
+         from what THIS student actually described in Part 1. See renderConsequenceIdea()
+         and the 'consequence_idea' AI type in 02_AIProxy.gs.) -->
     <div class="lc-panel" id="lcp-buckets">
-      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">All logical consequences fall into four categories — here's what each one means.</p>
-      <div class="bucket-grid">
-        <div class="bucket-card">
-          <div class="bucket-icon">🔧</div>
-          <div class="bucket-title">You Break It, You Fix It</div>
-          <div class="bucket-desc">You take responsibility for repairing whatever was damaged — a relationship, a space, a person's feelings, or a physical object.</div>
-          <div class="bucket-example"><strong>Example</strong>If you hurt someone's feelings, you write them a letter and come up with three ways to make it up to them.</div>
-        </div>
-        <div class="bucket-card">
-          <div class="bucket-icon">🎓</div>
-          <div class="bucket-title">Practice Academy</div>
-          <div class="bucket-desc">You spend time practicing the skill or behavior you struggled with — not as punishment, but to actually get better at it.</div>
-          <div class="bucket-example"><strong>Example</strong>If you were disruptive in class, you practice what respectful participation looks and sounds like.</div>
-        </div>
-        <div class="bucket-card">
-          <div class="bucket-icon">⚖️</div>
-          <div class="bucket-title">Restorative Practices</div>
-          <div class="bucket-desc">You actively seek to "make things right" — repairing the harm and restoring the relationship or environment affected by your actions.</div>
-          <div class="bucket-example"><strong>Example</strong>If you made a mess or damaged something, you clean it up and apologize to those affected.</div>
-        </div>
-        <div class="bucket-card">
-          <div class="bucket-icon">⛔</div>
-          <div class="bucket-title">Loss of Privilege</div>
-          <div class="bucket-desc">You temporarily lose access to something — but only if that privilege was connected to the behavior. It's not random; it makes logical sense.</div>
-          <div class="bucket-example"><strong>Example</strong>If you misused technology, you lose tech access until trust is rebuilt.</div>
-        </div>
+      <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">Based on what you shared in Part 1, here's the kind of consequence that tends to fit a situation like yours.</p>
+      <div id="ci-loading" style="font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-light);display:flex;align-items:center;gap:10px;padding:20px 0">
+        <div class="spin"></div>Thinking about your situation…
       </div>
+      <div id="ci-card" style="display:none"></div>
       <div style="text-align:right;margin-top:14px">
         <button class="pause-btn" style="padding:9px 20px;font-size:.82rem" onclick="showLCTab('check',document.querySelectorAll('.lc-tab')[3])">Next: The Checklist →</button>
       </div>
@@ -2098,7 +2136,7 @@ body.squad-purple {
 
   <div class="nav-row" style="margin-top:28px">
     <div></div>
-    <button class="btn-next" onclick="if(validatePart2())goTo('3b')">I've finished Part 2 →</button>
+    <button class="btn-next" onclick="if(validatePart2())afterPart2()">I've finished Part 2 →</button>
   </div>
 </div>
 
@@ -2124,7 +2162,7 @@ body.squad-purple {
   <div class="section-head">
     <div class="trail-marker marker-bark">🗺 Part 3 of 3 — The Path Forward</div>
     <h2>Your <em>Growth Plan</em> &amp; Follow-Through</h2>
-    <p>The last leg of the trail. Choose the trait you most need to develop, pick how you'll demonstrate it, and then commit to a follow-through plan — the <strong>when</strong>, <strong>how</strong>, and <strong>who</strong> that turns your plan into action.</p>
+    <p>The last leg of the trail. Choose the trait you most need to develop, pick how you'll demonstrate it, commit to giving something back to your community, and then commit to a follow-through plan — the <strong>when</strong>, <strong>how</strong>, and <strong>who</strong> that turns your plan into action.</p>
   </div>
 
   <div class="jcard">
@@ -2179,6 +2217,13 @@ body.squad-purple {
       <div class="jcard-label" style="margin-bottom:8px">Describe What You'll Create</div>
       <textarea id="q-creative" rows="3" placeholder="Briefly describe what you'll make and what you'll need…"></textarea>
     </div>
+  </div>
+
+  <div class="jcard" id="jc-community">
+    <div class="jcard-label">🌱 How Will This Also Help Your Community?</div>
+    <div class="jcard-sub">Making things right with the people directly involved matters — and so does leaving Camp Mountaineer a little better than you found it. What's one specific way you can give back or help others as part of this plan?</div>
+    <textarea id="q-community" rows="3" placeholder="One way I can help my community or give back is…"></textarea>
+    <div class="val-msg" id="e-community">Write one specific way you can help your community — even a small one counts.</div>
   </div>
 
   <!-- FOLLOW-THROUGH PLAN -->
@@ -2469,6 +2514,7 @@ const S = {
   initial: '',
   name: '',
   grade: null,
+  location: null, tier: null, peak: null,
   sessionId: generateUUID(),
   squad: null,
   eduring: [], enow: [],
@@ -2510,10 +2556,40 @@ function selectGrade(grade, btn) {
   btn.classList.add('selected');
 }
 
+// Maps the "where are you completing this" answer to which tier of journal the student
+// gets. See goTo helpers afterReading()/afterPart2() and doSubmit() for how each tier
+// skips (or doesn't skip) Part 2/Part 3.
+//   office:    Part 1 + one short repair note only (shortest -- Time in Office is
+//              explicitly "periods of time" per the Discipline Referral System guide).
+//   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan.
+//   full:      Part 1 + Part 2 + Part 3 -- Part 3's growth plan folds in community/
+//              service language for ISS and Camp Mountaineer.
+const LOCATION_TIER_ = {
+  'Lunch Detention': 'detention',
+  'Afterschool Detention': 'detention',
+  'Time in Office': 'office',
+  'ISS': 'full',
+  'Camp Mountaineer': 'full',
+};
+
+function selectLocation(loc, btn) {
+  S.location = loc;
+  S.tier = LOCATION_TIER_[loc] || 'full';
+  document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function selectPeak(peak, btn) {
+  S.peak = peak;
+  document.querySelectorAll('.peak-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  hideErr('e-peak');
+}
+
 function begin() {
   // Admin preview bypass — skip name/grade requirement
   if (IS_PREVIEW) {
-    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8';
+    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8'; S.location = S.location || 'Camp Mountaineer'; S.tier = S.tier || 'full';
     document.getElementById('hdr-initial').textContent = 'A';
     document.getElementById('hdr-initial').classList.add('show');
     document.getElementById('r-init').textContent = 'A';
@@ -2523,6 +2599,7 @@ function begin() {
   const raw = document.getElementById('name-inp').value.trim();
   if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { doShake(document.getElementById('name-inp')); return; }
   if (!S.grade) { doShake(document.getElementById('grade-picker')); return; }
+  if (!S.location) { doShake(document.getElementById('location-picker')); return; }
   S.name = raw;
   S.initial = raw[0].toUpperCase();
   document.getElementById('name-inp').value = '';
@@ -2535,6 +2612,7 @@ function begin() {
 function validatePart1() {
   if (IS_PREVIEW) return true;
   let ok = true;
+  if (!S.peak) { showErr('e-peak'); doShake(document.getElementById('peak-picker')); ok = false; } else { hideErr('e-peak'); }
   const checks = [
     ['q-what','e-what','This one needs something written in. Even a few words about what happened is a start.'],
     ['q-who','e-who','Let us know who else was part of this — even just a description is fine.'],
@@ -2578,6 +2656,10 @@ function validatePart3() {
   if (tw && thin(tw.value)) {
     tw.classList.add('field-error'); showErr('e-traitwhy','Tell us why you picked this one — how does it connect to what happened?'); doShake(tw); ok = false;
   } else if (tw) { tw.classList.remove('field-error'); hideErr('e-traitwhy'); }
+  const comm = document.getElementById('q-community');
+  if (comm && thin(comm.value)) {
+    comm.classList.add('field-error'); showErr('e-community'); doShake(comm); ok = false;
+  } else if (comm) { comm.classList.remove('field-error'); hideErr('e-community'); }
   return ok;
 }
 
@@ -2755,7 +2837,7 @@ function selectSquad(name, btn) {
   // class for styling, so an unscoped '.squad-btn' query here was clearing the grade
   // button's 'selected' state (gold border) every time a squad color was picked,
   // visually deselecting the grade even though S.grade itself was still set correctly.
-  document.querySelectorAll('.squad-btn:not(.grade-btn)').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.squad-btn:not(.grade-btn):not(.location-btn)').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   // Apply squad theme to body
@@ -3432,6 +3514,8 @@ async function buildMyPlan() {
     different: p2.different,
     bestIdea: p2.bestIdea,
     plan: p2.plan,
+    communityAction: gv('q-community'),
+    peak: S.peak,
   });
 
   document.getElementById('ft-plan-thinking').style.display = 'none';
@@ -3485,6 +3569,31 @@ function goTo(n) {
   document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
 }
 
+// ─── TIER-AWARE NAVIGATION ─────────────────────────────────────────────────
+// Where the student is completing the journal (S.tier, from S.location) decides how far
+// past Part 1 the journal goes. See LOCATION_TIER_ for the location -> tier mapping.
+function afterReading() {
+  if (S.tier === 'office') { goTo('office'); return; }
+  goTo('2b');
+}
+
+function afterPart2() {
+  // Detention tier ends here -- Part 2's repair plan is the whole point for a detention-
+  // length consequence. No conference-pause screen, no Part 3 growth plan.
+  if (S.tier === 'detention') { doSubmit(); return; }
+  goTo('3b');
+}
+
+async function doOfficeSubmit() {
+  const el = document.getElementById('q-office-repair');
+  if (thin(el.value)) {
+    el.classList.add('field-error'); showErr('e-office-repair'); doShake(el);
+    return;
+  }
+  el.classList.remove('field-error'); hideErr('e-office-repair');
+  await doSubmit();
+}
+
 // ─── DATA COLLECTORS ─────────────────────────────────────────────────────
 function gv(id) { return (document.getElementById(id)||{}).value || ''; }
 
@@ -3505,7 +3614,9 @@ function getPart1() {
 function getPart2() {
   return {
     hurtPeople: Array.from(document.querySelectorAll('.hurt-p')).map(i=>i.value).filter(Boolean),
-    makeRight: gv('q-makeright'),
+    // Office tier skips the full Part 2 form entirely -- q-makeright won't exist, so this
+    // falls back to the one-line repair note from screen-office (see doOfficeSubmit()).
+    makeRight: gv('q-makeright') || gv('q-office-repair'),
     selectedConsequences: S.ranked.length ? S.ranked : Array.from(document.querySelectorAll('.cc:checked')).map(c=>c.value),
     bestIdea: gv('q-bestidea'), plan: gv('q-plan'), different: gv('q-diff'),
     creativeChallenge: gv('cc-answer'),
@@ -3516,6 +3627,7 @@ function getPart3() {
     trait: S.trait,
     traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c=>c.value),
     traitWhy: gv('q-traitwhy'),
+    communityAction: gv('q-community'),
     selectedSkill: S.selectedSkill || null,
     creativeFormat: S.creative, creativePlan: gv('q-creative'),
     followThrough: {
@@ -3559,6 +3671,17 @@ async function doPart1() {
   S.priorCount = priorReflections.length;
   S.priorReflections = priorReflections;
 
+  // Fire the "what kind of consequence fits your situation" card at the same time as the
+  // reading, so it's ready by the time the student reaches screen 2b (after the reading +
+  // conference check-in). Not awaited here on purpose -- office tier skips screen 2b
+  // entirely, and for everyone else there's no reason to make the reading wait on it.
+  if (S.tier !== 'office') {
+    callEdge('consequence_idea', {
+      initial: S.initial, whatHappened: p1.whatHappened, why: p1.why, thinking: p1.thinking,
+      emotionsDuring: p1.emotionsDuring, emotionsNow: p1.emotionsNow, peak: S.peak,
+    }).then(renderConsequenceIdea);
+  }
+
   const result = await callEdge('article', {
     initial: S.initial, part1: p1,
     priorCount: S.priorCount,
@@ -3575,6 +3698,39 @@ async function doPart1() {
   } else {
     panel.innerHTML = `<div class="ai-body"><p>There was a problem generating your reading. Continue to your conference with the adult in the room.</p></div>`;
   }
+}
+
+// Renders the 'consequence_idea' AI result into the tab that replaced the static "Four
+// Buckets" explainer (screen-2b, #lcp-buckets). Fired from doPart1() -- office tier never
+// reaches screen-2b, so #ci-card legitimately won't exist there; bail out quietly.
+const CONSEQUENCE_CATEGORY_STYLE_ = {
+  'You Break It, You Fix It': { bg: 'var(--gold-light)', border: 'var(--gold)' },
+  'Loss of Privilege': { bg: 'rgba(176,48,48,.07)', border: 'rgba(176,48,48,.4)' },
+  'Space & Time': { bg: 'var(--trail-light)', border: 'var(--trail-mid)' },
+};
+
+function renderConsequenceIdea(result) {
+  const card = document.getElementById('ci-card');
+  if (!card) return;
+  const loading = document.getElementById('ci-loading');
+  if (loading) loading.style.display = 'none';
+  card.style.display = 'block';
+
+  if (!result || !result.category) {
+    card.innerHTML = `<p style="font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-light)">There was a problem generating this — that's okay, talk it through with the adult in the room instead.</p>`;
+    return;
+  }
+
+  const style = CONSEQUENCE_CATEGORY_STYLE_[result.category] || { bg: 'var(--gold-light)', border: 'var(--gold)' };
+  card.innerHTML =
+    `<div style="background:${style.bg};border:1.5px solid ${style.border};border-radius:10px;padding:18px">` +
+      `<div style="font-size:1.6rem;margin-bottom:8px">${result.categoryIcon || '🔧'}</div>` +
+      `<div style="font-family:'Walter Turncoat',cursive;font-size:1.1rem;color:var(--ink);margin-bottom:8px">${result.category}</div>` +
+      `<div style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:10px">${result.whyThisFits || ''}</div>` +
+      (result.example
+        ? `<div style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);font-style:italic;line-height:1.6"><strong style="display:block;font-style:normal;font-weight:800;text-transform:uppercase;font-size:.68rem;letter-spacing:.06em;margin-bottom:4px;opacity:.8">Example</strong>${result.example}</div>`
+        : '') +
+    `</div>`;
 }
 
 // Password checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
@@ -3790,6 +3946,8 @@ function buildEmailBody(result, p1, p2, p3) {
     'Generated: ' + new Date().toLocaleString(),
     'Student: ' + (S.name || S.initial || '—') + (S.grade ? ' (Grade ' + S.grade + ')' : ''),
     (S.squad ? 'Squad: ' + S.squad : ''),
+    (S.location ? 'Location: ' + S.location : ''),
+    (S.peak ? 'Mountaineer Peaks Area: ' + S.peak : ''),
   ].filter(Boolean).join('\n');
 
   const blockIncident = [
@@ -3832,6 +3990,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Why this trait: ' + (p3.traitWhy || '—'),
     'Creative format: ' + (p3.creativeFormat || '—'),
     'Creative plan: ' + (p3.creativePlan || '—'),
+    ...(p3.communityAction ? ['Community/Service Action: ' + p3.communityAction] : []),
   ].join('\n');
 
   const blockConsequences = (result.recommendedConsequences && result.recommendedConsequences.length)
@@ -3917,19 +4076,21 @@ function buildBICLink() {
     'https://behaviorinterventioncenter.com?' + params.toString();
 }
 async function doSubmit() {
-  if (!validatePart3()) return;
+  if (S.tier === 'full' && !validatePart3()) return;
   goTo('done');
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
 
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
     student_name: S.name, grade: S.grade,
+    location: S.location, peak: S.peak,
     part1_json: p1, part2_json: p2, part3_json: p3,
     prior_count: S.priorCount || 0, status: 'submitted'
   });
 
   const result = await callEdge('summary', {
     initial: S.initial, part1: p1, part2: p2, part3: p3,
+    location: S.location, peak: S.peak, tier: S.tier,
     sessionId: S.sessionId,
     priorCount: S.priorCount || 0,
     priorReflections: (S.priorReflections || []).map(r => ({

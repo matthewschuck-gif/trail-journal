@@ -114,6 +114,30 @@ function buildAiPrompt_(type, payload) {
       'Return ONLY valid JSON: {"suggestions":[{"person":"type","insight":"how affected"}]}';
   }
 
+  if (type === 'consequence_idea') {
+    // Replaces the old static "Four Buckets" explainer tab (which showed the same 4
+    // generic categories to every student regardless of situation) with a personalized
+    // recommendation, generated right after Part 1 -- same timing as the 'article' call.
+    // Grounded in the EMS Logical Consequences staff guide: Responsive Classroom's 3
+    // foundational categories, with Curwin & Mendler's Discipline with Dignity framework
+    // (Community, Teach Skills, Offer Choices, Transform, Inspire, Plan, Altruistic) as
+    // optional supporting texture. This is guidance ahead of Part 2, not a final decision
+    // -- the student still ranks and chooses their own consequence ideas there.
+    return 'You are a compassionate school counselor helping a middle school student at Camp Mountaineer understand what kind of logical consequence tends to fit a situation like theirs, before they choose their own in the next step.\n\n' +
+      'The three foundational categories (Responsive Classroom):\n' +
+      '- "You Break It, You Fix It": something was broken, a mess was made, or harm was done to a person or relationship -- the student repairs it directly.\n' +
+      '- "Loss of Privilege": behavior didn\'t meet the expectations tied to a privilege or material -- that privilege is removed, briefly and directly connected to the misuse.\n' +
+      '- "Space & Time": the student needs a chance to calm down, regroup, and return -- not isolation or shame, called "Space and Time" at the middle school level.\n\n' +
+      (payload.peak ? ('Mountaineer Peaks connection: this incident relates most to "' + payload.peak + '."\n\n') : '') +
+      'What happened: ' + payload.whatHappened + '\n' +
+      'Why: ' + payload.why + '\n' +
+      'Thinking at the time: ' + payload.thinking + '\n' +
+      'Emotions during: ' + ((payload.emotionsDuring || []).join(', ')) + '\n' +
+      'Emotions now: ' + ((payload.emotionsNow || []).join(', ')) + '\n\n' +
+      'Pick the ONE category that best fits this specific situation. In 2-3 warm sentences, explain why it fits -- reference their actual situation, not a generic definition. Then give ONE concrete example of what that could look like for them. Speak directly to the student ("you"), second person, warm but honest. This is meant to help them think it through, not tell them what will happen -- they choose the actual consequence themselves next.\n\n' +
+      'Return ONLY valid JSON: {"category":"You Break It, You Fix It" or "Loss of Privilege" or "Space & Time","categoryIcon":"one emoji","whyThisFits":"2-3 sentences","example":"1-2 sentence concrete example"}';
+  }
+
   if (type === 'consequence_nudge') {
     return 'School counselor reviewing consequence choices.\n' +
       'What happened: ' + payload.whatHappened + '\n' +
@@ -225,6 +249,7 @@ function buildAiPrompt_(type, payload) {
     const p = payload;
     return 'You are a compassionate school counselor summarizing a student\'s growth plan at Camp Mountaineer. Write directly to the student in second person ("you"). Warm but honest.\n\n' +
       'Student: ' + p.initial + '\n' +
+      (p.peak ? ('Mountaineer Peaks area: ' + p.peak + '\n') : '') +
       'What happened: ' + (p.whatHappened || 'not shared') + '\n' +
       'People hurt: ' + ((p.hurtPeople || []).join(', ') || 'not named') + '\n' +
       'How they\'ll make it right: ' + (p.makeRight || 'not stated') + '\n' +
@@ -238,21 +263,31 @@ function buildAiPrompt_(type, payload) {
       'Specific areas: ' + ((p.traitSpecifics || []).join(', ') || 'none checked') + '\n' +
       'Why this trait: ' + (p.traitWhy || 'not explained') + '\n' +
       'Creative product: ' + (p.creativeFormat || 'not chosen') + '\n' +
-      'Description: ' + (p.creativePlan || 'not described') + '\n\n' +
-      'Write a 3-4 sentence summary that starts with "Your plan is to..." and weaves together: (1) the trait they\'re working on and why it matters for their situation, (2) what they\'re creating and how it connects to the harm, (3) how their repair commitment and creative product work together. End with one encouraging sentence. Keep it concise and direct -- this is a plan summary, not a pep talk.\n\n' +
+      'Description: ' + (p.creativePlan || 'not described') + '\n' +
+      'Community/service action: ' + (p.communityAction || 'not stated') + '\n\n' +
+      'Write a 3-4 sentence summary that starts with "Your plan is to..." and weaves together: (1) the trait they\'re working on and why it matters for their situation, (2) what they\'re creating and how it connects to the harm, (3) how their repair commitment, creative product, and community/service action work together to both make things right AND leave their community better. End with one encouraging sentence. Keep it concise and direct -- this is a plan summary, not a pep talk.\n\n' +
       'Return ONLY valid JSON: {"planSummary":"the 3-4 sentence summary as a single string with no line breaks"}';
   }
 
   if (type === 'summary') {
     const p1 = payload.part1, p2 = payload.part2, p3 = payload.part3;
+    const tier = payload.tier || 'full';
+    const tierNote = {
+      office: "This student's tier is OFFICE (shortest) -- only Part 1 plus a one-line repair note were ever collected by design. Part 2/Part 3 fields will be empty or near-empty -- that is expected, NOT avoidance. Do not penalize insight level for missing Part 2/3 content.",
+      detention: "This student's tier is DETENTION -- Part 1 and Part 2 (repair plan) were collected; Part 3 (growth plan/trait) was never asked, by design. Do not penalize insight level for missing Part 3 content.",
+      full: "This student's tier is FULL -- all three parts were collected.",
+    }[tier];
     return 'Experienced middle school AP reviewing a completed Camp Mountaineer Trail Journal. Uses CPS, restorative practices, logical consequences.\n\n' +
       'STUDENT (initial: ' + payload.initial + '):\n' +
+      (payload.location ? ('Location: ' + payload.location + ' | ') : '') +
+      (payload.peak ? ('Mountaineer Peaks area: ' + payload.peak + '\n') : '\n') +
       'PART 1: What happened: ' + p1.whatHappened + ' | Why: ' + p1.why + ' | Emotions during (' + p1.intensityDuring + '/5): ' +
       ((p1.emotionsDuring || []).join(',')) + ' | Emotions now (' + p1.intensityNow + '/5): ' + ((p1.emotionsNow || []).join(',')) +
       ' | CPS problem: ' + p1.cpsUnsolvedProblem + ' | My concern: ' + p1.cpsMyConcern + ' | Their concern: ' + p1.cpsTheirConcern + '\n' +
       'PART 2: People hurt: ' + ((p2.hurtPeople || []).join(',')) + ' | Make right: ' + p2.makeRight + ' | Consequences: ' +
       ((p2.selectedConsequences || []).join('-')) + ' | Plan: ' + p2.plan + ' | Different: ' + p2.different + '\n' +
-      'PART 3: Trait: ' + p3.trait + ' | Specifics: ' + ((p3.traitSpecifics || []).join(',')) + ' | Why trait: ' + p3.traitWhy + ' | Creative: ' + p3.creativeFormat + '\n\n' +
+      'PART 3: Trait: ' + p3.trait + ' | Specifics: ' + ((p3.traitSpecifics || []).join(',')) + ' | Why trait: ' + p3.traitWhy + ' | Creative: ' + p3.creativeFormat + ' | Community/service action: ' + (p3.communityAction || 'n/a') + '\n\n' +
+      tierNote + '\n\n' +
       'INSIGHT LEVEL: HIGH = honest effort throughout + named someone hurt + any self-awareness + non-dismissive. Short honest answers count as High. MEDIUM = partial/thin engagement. LOW = clearly avoidant/dismissive throughout only. Default strongly toward HIGH.\n\n' +
       'Return this exact JSON:\n' +
       '{"summary":"2-3 sentences","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
