@@ -1084,6 +1084,7 @@ input[type="range"]::-webkit-slider-thumb {
   font-size: 0.9rem; transition: all 0.2s; margin-top: 1px;
 }
 .check-gate-item.checked .cg-box { background: var(--trail); border-color: var(--trail); color: white; }
+.check-gate-item:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .gate-unlock { display: none; margin-top: 14px; }
 .gate-unlock.show { display: block !important; animation: trailIn 0.3s ease; }
 
@@ -1484,7 +1485,7 @@ body.squad-purple {
     <p>Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward. Take your time — honest answers matter.</p>
     <div class="name-entry">
       <div class="name-bubble" id="name-bubble"></div>
-      <input type="text" class="name-field-input" id="name-inp" placeholder="Your first and last name" maxlength="60" autocomplete="off" spellcheck="false">
+      <input type="text" class="name-field-input" id="name-inp" aria-label="Your first and last name" placeholder="Your first and last name" maxlength="60" autocomplete="off" spellcheck="false">
     </div>
     <div style="margin-top:18px">
       <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Grade</div>
@@ -1603,9 +1604,9 @@ body.squad-purple {
   </div>
 
   <div class="jcard">
-    <div class="jcard-label">Why Are You Here?</div>
+    <div class="jcard-label" id="lbl-cm-why">Why Are You Here?</div>
     <div class="jcard-sub">Give us the actual reason — even a sentence or two is enough.</div>
-    <textarea id="q-cm-why" rows="4" placeholder="Write why you're in Camp Mountaineer today…"></textarea>
+    <textarea id="q-cm-why" aria-labelledby="lbl-cm-why" rows="4" placeholder="Write why you're in Camp Mountaineer today…"></textarea>
     <div class="val-msg" id="e-cm-why">This needs something written in — even one sentence helps.</div>
   </div>
 
@@ -1660,9 +1661,9 @@ body.squad-purple {
   </div>
 
   <div class="jcard" id="jc-what">
-    <div class="jcard-label">Describe the Situation</div>
+    <div class="jcard-label" id="lbl-what">Describe the Situation</div>
     <div class="jcard-sub">What action or actions brought you here today? Tell the full story in your own words.</div>
-    <textarea id="q-what" placeholder="Write what happened from the beginning. Be specific — where were you, what did you do, how did it start?" rows="5"></textarea>
+    <textarea id="q-what" aria-labelledby="lbl-what" placeholder="Write what happened from the beginning. Be specific — where were you, what did you do, how did it start?" rows="5"></textarea>
     <div class="val-msg" id="e-what">This one needs something written in. Even a few words about what happened is a start.</div>
   </div>
 
@@ -1670,18 +1671,18 @@ body.squad-purple {
     <div class="jcard-label">The Details</div>
     <div class="grid2">
       <div class="ig">
-        <label>Who else was involved?</label>
+        <label for="q-who">Who else was involved?</label>
         <input type="text" id="q-who" placeholder="First names or descriptions of others…">
         <div class="val-msg" id="e-who">Let us know who else was part of this — even just a description is fine.</div>
       </div>
       <div class="ig">
-        <label>Who witnessed it?</label>
+        <label for="q-witness">Who witnessed it?</label>
         <input type="text" id="q-witness" placeholder="Who else saw what happened?">
       </div>
     </div>
     <div class="grid2">
       <div class="ig">
-        <label>Where did it happen?</label>
+        <label for="q-where">Where did it happen?</label>
         <select id="q-where">
           <option value="">Select a location…</option>
           <option value="Classroom">Classroom</option>
@@ -1697,22 +1698,22 @@ body.squad-purple {
         <div class="val-msg" id="e-where">Pick where you were when this happened.</div>
       </div>
       <div class="ig">
-        <label>When / what were you doing?</label>
+        <label for="q-when">When / what were you doing?</label>
         <input type="text" id="q-when" placeholder="Period, lunch, passing time…">
         <div class="val-msg" id="e-when">Give us a sense of when — what were you doing or what period was it?</div>
       </div>
     </div>
     <div class="ig">
-      <label>What were you thinking at the time?</label>
+      <label for="q-think">What were you thinking at the time?</label>
       <input type="text" id="q-think" placeholder="Be honest — what was actually going through your mind?">
       <div class="val-msg" id="e-think">Even if you weren't sure what you were thinking, write that. Honest is what matters here.</div>
     </div>
   </div>
 
   <div class="jcard" id="jc-why">
-    <div class="jcard-label">Why Did You Do It?</div>
+    <div class="jcard-label" id="lbl-why">Why Did You Do It?</div>
     <div class="jcard-sub">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
-    <textarea id="q-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
+    <textarea id="q-why" aria-labelledby="lbl-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
     <div class="val-msg" id="e-why">This is the most important one. Write whatever is true for you, even if it's hard to explain.</div>
   </div>
 
@@ -1732,8 +1733,8 @@ body.squad-purple {
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">Before this happened…</div>
-            <textarea class="cps-ta" id="cps1" rows="4" placeholder="Something that was already going on was…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label" id="lbl-cps1">Before this happened…</div>
+            <textarea class="cps-ta" id="cps1" aria-labelledby="lbl-cps1" rows="4" placeholder="Something that was already going on was…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
@@ -1745,8 +1746,8 @@ body.squad-purple {
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">In that moment I cared about…</div>
-            <textarea class="cps-ta" id="cps2" rows="4" placeholder="What mattered to me in that moment was…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label" id="lbl-cps2">In that moment I cared about…</div>
+            <textarea class="cps-ta" id="cps2" aria-labelledby="lbl-cps2" rows="4" placeholder="What mattered to me in that moment was…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
@@ -1758,8 +1759,8 @@ body.squad-purple {
             <div class="ftap">Tap to flip →</div>
           </div>
           <div class="flip-face flip-back">
-            <div class="fan-label">They probably cared about…</div>
-            <textarea class="cps-ta" id="cps3" rows="4" placeholder="They were probably thinking about / cared about…" onclick="event.stopPropagation()"></textarea>
+            <div class="fan-label" id="lbl-cps3">They probably cared about…</div>
+            <textarea class="cps-ta" id="cps3" aria-labelledby="lbl-cps3" rows="4" placeholder="They were probably thinking about / cared about…" onclick="event.stopPropagation()"></textarea>
           </div>
         </div>
       </div>
@@ -1777,11 +1778,11 @@ body.squad-purple {
     <div class="jcard-label">How Were You Feeling?</div>
     <div class="jcard-sub">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
 
-    <div class="zone-tabs">
-      <button class="zone-tab zt-red" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High energy, hard feelings</small></button>
-      <button class="zone-tab zt-yellow" onclick="showZone('during','yellow',this)">🟡 Yellow Zone<br><small>High energy, good feelings</small></button>
-      <button class="zone-tab zt-blue" onclick="showZone('during','blue',this)">🔵 Blue Zone<br><small>Low energy, hard feelings</small></button>
-      <button class="zone-tab zt-green" onclick="showZone('during','green',this)">🟢 Green Zone<br><small>Low energy, good feelings</small></button>
+    <div class="zone-tabs" role="tablist">
+      <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High energy, hard feelings</small></button>
+      <button class="zone-tab zt-yellow" role="tab" aria-selected="false" onclick="showZone('during','yellow',this)">🟡 Yellow Zone<br><small>High energy, good feelings</small></button>
+      <button class="zone-tab zt-blue" role="tab" aria-selected="false" onclick="showZone('during','blue',this)">🔵 Blue Zone<br><small>Low energy, hard feelings</small></button>
+      <button class="zone-tab zt-green" role="tab" aria-selected="false" onclick="showZone('during','green',this)">🟢 Green Zone<br><small>Low energy, good feelings</small></button>
     </div>
 
     <div class="zone-intro zi-red" id="zi-during-red">These emotions are high-energy and difficult. They're not bad — they're powerful signals. Anger can mean something important was crossed. Fear can mean you felt unsafe. They're telling you something.</div>
@@ -1816,11 +1817,11 @@ body.squad-purple {
     <div class="jcard-label">How Do You Feel Right Now?</div>
     <div class="jcard-sub">Sitting here reflecting — pick up to 3 emotions you feel <strong>right now</strong>. Notice if anything has shifted.</div>
 
-    <div class="zone-tabs">
-      <button class="zone-tab zt-red" onclick="showZone('now','red',this)">🔴 Red Zone</button>
-      <button class="zone-tab zt-yellow" onclick="showZone('now','yellow',this)">🟡 Yellow Zone</button>
-      <button class="zone-tab zt-blue" onclick="showZone('now','blue',this)">🔵 Blue Zone</button>
-      <button class="zone-tab zt-green" onclick="showZone('now','green',this)">🟢 Green Zone</button>
+    <div class="zone-tabs" role="tablist">
+      <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('now','red',this)">🔴 Red Zone</button>
+      <button class="zone-tab zt-yellow" role="tab" aria-selected="false" onclick="showZone('now','yellow',this)">🟡 Yellow Zone</button>
+      <button class="zone-tab zt-blue" role="tab" aria-selected="false" onclick="showZone('now','blue',this)">🔵 Blue Zone</button>
+      <button class="zone-tab zt-green" role="tab" aria-selected="false" onclick="showZone('now','green',this)">🟢 Green Zone</button>
     </div>
 
     <div class="zone-intro zi-red" id="zi-now-red">Still feeling high-energy difficult emotions is okay. It means you're still processing — and that's honest.</div>
@@ -1844,14 +1845,14 @@ body.squad-purple {
   </div>
 
   <div class="jcard">
-    <div class="jcard-label">Did Your Emotions Change?</div>
+    <div class="jcard-label" id="lbl-yn">Did Your Emotions Change?</div>
     <div class="jcard-sub">Compare how you felt during the situation vs. how you feel right now. A shift in feelings is worth paying attention to.</div>
     <div class="yn-group">
       <button class="yn-btn" id="yn-y" onclick="setYN('yes')">YES</button>
       <button class="yn-btn" id="yn-n" onclick="setYN('no')">NO</button>
     </div>
     <div id="yn-extra" class="hidden" style="margin-top:12px">
-      <textarea id="q-yn" rows="3" placeholder="Explain the change — or why you feel the same way now as you did then…"></textarea>
+      <textarea id="q-yn" aria-labelledby="lbl-yn" rows="3" placeholder="Explain the change — or why you feel the same way now as you did then…"></textarea>
     </div>
   </div>
 
@@ -1880,9 +1881,9 @@ body.squad-purple {
   </div>
 
   <div class="jcard" id="jc-part1-takeaway">
-    <div class="jcard-label">Your Takeaway</div>
+    <div class="jcard-label" id="lbl-part1-takeaway">Your Takeaway</div>
     <div class="jcard-sub">Based on what you just read, what's the one thing you want to remember or do differently?</div>
-    <textarea id="q-part1-takeaway" rows="3" placeholder="My biggest takeaway is…"></textarea>
+    <textarea id="q-part1-takeaway" aria-labelledby="lbl-part1-takeaway" rows="3" placeholder="My biggest takeaway is…"></textarea>
     <div class="val-msg" id="e-part1-takeaway">Write at least a sentence about what you're taking away from this.</div>
   </div>
 
@@ -1901,7 +1902,7 @@ body.squad-purple {
     <h3>Staff Check-In Required</h3>
     <p>Before continuing to Part 2, the adult in the room needs to enter the staff password to confirm the Part 1 check-in happened.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input-1" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
+      <input type="password" class="pw-input" id="pw-input-1" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
       <button class="pw-btn" onclick="checkGatePassword('1')">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error-1">Incorrect password. Try again.</div>
@@ -1977,9 +1978,9 @@ body.squad-purple {
     <p>You've already told us what happened. One more thing before you're done.</p>
   </div>
   <div class="jcard">
-    <div class="jcard-label">What Will You Do to Make This Right?</div>
+    <div class="jcard-label" id="lbl-office-repair">What Will You Do to Make This Right?</div>
     <div class="jcard-sub">Even one specific, honest sentence is enough.</div>
-    <textarea id="q-office-repair" rows="4" placeholder="Write what you'll do to make this right…"></textarea>
+    <textarea id="q-office-repair" aria-labelledby="lbl-office-repair" rows="4" placeholder="Write what you'll do to make this right…"></textarea>
     <div class="val-msg" id="e-office-repair">This needs something written in — even one sentence is enough.</div>
   </div>
   <div class="nav-row">
@@ -2080,23 +2081,23 @@ body.squad-purple {
     <div class="lc-panel" id="lcp-check">
       <p style="font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--ink-mid);line-height:1.7;margin-bottom:14px">Before you move on to pick your consequence, confirm you understand what makes one good. Check each box once you believe it.</p>
       <div class="check-gate" id="lc-checklist">
-        <div class="check-gate-item" onclick="toggleCheck(this)">
+        <div class="check-gate-item" onclick="toggleCheck(this)" tabindex="0" role="checkbox" aria-checked="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCheck(this);}">
           <div class="cg-box"></div>
           A logical consequence is directly related to the behavior — not random.
         </div>
-        <div class="check-gate-item" onclick="toggleCheck(this)">
+        <div class="check-gate-item" onclick="toggleCheck(this)" tabindex="0" role="checkbox" aria-checked="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCheck(this);}">
           <div class="cg-box"></div>
           It asks me to actively do something, not just passively sit through something.
         </div>
-        <div class="check-gate-item" onclick="toggleCheck(this)">
+        <div class="check-gate-item" onclick="toggleCheck(this)" tabindex="0" role="checkbox" aria-checked="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCheck(this);}">
           <div class="cg-box"></div>
           It's meant to help me learn and repair — not just make me feel punished.
         </div>
-        <div class="check-gate-item" onclick="toggleCheck(this)">
+        <div class="check-gate-item" onclick="toggleCheck(this)" tabindex="0" role="checkbox" aria-checked="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCheck(this);}">
           <div class="cg-box"></div>
           It should pass the 3 R's test: Related, Respectful, and Realistic.
         </div>
-        <div class="check-gate-item" onclick="toggleCheck(this)">
+        <div class="check-gate-item" onclick="toggleCheck(this)" tabindex="0" role="checkbox" aria-checked="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCheck(this);}">
           <div class="cg-box"></div>
           I understand that <em>I</em> have a say in what happens next — this is done <em>with</em> me, not <em>to</em> me.
         </div>
@@ -2181,9 +2182,9 @@ body.squad-purple {
 
   <!-- MOMENT 3: ONE QUESTION -->
   <div class="jcard" id="fair-question-card" style="display:none">
-    <div class="jcard-label">One question before you continue</div>
+    <div class="jcard-label" id="lbl-fair-reflect">One question before you continue</div>
     <div class="jcard-sub">What would make what comes next feel fair to you?</div>
-    <textarea id="q-fair-reflect" rows="3" placeholder="Write whatever's on your mind — even if it's complicated…"></textarea>
+    <textarea id="q-fair-reflect" aria-labelledby="lbl-fair-reflect" rows="3" placeholder="Write whatever's on your mind — even if it's complicated…"></textarea>
     <div style="text-align:right;margin-top:14px">
       <button class="pause-btn" onclick="goTo(3)">Continue to Part 2 — Making Things Right →</button>
     </div>
@@ -2261,9 +2262,9 @@ body.squad-purple {
   </div>
 
   <div class="jcard" id="jc-makeright">
-    <div class="jcard-label">What Needs to Happen to Make Things Right?</div>
+    <div class="jcard-label" id="lbl-makeright">What Needs to Happen to Make Things Right?</div>
     <div class="jcard-sub">Think about each person affected. What would truly repair this — not just apologize, but genuinely make it right?</div>
-    <textarea id="q-makeright" rows="4" placeholder="For each person I hurt, making it right would mean…"></textarea>
+    <textarea id="q-makeright" aria-labelledby="lbl-makeright" rows="4" placeholder="For each person I hurt, making it right would mean…"></textarea>
     <div class="val-msg" id="e-makeright">Give a thoughtful answer — what do YOU think should actually happen to repair this?</div>
   </div>
 
@@ -2321,27 +2322,27 @@ body.squad-purple {
       <div class="cc-badge">🎨 Creative Challenge</div>
       <div class="cc-thinking" id="cc-thinking"><div class="spin"></div>Generating your creative challenge…</div>
       <div class="cc-question hidden" id="cc-question"></div>
-      <textarea class="cc-textarea hidden" id="cc-answer" rows="4" placeholder="Think outside the box — describe your idea here…"></textarea>
+      <textarea class="cc-textarea hidden" id="cc-answer" aria-labelledby="cc-question" rows="4" placeholder="Think outside the box — describe your idea here…"></textarea>
     </div>
   </div>
 
   <div class="jcard" id="jc-bestidea">
-    <div class="jcard-label">Why Is That Your Best Idea?</div>
-    <textarea id="q-bestidea" rows="3" placeholder="Explain why your top-ranked choice makes the most sense for this specific situation…"></textarea>
+    <div class="jcard-label" id="lbl-bestidea">Why Is That Your Best Idea?</div>
+    <textarea id="q-bestidea" aria-labelledby="lbl-bestidea" rows="3" placeholder="Explain why your top-ranked choice makes the most sense for this specific situation…"></textarea>
     <div class="val-msg" id="e-bestidea">Explain your thinking — why does this choice actually make the most sense?</div>
   </div>
 
   <div class="jcard" id="jc-plan">
-    <div class="jcard-label">What Is Your Plan to Follow Through?</div>
+    <div class="jcard-label" id="lbl-plan">What Is Your Plan to Follow Through?</div>
     <div class="jcard-sub">Be specific — who do you need to talk to, when will you do it, and what help do you need?</div>
-    <textarea id="q-plan" rows="3" placeholder="My plan is to… I will need help from… I will do this by…"></textarea>
+    <textarea id="q-plan" aria-labelledby="lbl-plan" rows="3" placeholder="My plan is to… I will need help from… I will do this by…"></textarea>
     <div class="val-msg" id="e-plan">Be specific — what will you actually do, when, and who will help you?</div>
   </div>
 
   <div class="jcard" id="jc-diff">
-    <div class="jcard-label">What Will You Do Differently Next Time?</div>
+    <div class="jcard-label" id="lbl-diff">What Will You Do Differently Next Time?</div>
     <div class="jcard-sub">Think about a specific skill or strategy you could use the next time you're in a similar situation — before things escalate.</div>
-    <textarea id="q-diff" rows="3" placeholder="Next time I'm in a similar situation, instead of… I will…"></textarea>
+    <textarea id="q-diff" aria-labelledby="lbl-diff" rows="3" placeholder="Next time I'm in a similar situation, instead of… I will…"></textarea>
     <div class="val-msg" id="e-diff">Write a real strategy — what will you actually do differently?</div>
   </div>
 
@@ -2374,7 +2375,7 @@ body.squad-purple {
     <h3>Staff Check-In Required</h3>
     <p>Enter the staff password to confirm the Part 2 conference happened and unlock Part 3.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input-2" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
+      <input type="password" class="pw-input" id="pw-input-2" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
       <button class="pw-btn" onclick="checkGatePassword('2')">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error-2">Incorrect password. Try again.</div>
@@ -2415,8 +2416,8 @@ body.squad-purple {
   </div>
 
   <div id="trait-why-card" class="jcard hidden">
-    <div class="jcard-label">Why Did You Choose This Trait?</div>
-    <textarea id="q-traitwhy" rows="3" placeholder="Explain the direct connection between this trait and what happened…"></textarea>
+    <div class="jcard-label" id="lbl-traitwhy">Why Did You Choose This Trait?</div>
+    <textarea id="q-traitwhy" aria-labelledby="lbl-traitwhy" rows="3" placeholder="Explain the direct connection between this trait and what happened…"></textarea>
     <div class="val-msg" id="e-traitwhy">Explain the connection — why does this trait relate to what happened?</div>
   </div>
 
@@ -2438,15 +2439,15 @@ body.squad-purple {
       <button class="creative-btn" data-cv="My Own Idea" onclick="pickCreative(this)"><span class="ce">💡</span>My Own Idea</button>
     </div>
     <div id="creative-detail" class="hidden" style="margin-top:16px">
-      <div class="jcard-label" style="margin-bottom:8px">Describe What You'll Create</div>
-      <textarea id="q-creative" rows="3" placeholder="Briefly describe what you'll make and what you'll need…"></textarea>
+      <div class="jcard-label" id="lbl-creative" style="margin-bottom:8px">Describe What You'll Create</div>
+      <textarea id="q-creative" aria-labelledby="lbl-creative" rows="3" placeholder="Briefly describe what you'll make and what you'll need…"></textarea>
     </div>
   </div>
 
   <div class="jcard" id="jc-community">
-    <div class="jcard-label">🌱 How Will This Also Help Your Community?</div>
+    <div class="jcard-label" id="lbl-community">🌱 How Will This Also Help Your Community?</div>
     <div class="jcard-sub">Making things right with the people directly involved matters — and so does leaving Camp Mountaineer a little better than you found it. What's one specific way you can give back or help others as part of this plan?</div>
-    <textarea id="q-community" rows="3" placeholder="One way I can help my community or give back is…"></textarea>
+    <textarea id="q-community" aria-labelledby="lbl-community" rows="3" placeholder="One way I can help my community or give back is…"></textarea>
     <div class="val-msg" id="e-community">Write one specific way you can help your community — even a small one counts.</div>
   </div>
 
@@ -2486,17 +2487,17 @@ body.squad-purple {
         </div>
 
         <div style="margin-bottom:14px">
-          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What do you need to make it happen?</label>
+          <label for="q-ft-needs" style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What do you need to make it happen?</label>
           <textarea id="q-ft-needs" rows="2" placeholder="Materials, time, a quiet space, help from someone…"></textarea>
         </div>
 
         <div style="margin-bottom:14px">
-          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">Who will you show or present your finished product to?</label>
+          <label for="q-ft-audience" style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">Who will you show or present your finished product to?</label>
           <textarea id="q-ft-audience" rows="2" placeholder="A teacher, counselor, the person I hurt, my class…"></textarea>
         </div>
 
         <div style="margin-bottom:14px">
-          <label style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What will you do if you get stuck or want to quit?</label>
+          <label for="q-ft-stuck" style="font-family:'Barlow',sans-serif;font-size:.76rem;font-weight:700;color:var(--ink-light);display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase">What will you do if you get stuck or want to quit?</label>
           <textarea id="q-ft-stuck" rows="2" placeholder="I'll ask for help from… I'll take a break and come back… I'll remember why this matters because…"></textarea>
         </div>
       </div>
@@ -2546,7 +2547,7 @@ body.squad-purple {
     <h3>Staff Access</h3>
     <p>Enter the staff password to unlock this student's full plan summary and send it as a PDF directly to your inbox.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
+      <input type="password" class="pw-input" id="pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
       <button class="pw-btn" onclick="checkPW()">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
@@ -3030,15 +3031,23 @@ function renderCmCheckGate(containerId, items, onToggle) {
   items.forEach(text => {
     const row = document.createElement('div');
     row.className = 'check-gate-item';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'checkbox');
+    row.setAttribute('aria-checked', 'false');
     const box = document.createElement('div');
     box.className = 'cg-box';
     row.appendChild(box);
     row.appendChild(document.createTextNode(text));
-    row.addEventListener('click', () => {
+    const toggle = () => {
       const wasChecked = row.classList.contains('checked');
       row.classList.toggle('checked');
+      row.setAttribute('aria-checked', wasChecked ? 'false' : 'true');
       box.textContent = wasChecked ? '' : '✓';
       onToggle();
+    };
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
     container.appendChild(row);
   });
@@ -3568,14 +3577,24 @@ function buildZoneGrids() {
         btn.dataset.group = group;
         btn.dataset.zone = zone;
         btn.dataset.val = emo.name;
-        btn.innerHTML = `<span class="ze-info" title="What does this mean?">ⓘ</span><span class="ze-emoji">${emo.emoji}</span><span class="ze-name">${emo.name}</span>`;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = `<span class="ze-info" title="What does this mean?" role="button" tabindex="0" aria-label="What does ${emo.name} mean?">ⓘ</span><span class="ze-emoji">${emo.emoji}</span><span class="ze-name">${emo.name}</span>`;
 
-        // ⓘ gets its own listener — stopPropagation prevents the button click from firing
+        // ⓘ gets its own listener — stopPropagation prevents the button click from firing.
+        // tabindex/role above make it independently keyboard-reachable (Enter/Space),
+        // not just clickable, since it's a real supplementary action, not decoration.
         const infoSpan = btn.querySelector('.ze-info');
         infoSpan.addEventListener('click', (e) => {
           e.stopImmediatePropagation();
           e.preventDefault();
           showDefinition(emo, e);
+        });
+        infoSpan.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            showDefinition(emo, e);
+          }
         });
 
         // Main button click — only fires if ⓘ was NOT clicked
@@ -3592,8 +3611,9 @@ function buildZoneGrids() {
 
 // ─── SHOW / HIDE ZONE PANELS ─────────────────────────────────────────────
 function showZone(group, zone, tabEl) {
-  tabEl.closest('.jcard').querySelectorAll('.zone-tab').forEach(t => t.classList.remove('active'));
+  tabEl.closest('.jcard').querySelectorAll('.zone-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
   tabEl.classList.add('active');
+  tabEl.setAttribute('aria-selected', 'true');
   ['red','yellow','blue','green'].forEach(z => {
     document.getElementById(`zp-${group}-${z}`)?.classList.remove('show');
     document.getElementById(`zi-${group}-${z}`)?.classList.remove('show');
@@ -3609,10 +3629,12 @@ function toggleEmotion(group, zone, emo, btn) {
   if (existing) {
     S[key] = S[key].filter(e => e.name !== emo.name);
     btn.classList.remove('on');
+    btn.setAttribute('aria-pressed', 'false');
   } else {
     if (S[key].length >= 3) return;
     S[key].push({ name: emo.name, zone, intensity: 3 });
     btn.classList.add('on');
+    btn.setAttribute('aria-pressed', 'true');
   }
   updateSelectedDisplay(group);
   updateQuality();
@@ -3638,7 +3660,7 @@ function updateSelectedDisplay(group) {
   chips.innerHTML = S[key].map(e =>
     `<span class="sed-chip chip-${e.zone}">
       ${EMOTIONS[e.zone]?.find(x => x.name === e.name)?.emoji || ''} ${e.name}
-      <button onclick="removeEmotion('${group}','${e.name}')" title="Remove">✕</button>
+      <button onclick="removeEmotion('${group}','${e.name}')" title="Remove" aria-label="Remove ${e.name}">✕</button>
     </span>`
   ).join('');
 
@@ -3721,6 +3743,7 @@ function toggleCheck(el) {
   const box = el.querySelector('.cg-box');
   const wasChecked = el.classList.contains('checked');
   el.classList.toggle('checked');
+  el.setAttribute('aria-checked', wasChecked ? 'false' : 'true');
   box.textContent = wasChecked ? '' : '✓';
   lcChecked += wasChecked ? -1 : 1;
   // Update progress hint
@@ -5015,7 +5038,7 @@ function addFuAttendee() {
   row.innerHTML = `
     <input type="text" placeholder="Name" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
     <input type="email" placeholder="email@ephrata.org" style="flex:2;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.85rem;background:var(--paper)">
-    <button onclick="this.parentElement.remove()" style="background:rgba(176,48,48,.1);border:1px solid rgba(176,48,48,.25);color:var(--red);border-radius:7px;padding:6px 9px;cursor:pointer;font-size:.8rem;flex-shrink:0">✕</button>`;
+    <button onclick="this.parentElement.remove()" aria-label="Remove this entry" style="background:rgba(176,48,48,.1);border:1px solid rgba(176,48,48,.25);color:var(--red);border-radius:7px;padding:6px 9px;cursor:pointer;font-size:.8rem;flex-shrink:0">✕</button>`;
   list.appendChild(row);
 }
 
