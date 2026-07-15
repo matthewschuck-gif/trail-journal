@@ -2763,6 +2763,9 @@ const LOCATION_TIER_ = {
   'Morning Detention': 'detention',
   'Afterschool Detention': 'detention',
   'Office': 'office',
+  // ISS and Camp Mountaineer both route into the Camp Mountaineer pre-page (screen-cm)
+  // before Part 1 -- the tier value set here is only a placeholder until the student
+  // picks their actual pathway there, which re-sets S.tier via CM_REASON_TIER_.
   'ISS': 'full',
   'Camp Mountaineer': 'full',
   'Other': 'full', // safest default when the location doesn't fit cleanly -- full asks
@@ -2936,7 +2939,7 @@ function begin() {
     document.getElementById('hdr-initial').textContent = 'A';
     document.getElementById('hdr-initial').classList.add('show');
     document.getElementById('r-init').textContent = 'A';
-    if (S.location === 'Camp Mountaineer') { goTo('cm'); return; }
+    if (S.location === 'Camp Mountaineer' || S.location === 'ISS') { goTo('cm'); return; }
     goTo(1);
     return;
   }
@@ -2950,10 +2953,12 @@ function begin() {
   const hi = document.getElementById('hdr-initial');
   hi.textContent = S.initial; hi.classList.add('show');
   document.getElementById('r-init').textContent = S.initial;
-  // Camp Mountaineer needs to log pathway/reason, initiator, and why before Part 1 --
-  // and, for the ISS-alternative pathway, gate behind the Effort Agreement checklist.
-  // See afterCm() for the validation + routing into Part 1.
-  if (S.location === 'Camp Mountaineer') { goTo('cm'); return; }
+  // Both Camp Mountaineer and ISS route through the Camp Mountaineer pre-page -- ISS
+  // reflections physically happen in the Camp Mountaineer space, so they need to log
+  // pathway/reason, initiator, and why before Part 1 too. See afterCm() for the
+  // validation + routing into Part 1, and CM_REASON_TIER_ for how the pathway picked
+  // there (not this location) ends up deciding the actual tier.
+  if (S.location === 'Camp Mountaineer' || S.location === 'ISS') { goTo('cm'); return; }
   goTo(1);
 }
 
