@@ -2751,7 +2751,11 @@ async function awardClashPoints(initial, sessionId, insightLevel) {
 // ─── SQUAD SELECTION ──────────────────────────────────────────────────────
 function selectSquad(name, btn) {
   S.squad = name;
-  document.querySelectorAll('.squad-btn').forEach(b => b.classList.remove('selected'));
+  // Scoped to exclude .grade-btn -- grade buttons also carry the shared .squad-btn base
+  // class for styling, so an unscoped '.squad-btn' query here was clearing the grade
+  // button's 'selected' state (gold border) every time a squad color was picked,
+  // visually deselecting the grade even though S.grade itself was still set correctly.
+  document.querySelectorAll('.squad-btn:not(.grade-btn)').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   // Apply squad theme to body
