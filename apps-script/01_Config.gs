@@ -69,6 +69,17 @@ const SCHEMA = {
     // (Be Present / Be Personable / Be Productive) the incident relates to most. Both
     // appended at the end -- see migrateAddLocationPeakColumns_() below.
     'location', 'peak',
+    // Added for the Camp Mountaineer pre-page (only shown when location is 'Camp
+    // Mountaineer'): 'cm_reason' is which of the 4 pathways brought the student in
+    // (Behavior Reflection - Time in Office / Behavior Reflection - Alternative to ISS /
+    // Scheduled Break or Reflection Check-In / Re-Entry), 'cm_initiated_by' is
+    // Student-Initiated or Staff-Initiated, 'cm_why' is the free-text reason, and
+    // 'cm_effort_agreed' is true only when the Alternative-to-ISS pathway's 9-item Effort
+    // Agreement checklist (from the Camp Mountaineer Updates doc) was fully confirmed --
+    // null for every other pathway, where it isn't required. See CM_REASON_TIER_ and
+    // screen-cm in index.html. Appended at the end -- see
+    // migrateAddCampMountaineerColumns_() below.
+    'cm_reason', 'cm_initiated_by', 'cm_why', 'cm_effort_agreed',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -130,6 +141,16 @@ function migrateAddNameGradeColumns_() {
  */
 function migrateAddLocationPeakColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['location', 'peak']);
+  SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before the Camp Mountaineer
+ * pre-page columns were added to the reflections schema above. Same safe append-only
+ * behavior as the other migrate*_ helpers.
+ */
+function migrateAddCampMountaineerColumns_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['cm_reason', 'cm_initiated_by', 'cm_why', 'cm_effort_agreed']);
   SpreadsheetApp.getUi().alert(result);
 }
 

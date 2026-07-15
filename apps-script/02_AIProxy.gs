@@ -308,10 +308,15 @@ function buildAiPrompt_(type, payload) {
       detention: "This student's tier is DETENTION -- Part 1 and Part 2 (repair plan) were collected; Part 3 (growth plan/trait) was never asked, by design. Do not penalize insight level for missing Part 3 content.",
       full: "This student's tier is FULL -- all three parts were collected.",
     }[tier];
+    const cmNote = payload.cmReason ?
+      ('CAMP MOUNTAINEER CONTEXT: Pathway: ' + payload.cmReason + ' | Initiated by: ' + (payload.cmInitiatedBy || 'not stated') +
+       ' | Student-reported reason: ' + (payload.cmWhy || 'not stated') +
+       (payload.cmReason.indexOf('Alternative to ISS') !== -1 ? ' | Effort Agreement confirmed: ' + (payload.cmEffortAgreed ? 'Yes' : 'No') : '') + '\n') : '';
     return 'Experienced middle school AP reviewing a completed Camp Mountaineer Trail Journal. Uses CPS, restorative practices, logical consequences.\n\n' +
       'STUDENT (initial: ' + payload.initial + '):\n' +
       (payload.location ? ('Location: ' + payload.location + ' | ') : '') +
       (payload.peak ? ('Mountaineer Peaks area: ' + payload.peak + '\n') : '\n') +
+      cmNote +
       'PART 1: What happened: ' + p1.whatHappened + ' | Why: ' + p1.why + ' | Emotions during (' + p1.intensityDuring + '/5): ' +
       ((p1.emotionsDuring || []).join(',')) + ' | Emotions now (' + p1.intensityNow + '/5): ' + ((p1.emotionsNow || []).join(',')) +
       ' | CPS problem: ' + p1.cpsUnsolvedProblem + ' | My concern: ' + p1.cpsMyConcern + ' | Their concern: ' + p1.cpsTheirConcern + '\n' +

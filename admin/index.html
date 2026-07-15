@@ -922,6 +922,10 @@ Required structure:
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="grade" checked> Grade</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="location" checked> Location</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="peak"> Mountaineer Peaks Area</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_reason"> Camp Mountaineer Pathway</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_initiated_by"> Camp Mountaineer Initiated By</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_why"> Camp Mountaineer Reason Given</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_effort_agreed"> Effort Agreement Confirmed</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial"> Student Initial</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="insight" checked> Insight Level</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait" checked> LRG Trait</label>
@@ -1338,6 +1342,10 @@ function openModal(r) {
   document.getElementById('modal-body').innerHTML = `
     <div class="ds"><h4>Part 1 — What Happened</h4>
       ${r.peak ? `<div class="di"><div class="di-lbl">Mountaineer Peaks Area</div><div class="di-val">${r.peak}</div></div>` : ''}
+      ${r.cm_reason ? `<div class="di"><div class="di-lbl">Camp Mountaineer Pathway</div><div class="di-val">${r.cm_reason}</div></div>` : ''}
+      ${r.cm_initiated_by ? `<div class="di"><div class="di-lbl">Initiated By</div><div class="di-val">${r.cm_initiated_by}</div></div>` : ''}
+      ${r.cm_why ? `<div class="di"><div class="di-lbl">Camp Mountaineer Reason Given</div><div class="di-val">${r.cm_why}</div></div>` : ''}
+      ${r.cm_reason && String(r.cm_reason).indexOf('Alternative to ISS') !== -1 ? `<div class="di"><div class="di-lbl">Effort Agreement Confirmed</div><div class="di-val">${r.cm_effort_agreed ? 'Yes' : 'No'}</div></div>` : ''}
       <div class="di"><div class="di-lbl">Situation</div><div class="di-val">${p1.whatHappened||'—'}</div></div>
       <div class="di"><div class="di-lbl">Why</div><div class="di-val">${p1.why||'—'}</div></div>
       <div class="di"><div class="di-lbl">Thinking at the time</div><div class="di-val">${p1.thinking||'—'}</div></div>
@@ -1671,6 +1679,10 @@ const EXPORT_COLS = {
   grade:          { label: 'Grade',                 fn: r => r.grade || '' },
   location:       { label: 'Location',              fn: r => r.location || '' },
   peak:           { label: 'Mountaineer Peaks Area', fn: r => r.peak || '' },
+  cm_reason:      { label: 'Camp Mountaineer Pathway', fn: r => r.cm_reason || '' },
+  cm_initiated_by:{ label: 'Camp Mountaineer Initiated By', fn: r => r.cm_initiated_by || '' },
+  cm_why:         { label: 'Camp Mountaineer Reason Given', fn: r => r.cm_why || '' },
+  cm_effort_agreed:{ label: 'Effort Agreement Confirmed', fn: r => r.cm_effort_agreed === true ? 'Yes' : (r.cm_effort_agreed === false ? 'No' : '') },
   initial:        { label: 'Initial',               fn: r => r.initial || '' },
   insight:        { label: 'Insight Level',         fn: r => r.insight_level || '' },
   trait:          { label: 'LRG Trait',             fn: r => r.part3_json?.trait || '' },
