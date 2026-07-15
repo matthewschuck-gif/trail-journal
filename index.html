@@ -236,7 +236,7 @@ body::before {
 }
 
 /* ── FORM ELEMENTS ── */
-textarea, input[type="text"] {
+textarea, input[type="text"], select {
   width: 100%;
   border: 1.5px solid var(--border);
   border-radius: 9px;
@@ -247,10 +247,14 @@ textarea, input[type="text"] {
   resize: vertical; line-height: 1.65;
   transition: border-color 0.2s, background 0.2s;
 }
-textarea:focus, input[type="text"]:focus {
+textarea:focus, input[type="text"]:focus, select:focus {
   outline: none; border-color: var(--trail-mid); background: white;
 }
 textarea { min-height: 90px; }
+select { appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%238a8070"><path d="M5.5 7.5l4.5 4.5 4.5-4.5" stroke="%238a8070" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
+}
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .ig label {
   font-family: 'Barlow', sans-serif;
@@ -1548,8 +1552,19 @@ body.squad-purple {
     <div class="grid2">
       <div class="ig">
         <label>Where did it happen?</label>
-        <input type="text" id="q-where" placeholder="Hallway, classroom, cafeteria…">
-        <div class="val-msg" id="e-where">Just tell us where you were when this happened.</div>
+        <select id="q-where">
+          <option value="">Select a location…</option>
+          <option value="Classroom">Classroom</option>
+          <option value="Hallways">Hallways</option>
+          <option value="Cafeteria">Cafeteria</option>
+          <option value="Auditorium">Auditorium</option>
+          <option value="Bathroom">Bathroom</option>
+          <option value="Media Center">Media Center</option>
+          <option value="Traveling To & From School">Traveling To &amp; From School (bus, car line, walking)</option>
+          <option value="Digital Environment">Digital Environment (device, online, phone)</option>
+          <option value="Other">Other / not listed</option>
+        </select>
+        <div class="val-msg" id="e-where">Pick where you were when this happened.</div>
       </div>
       <div class="ig">
         <label>When / what were you doing?</label>
@@ -1717,23 +1732,6 @@ body.squad-purple {
     <div class="emo-messenger" id="edp-msg"></div>
   </div>
 
-  <div class="jcard">
-    <div class="jcard-label">Which Mountaineer Peak Does This Relate To?</div>
-    <div class="jcard-sub">Every day at EMS we climb together by Being Present, Being Personable, and Being Productive. Which one connects most to what happened?</div>
-    <div class="squad-picker" id="peak-picker">
-      <button class="squad-btn peak-btn" data-peak="Be Present" onclick="selectPeak('Be Present',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
-        <span class="sq-icon">🧭</span>Be Present
-      </button>
-      <button class="squad-btn peak-btn" data-peak="Be Personable" onclick="selectPeak('Be Personable',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
-        <span class="sq-icon">🤝</span>Be Personable
-      </button>
-      <button class="squad-btn peak-btn" data-peak="Be Productive" onclick="selectPeak('Be Productive',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
-        <span class="sq-icon">⛏</span>Be Productive
-      </button>
-    </div>
-    <div class="val-msg" id="e-peak">Pick the Peak that fits best — even if more than one feels true.</div>
-  </div>
-
   <div class="nav-row">
     <button class="btn-back" onclick="goTo(0)">← Back</button>
     <button class="btn-next" onclick="doPart1()">Continue to Reading →</button>
@@ -1755,6 +1753,62 @@ body.squad-purple {
     <h3>Time to Check In</h3>
     <p>Raise your hand and let the adult in the room know you've finished reading and are ready for your Part 1 conversation. Don't move on until you've had that check-in.</p>
     <button class="pause-btn" onclick="afterReading()">Check-in done — continue →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 2p: MOUNTAINEER PEAKS (all tiers) ═══ -->
+<div class="screen" id="screen-2p">
+  <div class="section-head">
+    <div class="trail-marker marker-green">🏔 How We Show Up Every Day</div>
+    <h2>Mountaineer <em>Peaks</em></h2>
+    <p>Every day at EMS, everyone — students and staff — climbs together by living out three expectations, in every space we share. <strong>Together We Climb.</strong></p>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">The Three Peaks</div>
+    <div class="three-r-grid">
+      <div class="r-card">
+        <div class="r-icon">🧭</div>
+        <div class="r-title">Be Present</div>
+        <div class="r-desc">Arrive on time and be where you're supposed to be. Stay alert, minimize distractions, and follow instructions the first time.</div>
+      </div>
+      <div class="r-card">
+        <div class="r-icon">🤝</div>
+        <div class="r-title">Be Personable</div>
+        <div class="r-desc">Communicate kindly and respectfully. Share space, include others, and treat people the way you'd want to be treated.</div>
+      </div>
+      <div class="r-card">
+        <div class="r-icon">⛏</div>
+        <div class="r-title">Be Productive</div>
+        <div class="r-desc">Use your time and the space you're in with purpose. Focus on what you're there to do, follow through, and leave things better than you found them.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Which Peak Connects to What Happened?</div>
+    <div class="jcard-sub" id="peak-ai-loading" style="display:flex;align-items:center;gap:10px">
+      <div class="spin"></div>Thinking about which Peak fits your situation…
+    </div>
+    <div id="peak-ai-guidance" style="display:none;background:var(--trail-light);border:1.5px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.86rem;color:var(--ink-mid);line-height:1.65;margin-bottom:16px"></div>
+    <div class="squad-picker" id="peak-picker">
+      <button class="squad-btn peak-btn" data-peak="Be Present" onclick="selectPeak('Be Present',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
+        <span class="sq-icon">🧭</span>Be Present
+      </button>
+      <button class="squad-btn peak-btn" data-peak="Be Personable" onclick="selectPeak('Be Personable',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+        <span class="sq-icon">🤝</span>Be Personable
+      </button>
+      <button class="squad-btn peak-btn" data-peak="Be Productive" onclick="selectPeak('Be Productive',this)" style="background:#e8f0fb;color:#2f4d78;border-color:#5b8dd9">
+        <span class="sq-icon">⛏</span>Be Productive
+      </button>
+    </div>
+    <div class="squad-hint">Pick the Peak that fits best — even if the AI guidance above suggested one, the choice is yours.</div>
+    <div class="val-msg" id="e-peak">Pick the Peak that fits best — even if more than one feels true.</div>
+  </div>
+
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-next" onclick="afterPeaks()">Continue →</button>
   </div>
 </div>
 
@@ -2589,7 +2643,7 @@ function selectPeak(peak, btn) {
 function begin() {
   // Admin preview bypass — skip name/grade requirement
   if (IS_PREVIEW) {
-    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8'; S.location = S.location || 'Camp Mountaineer'; S.tier = S.tier || 'full';
+    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8'; S.location = S.location || 'Camp Mountaineer'; S.tier = S.tier || 'full'; S.peak = S.peak || 'Be Present';
     document.getElementById('hdr-initial').textContent = 'A';
     document.getElementById('hdr-initial').classList.add('show');
     document.getElementById('r-init').textContent = 'A';
@@ -2612,11 +2666,10 @@ function begin() {
 function validatePart1() {
   if (IS_PREVIEW) return true;
   let ok = true;
-  if (!S.peak) { showErr('e-peak'); doShake(document.getElementById('peak-picker')); ok = false; } else { hideErr('e-peak'); }
   const checks = [
     ['q-what','e-what','This one needs something written in. Even a few words about what happened is a start.'],
     ['q-who','e-who','Let us know who else was part of this — even just a description is fine.'],
-    ['q-where','e-where','Just tell us where you were when this happened.'],
+    ['q-where','e-where','Pick where you were when this happened.'],
     ['q-when','e-when','Give us a sense of when — what were you doing or what period was it?'],
     ['q-think','e-think','Even if you weren\'t sure what you were thinking, write that. Honest is what matters here.'],
     ['q-why','e-why','This is the most important one. Write whatever is true for you, even if it\'s hard to explain.'],
@@ -3550,20 +3603,26 @@ async function buildMyPlan() {
 const PROGRESS = {0:0,1:20,2:45,3:65,4:85,done:100};
 const PIPS = ['pip-0','pip-1','pip-2','pip-2b','pip-2c','pip-3','pip-3b','pip-4','pip-done'];
 const PIP_SCREENS = [0,1,2,'2b','2c',3,'3b',4,'done'];
-const SCREEN_PROGRESS = {0:0,1:14,2:28,'2b':40,'2c':52,3:62,'3b':72,4:84,done:100};
+const SCREEN_PROGRESS = {0:0,1:14,2:28,'2p':34,'2b':40,'2c':52,3:62,'3b':72,4:84,office:90,done:100};
 
 function goTo(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + n).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   document.getElementById('progress-fill').style.width = (SCREEN_PROGRESS[n] || 0) + '%';
+  // screen-2p and screen-office aren't in the fixed 9-pip trail (added for the tiered-
+  // journal feature, and office tier in particular skips most of the original trail
+  // entirely) -- leave the pips as they already are instead of resetting all of them to
+  // blank when landing on a screen the pip trail doesn't know about.
   const ai = PIP_SCREENS.indexOf(n);
-  PIP_SCREENS.forEach((_,i) => {
-    const el = document.getElementById(PIPS[i]); if (!el) return;
-    el.className = 'step-pip';
-    if (i < ai) el.classList.add('done');
-    if (i === ai) el.classList.add('active');
-  });
+  if (ai !== -1) {
+    PIP_SCREENS.forEach((_,i) => {
+      const el = document.getElementById(PIPS[i]); if (!el) return;
+      el.className = 'step-pip';
+      if (i < ai) el.classList.add('done');
+      if (i === ai) el.classList.add('active');
+    });
+  }
   // Show quality meter on all reflective screens except welcome (0) and done
   const noMeter = [0, 'done'];
   document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
@@ -3573,6 +3632,14 @@ function goTo(n) {
 // Where the student is completing the journal (S.tier, from S.location) decides how far
 // past Part 1 the journal goes. See LOCATION_TIER_ for the location -> tier mapping.
 function afterReading() {
+  // Mountaineer Peaks now applies to every tier -- office included -- so this always
+  // routes through screen-2p first. afterPeaks() handles the tier branch from there.
+  goTo('2p');
+}
+
+function afterPeaks() {
+  if (!IS_PREVIEW && !S.peak) { showErr('e-peak'); doShake(document.getElementById('peak-picker')); return; }
+  hideErr('e-peak');
   if (S.tier === 'office') { goTo('office'); return; }
   goTo('2b');
 }
@@ -3671,6 +3738,14 @@ async function doPart1() {
   S.priorCount = priorReflections.length;
   S.priorReflections = priorReflections;
 
+  // Fire the "which Peak connects to this" guidance at the same time as the reading --
+  // ready by the time the student reaches screen 2p, which every tier passes through
+  // (Mountaineer Peaks applies regardless of consequence severity).
+  callEdge('peak_guidance', {
+    initial: S.initial, whatHappened: p1.whatHappened, why: p1.why, thinking: p1.thinking,
+    where: p1.where,
+  }).then(renderPeakGuidance);
+
   // Fire the "what kind of consequence fits your situation" card at the same time as the
   // reading, so it's ready by the time the student reaches screen 2b (after the reading +
   // conference check-in). Not awaited here on purpose -- office tier skips screen 2b
@@ -3698,6 +3773,24 @@ async function doPart1() {
   } else {
     panel.innerHTML = `<div class="ai-body"><p>There was a problem generating your reading. Continue to your conference with the adult in the room.</p></div>`;
   }
+}
+
+// Renders the 'peak_guidance' AI result into screen-2p. Fired from doPart1() for every
+// tier -- Mountaineer Peaks applies regardless of consequence severity, so unlike
+// renderConsequenceIdea() there's no tier-based early exit here.
+function renderPeakGuidance(result) {
+  const loading = document.getElementById('peak-ai-loading');
+  const box = document.getElementById('peak-ai-guidance');
+  if (!box) return;
+  if (loading) loading.style.display = 'none';
+  box.style.display = 'block';
+
+  if (!result || !result.peak) {
+    box.innerHTML = `<p style="margin:0">We couldn't generate a suggestion for this one — pick whichever Peak feels closest to what happened.</p>`;
+    return;
+  }
+  box.innerHTML =
+    `<strong style="color:var(--trail)">🏔 We think this connects most to "${result.peak}."</strong><br>${result.whyThisFits || ''}`;
 }
 
 // Renders the 'consequence_idea' AI result into the tab that replaced the static "Four

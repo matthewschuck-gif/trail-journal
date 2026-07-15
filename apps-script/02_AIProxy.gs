@@ -114,6 +114,37 @@ function buildAiPrompt_(type, payload) {
       'Return ONLY valid JSON: {"suggestions":[{"person":"type","insight":"how affected"}]}';
   }
 
+  if (type === 'peak_guidance') {
+    // Grounds the guidance in the actual EMS Mountaineer Peaks universal expectations deck
+    // (11x17 EMS-Mountaineer-Peaks.pptx) -- each location's real "Be Present / Be
+    // Personable / Be Productive" examples, not a generic definition. payload.where comes
+    // from the Part 1 "Where did it happen?" dropdown, which now uses these exact location
+    // names so this lookup always hits (falls back to a general description otherwise).
+    const LOCATION_PEAKS_ = {
+      'Classroom': 'Be Present: arrive on time, stay engaged, minimize distractions, follow routines. Be Personable: communicate respectfully with peers and staff, participate appropriately. Be Productive: focus on the task/lesson, follow instructions, complete work with integrity.',
+      'Hallways': 'Be Present: eyes up, be aware of surroundings; be where you\'re supposed to be with a pass, on time. Be Personable: communicate kindly, polite words and body language, conversational volume, respect boundaries (hands/feet to self), help others. Be Productive: use the fastest route straight to your destination, stay with the flow of traffic.',
+      'Cafeteria': 'Be Present: be there -- arrive on time, sit at a table, stay the whole period; be prepared with ID/lunch code. Be Personable: share the space, keep your area clean, honor personal space, communicate kindly (please/thank you/excuse me), engage with peers, be friendly. Be Productive: eat and prioritize your nutritional needs, clean up after yourself, use time wisely.',
+      'Auditorium': 'Be Present: arrive on time, follow directions to your seating area, practice active listening (face the speaker, sit up, engage when invited). Be Personable: respond appropriately (right time/volume), be friendly. Be Productive: follow instructions, wait for dismissal directions, focus on learning.',
+      'Bathroom': 'Be Present: have a pass, check in with your teacher first, use the nearest bathroom, keep trips short. Be Personable: respect others\' space (one person per stall), stay tech-free. Be Productive: use it as intended (not a hangout spot), keep it clean, return promptly (5 min or less), report issues to a trusted adult.',
+      'Media Center': 'Be Present: have a pass, arrive ready to work with a clear purpose. Be Personable: share the space, be aware of others\' need for quiet, handle materials with care, communicate kindly in low voices. Be Productive: focus on your purpose (research/read/study/create), minimize distractions, show integrity, leave it better than you found it.',
+      'Traveling To & From School': 'Be Present: be on time, know your route/stop, minimize distractions. Be Personable: communicate kindly with everyone around you, respect property and boundaries. Be Productive: plan ahead, follow laws and rules, pay attention and maintain safety, get where you\'re going.',
+      'Digital Environment': 'Be Present: use your device as issued, keep your phone stored and off. Be Personable: communicate with intention (words carry weight and leave a record), honor others\' privacy before capturing or sharing images. Be Productive: use technology with purpose, show integrity (cite sources and AI tools used), own your account and protect your credentials, be a Mountaineer everywhere online, protect yourself and speak up if something feels wrong.',
+    };
+    const locNote = LOCATION_PEAKS_[payload.where] || null;
+
+    return 'You are a compassionate school counselor at Ephrata Middle School helping a student see which Mountaineer Peaks universal expectation their incident relates to most, before they pick one themselves in the next step.\n\n' +
+      'The three Peaks -- "Together We Climb":\n' +
+      '- Be Present: showing up, on time, engaged, and aware of your surroundings.\n' +
+      '- Be Personable: communicating with kindness and respect, sharing space well with others.\n' +
+      '- Be Productive: using your time and the space you\'re in with purpose, following through, leaving things better than you found them.\n\n' +
+      (locNote ? ('What "' + payload.where + '" specifically looks like at EMS:\n' + locNote + '\n\n') : '') +
+      'What happened: ' + payload.whatHappened + '\n' +
+      'Why: ' + payload.why + '\n' +
+      'Thinking at the time: ' + payload.thinking + '\n\n' +
+      'Pick the ONE Peak that best fits this specific situation. In 2-3 warm sentences, explain why -- reference their actual situation and, if given, the specific expectations for that location, not a generic definition. Speak directly to the student ("you"), second person. This is guidance to help them think it through, not a final decision -- they choose the Peak themselves next.\n\n' +
+      'Return ONLY valid JSON: {"peak":"Be Present" or "Be Personable" or "Be Productive","whyThisFits":"2-3 sentences"}';
+  }
+
   if (type === 'consequence_idea') {
     // Replaces the old static "Four Buckets" explainer tab (which showed the same 4
     // generic categories to every student regardless of situation) with a personalized
