@@ -1385,6 +1385,12 @@ body.squad-purple {
 .squad-hint { font-size: 0.72rem; opacity: 0.5; text-align: center; font-family: 'Barlow', sans-serif; margin-top: 4px; letter-spacing: 0.03em; }
 .grade-btn { width: 96px; }
 .grade-btn.selected { border-color: var(--gold) !important; }
+.location-btn {
+  width: auto; height: auto; min-width: 92px; min-height: 60px;
+  padding: 8px 12px; font-size: 0.58rem; line-height: 1.3;
+}
+.location-btn .sq-icon { font-size: 1.3rem; }
+.location-btn.selected { border-color: var(--gold) !important; }
 
 /* ── MISC ── */
 .hidden { display: none !important; }
@@ -1480,17 +1486,23 @@ body.squad-purple {
         <button class="squad-btn location-btn" data-loc="Lunch Detention" onclick="selectLocation('Lunch Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
           <span class="sq-icon">🍽</span>Lunch Detention
         </button>
+        <button class="squad-btn location-btn" data-loc="Morning Detention" onclick="selectLocation('Morning Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+          <span class="sq-icon">🌅</span>Morning Detention
+        </button>
         <button class="squad-btn location-btn" data-loc="Afterschool Detention" onclick="selectLocation('Afterschool Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
           <span class="sq-icon">🕓</span>Afterschool Detention
         </button>
-        <button class="squad-btn location-btn" data-loc="Time in Office" onclick="selectLocation('Time in Office',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
-          <span class="sq-icon">🏢</span>Time in Office
+        <button class="squad-btn location-btn" data-loc="Office" onclick="selectLocation('Office',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
+          <span class="sq-icon">🏫</span>Office
         </button>
         <button class="squad-btn location-btn" data-loc="ISS" onclick="selectLocation('ISS',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
           <span class="sq-icon">🧭</span>ISS
         </button>
         <button class="squad-btn location-btn" data-loc="Camp Mountaineer" onclick="selectLocation('Camp Mountaineer',this)" style="background:var(--trail-light);color:var(--trail-deep);border-color:var(--trail-mid)">
           <span class="sq-icon">⛺</span>Camp Mountaineer
+        </button>
+        <button class="squad-btn location-btn" data-loc="Other" onclick="selectLocation('Other',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
+          <span class="sq-icon">✏️</span>Other
         </button>
       </div>
       <div class="squad-hint">This determines which parts of the journal you'll complete</div>
@@ -1812,7 +1824,7 @@ body.squad-purple {
   </div>
 </div>
 
-<!-- ═══ SCREEN OFFICE: SHORTEST TIER (Time in Office) ═══ -->
+<!-- ═══ SCREEN OFFICE: SHORTEST TIER (Office) ═══ -->
 <div class="screen" id="screen-office">
   <div class="section-head">
     <div class="trail-marker marker-gold">✍️ Quick Reflection</div>
@@ -2613,17 +2625,20 @@ function selectGrade(grade, btn) {
 // Maps the "where are you completing this" answer to which tier of journal the student
 // gets. See goTo helpers afterReading()/afterPart2() and doSubmit() for how each tier
 // skips (or doesn't skip) Part 2/Part 3.
-//   office:    Part 1 + one short repair note only (shortest -- Time in Office is
+//   office:    Part 1 + one short repair note only (shortest -- Office is
 //              explicitly "periods of time" per the Discipline Referral System guide).
 //   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan.
 //   full:      Part 1 + Part 2 + Part 3 -- Part 3's growth plan folds in community/
 //              service language for ISS and Camp Mountaineer.
 const LOCATION_TIER_ = {
   'Lunch Detention': 'detention',
+  'Morning Detention': 'detention',
   'Afterschool Detention': 'detention',
-  'Time in Office': 'office',
+  'Office': 'office',
   'ISS': 'full',
   'Camp Mountaineer': 'full',
+  'Other': 'full', // safest default when the location doesn't fit cleanly -- full asks
+                    // for more than a shorter tier would, never less than needed.
 };
 
 function selectLocation(loc, btn) {

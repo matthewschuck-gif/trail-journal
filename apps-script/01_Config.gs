@@ -56,8 +56,8 @@ const SCHEMA = {
     // if you already ran setupSpreadsheet() before this change.
     'student_name', 'grade',
     // Added for the tiered-journal-by-consequence-severity feature: 'location' is where
-    // the student is completing the journal (Lunch Detention / Afterschool Detention /
-    // Time in Office / ISS / Camp Mountaineer -- see LOCATION_TIER_ in index.html), which
+    // the student is completing the journal (Lunch/Morning/Afterschool Detention /
+    // Office / ISS / Camp Mountaineer / Other -- see LOCATION_TIER_ in index.html), which
     // determines whether they get the full 3-part journal, the 2-part version, or the
     // shortest office version. 'peak' is which Mountaineer Peaks universal expectation
     // (Be Present / Be Personable / Be Productive) the incident relates to most. Both
