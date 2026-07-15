@@ -968,12 +968,6 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--paper);
 }
 .email-inp:focus { outline: none; border-color: var(--trail-mid); background: white; }
-.email-send-btn {
-  padding: 12px 20px; background: var(--trail); color: white; border: none;
-  border-radius: 9px; font-family: 'Barlow', sans-serif; font-weight: 700;
-  font-size: 0.88rem; cursor: pointer; white-space: nowrap;
-}
-.email-send-btn:hover { opacity: 0.88; }
 .email-note { font-size: 0.76rem; color: var(--ink-light); margin-top: 8px; text-align: center; }
 
 /* ── BIC BUTTON ── */
@@ -2318,15 +2312,13 @@ body.squad-purple {
       <!-- Content shown once AI is done -->
       <div id="staff-ready" style="display:none">
 
-        <!-- EMAIL SEND -->
-        <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:14px">
-          Enter your email address — the full plan summary will be emailed to you, with a calendar reminder attached for your first follow-up check-in.
+        <!-- YOUR EMAIL (used for the follow-up scheduler below, and as a submitted-by record) -->
+        <p style="font-family:'Barlow',sans-serif;font-size:0.88rem;color:var(--ink-mid);line-height:1.65;margin-bottom:10px">
+          The full plan summary is included automatically in the follow-up check-in email you schedule below — one email with both, sent to whoever you invite.
         </p>
         <div class="email-row" style="margin-bottom:6px">
-          <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com">
-          <button class="email-send-btn" id="send-btn" onclick="sendSummaryPDF()">Send Summary →</button>
+          <input type="email" class="email-inp" id="staff-email" placeholder="your@email.com (for our records)">
         </div>
-        <div id="email-status" style="font-family:'Barlow',sans-serif;font-size:.78rem;margin-top:6px;min-height:20px;color:var(--trail)"></div>
 
         <!-- READING LIST + PRACTICE PLAN (staff-only) -->
         <div id="student-reading-wrap" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
@@ -2376,7 +2368,7 @@ body.squad-purple {
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
           <div class="jcard-label" style="color:var(--trail);margin-bottom:4px">📅 Schedule Follow-Up Check-In</div>
           <p style="font-family:'Barlow',sans-serif;font-size:.84rem;color:var(--ink-mid);line-height:1.6;margin-bottom:14px">
-            Schedule a single Outlook calendar event to follow up on this student's plan. Pick any date and time.
+            Pick a date and time — everyone you invite gets one email with the calendar invite and the full plan summary together.
           </p>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
@@ -2417,7 +2409,7 @@ body.squad-purple {
             <button onclick="resetFuScheduler()" style="padding:10px 16px;background:var(--paper);border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);cursor:pointer">Reset</button>
             <button id="fu-schedule-btn" onclick="scheduleFuCheckin()" style="flex:1;padding:10px 16px;background:var(--trail);color:white;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 3px 12px rgba(44,74,53,.25)">📅 Schedule Follow-Up</button>
           </div>
-          <div style="font-size:.7rem;color:var(--ink-light);text-align:center;margin-top:6px;font-style:italic">Record saved · Calendar invite via email (.ics)</div>
+          <div style="font-size:.7rem;color:var(--ink-light);text-align:center;margin-top:6px;font-style:italic">Record saved · One email with the plan summary + calendar invite (.ics)</div>
         </div>
 
         <!-- CLASH OF CLASSES LEADERBOARD -->
@@ -3597,48 +3589,6 @@ async function doPart1() {
   }
 }
 
-// ─── EMAIL SUMMARY ────────────────────────────────────────────────────────
-// Sent directly from the backend (Resend), with a .ics calendar reminder attached for the
-// first (2-day) follow-up check-in -- replaced the old mailto: link, which opened the
-// staff member's own email app but could never carry a file attachment (a mailto: URL is
-// plain text only; there is no way to attach an .ics through it). See sendSummaryEmail_
-// in 04_FollowupEmails.gs.
-async function sendSummaryPDF() {
-  const email = document.getElementById('staff-email').value.trim();
-  if (!email || !email.includes('@')) {
-    doShake(document.getElementById('staff-email'));
-    setEmailStatus('Please enter a valid email address.', 'var(--red)');
-    return;
-  }
-  if (!S_RESULT) {
-    setEmailStatus('Summary is still generating — please wait a moment.', 'orange');
-    return;
-  }
-  const btn = document.getElementById('send-btn');
-  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
-  const body = buildEmailBody(S_RESULT, p1, p2, p3);
-  const date = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-  const subject = `Trail Journal Summary — ${S.initial}${S.squad ? ' (' + S.squad + ')' : ''} — ${date}`;
-
-  btn.disabled = true; btn.textContent = 'Sending…';
-  setEmailStatus('Sending summary and calendar reminder…', 'var(--ink-light)');
-  try {
-    await callBackend({ action: 'sendSummaryEmail', payload: {
-      toEmail: email,
-      subject,
-      summaryText: body,
-      studentLabel: S.initial + (S.squad ? ' (' + S.squad + ' Squad)' : ''),
-      grade: S.grade,
-      triggerDate: new Date().toISOString().split('T')[0],
-    } }, true);
-    setEmailStatus('✓ Summary emailed to ' + email + ', with a calendar invite for the 2-day check-in.', 'var(--trail)');
-    btn.textContent = '✓ Sent';
-  } catch (e) {
-    console.error('Send summary error:', e);
-    setEmailStatus('Could not send — ' + (e.message || 'check the connection and try again.'), 'var(--red)');
-    btn.disabled = false; btn.textContent = 'Send Summary →';
-  }
-}
 // Password checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
 async function checkPW() {
@@ -3928,12 +3878,6 @@ function buildEmailBody(result, p1, p2, p3) {
   return lines.join('\n');
 }
 
-// (sendSummaryPDF and setEmailStatus defined above with EmailJS)
-function setEmailStatus(msg, color) {
-  const el = document.getElementById('email-status');
-  if (el) { el.textContent = msg; el.style.color = color || 'var(--trail)'; }
-}
-
 
 // ─── BIC INTEGRATION ─────────────────────────────────────────────────────
 function buildBICLink() {
@@ -4175,20 +4119,27 @@ async function scheduleFuCheckin() {
     }}, /* admin */ true);
   } catch(e) { console.warn('Save error:', e); }
 
-  // NOTE ON A PRE-EXISTING QUIRK (found while porting, not introduced by this migration):
-  // this call sends singleEvent/eventDate/eventTime/duration, but the actual deployed
-  // send-followup-emails function (v1, checked directly in Supabase) never reads those --
-  // it always runs its fixed 2-day/2-week/2-month loop regardless. That means this
-  // "Schedule Follow-Up" button has likely always sent the standard 3-interval sequence
-  // rather than a single custom-dated event, even before this migration. Ported here
-  // exactly as the original behaves; flagged to Matt to decide whether to fix it.
+  // Fixed: this used to send singleEvent/eventDate/eventTime/duration to a backend
+  // function that never read them and always ran its fixed 2-day/2-week/2-month loop
+  // instead -- so this button silently sent the standard 3-interval sequence rather than
+  // the single custom-dated event the form actually asks for. sendFollowupEmails_ now
+  // has a real singleEvent branch (sendSingleFollowupEvent_ in 04_FollowupEmails.gs) that
+  // sends exactly one invite for the picked date/time/duration.
+  // Also bundles the full AI plan summary into that same email (summaryText below) --
+  // previously the summary and the calendar invite were two separate emails.
+  let summaryText = '';
+  if (S_RESULT) {
+    const sp1 = getPart1(), sp2 = getPart2(), sp3 = getPart3();
+    summaryText = buildEmailBody(S_RESULT, sp1, sp2, sp3);
+  }
+
   let success = false;
   try {
     const result = await callBackend({ action: 'sendFollowupEmails', payload: {
-      initials, squad, triggerType: 'trail-journal',
+      initials, squad, grade: S.grade, triggerType: 'trail-journal',
       singleEvent: true,
       eventDate, eventTime, duration: fuDuration,
-      outcome, attendees,
+      outcome, attendees, summaryText,
       submittedBy: document.getElementById('staff-email')?.value?.trim() || '',
     }}, /* admin */ true);
     success = result?.results?.followup === 'sent' || result?.success || (result?.ok && !result?.errors?.length);
@@ -4202,7 +4153,7 @@ async function scheduleFuCheckin() {
   }
 
   if (success) {
-    showFuAlert('success', '✓ Follow-up invite sent to ' + attendees.length + ' staff member(s) for ' + eventDate + ' at ' + eventTime + '.');
+    showFuAlert('success', '✓ Summary + calendar invite sent to ' + attendees.length + ' staff member(s) for ' + eventDate + ' at ' + eventTime + '.');
     btn.textContent = '✓ Scheduled'; btn.style.background = '#15803d';
   } else {
     showFuAlert('error', 'Email sending failed. Check Edge Function logs.');

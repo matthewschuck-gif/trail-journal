@@ -113,6 +113,18 @@ function sendViaResend_(resendPayload) {
 function sendFollowupEmails_(payload) {
   const FROM_EMAIL = PropertiesService.getScriptProperties().getProperty('FROM_EMAIL') || 'noreply@trailjournal.org';
 
+  // singleEvent: true routes to a genuinely single, custom-dated calendar invite instead of
+  // the fixed 2/14/60-day sequence below. This used to be silently ignored -- the frontend's
+  // "Schedule Follow-Up Check-In" form (a single date/time/duration picker, sent with
+  // singleEvent/eventDate/eventTime/duration) always got the fixed 3-interval sequence
+  // instead, because this function never read those fields. Fixed: that form only ever
+  // collects ONE date/time, so it should only ever send ONE invite. Also bundles the AI plan
+  // summary (payload.summaryText) into that same email, per Matt's request to stop sending
+  // the plan summary and the calendar invite as two separate emails.
+  if (payload.singleEvent) {
+    return sendSingleFollowupEvent_(payload, FROM_EMAIL);
+  }
+
   const initials = payload.initials;
   const squad = payload.squad;
   const grade = payload.grade;
@@ -187,6 +199,87 @@ function sendFollowupEmails_(payload) {
   });
 
   return { ok: true, results: results, errors: errors };
+}
+
+// ── SINGLE CUSTOM FOLLOW-UP EVENT (with the plan summary bundled in) ───────
+function sendSingleFollowupEvent_(payload, FROM_EMAIL) {
+  const initials = payload.initials;
+  const squad = payload.squad;
+  const eventDate = payload.eventDate;   // 'yyyy-MM-dd'
+  const eventTime = payload.eventTime;   // 'HH:MM', 24-hour
+  const duration = Number(payload.duration) || 15; // minutes
+  const outcome = payload.outcome;
+  const summaryText = payload.summaryText || '';
+  const attendees = payload.attendees || [];
+
+  if (!eventDate || !eventTime) throw new Error('eventDate and eventTime are required for a single follow-up event.');
+
+  const [h, m] = eventTime.split(':').map(Number);
+  const startISO = icsDate_(eventDate, h, m);
+  const endMinutesTotal = h * 60 + m + duration;
+  const endH = Math.floor(endMinutesTotal / 60) % 24;
+  const endM = endMinutesTotal % 60;
+  const endISO = icsDate_(eventDate, endH, endM);
+
+  const timeLabel = formatTimeLabel_(h, m) + ' - ' + formatTimeLabel_(endH, endM);
+  const subject = '[EMS Follow-Up] ' + initials + ' - Follow-Up Check-In' + (squad ? ' (' + squad + ' Squad)' : '');
+
+  const escaped = summaryText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const summaryHtml = escaped
+    ? '<div style="margin-top:16px;padding-top:14px;border-top:1px solid #e5ddc8">' +
+        escaped.split(/\n\n+/).map(function (para) {
+          return '<p style="margin:0 0 12px;font-size:13px;line-height:1.7;color:#3a3a3a;font-family:Verdana,sans-serif;white-space:pre-line">' + para + '</p>';
+        }).join('') +
+      '</div>'
+    : '';
+
+  const results = {};
+  const errors = [];
+  let anyFailed = false;
+
+  attendees.forEach(function (att) {
+    try {
+      const uid = 'fu-single-' + new Date().getTime() + '-' + Math.floor(Math.random() * 10000) + '@trailjournal.org';
+      const desc = 'Follow-Up Check-In\\nStudent: ' + initials + (squad ? ' (' + squad + ' Squad)' : '') +
+        '\\nDate: ' + fmtDate_(eventDate) + '\\nTime: ' + timeLabel + ' (' + duration + ' min)' +
+        (outcome ? '\\nContext: ' + outcome : '');
+
+      const ics = buildIcsVevent_({
+        uid: uid, startISO: startISO, endISO: endISO, summary: subject, description: desc,
+        organizerEmail: FROM_EMAIL, attendeeEmail: att.email, attendeeName: att.name,
+      });
+
+      const body =
+        emailInfoRow_('Student', initials + (squad ? ' &mdash; ' + squad + ' Squad' : '')) +
+        emailInfoRow_('Date', fmtDate_(eventDate)) +
+        emailInfoRow_('Time', timeLabel + ' (' + duration + ' min)') +
+        (outcome ? emailCallout_('Context', outcome) : '') +
+        icsFooterNote_('follow-up-checkin.ics') +
+        summaryHtml;
+
+      const html = emailShell_('&#128197;', 'Follow-Up Check-In', initials + (squad ? ' &middot; ' + squad + ' Squad' : ''), body);
+
+      sendViaResend_({
+        from: 'EMS Trail Journal <' + FROM_EMAIL + '>',
+        to: [att.email],
+        subject: subject,
+        html: html,
+        attachments: [{ filename: 'follow-up-checkin.ics', content: Utilities.base64Encode(ics) }],
+      });
+    } catch (e) {
+      errors.push('Follow-up check-in -> ' + att.email + ': ' + e.message);
+      anyFailed = true;
+    }
+  });
+
+  results.followup = anyFailed ? 'failed' : 'sent';
+  return { ok: true, results: results, errors: errors };
+}
+
+function formatTimeLabel_(h, m) {
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = ((h + 11) % 12) + 1;
+  return h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
 }
 
 // ── PLAN SUMMARY EMAIL (from the main journal's "Send Summary" button) ─────
