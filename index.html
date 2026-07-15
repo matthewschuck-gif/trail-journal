@@ -2766,6 +2766,153 @@ const S = {
   _staffUnlocked: false,
 };
 
+// ─── LOCAL DRAFT AUTOSAVE / RESUME ─────────────────────────────────────────
+// Protects against a wifi drop or an accidentally-closed tab losing a long Part 1-3
+// entry. Saves a snapshot of S plus every visible form field to localStorage on every
+// screen transition (see goTo()) and, debounced, on every keystroke, then offers to
+// resume on reload. Skipped entirely in admin preview mode. Cleared on successful
+// submission (doSubmit()) and on the staff new-journal/close-out reset, so a finished or
+// intentionally-cleared session never resurfaces a stale resume prompt.
+const DRAFT_KEY = 'trailJournalDraft_v1';
+const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // don't offer to resume anything older than a day
+
+function saveDraft() {
+  if (IS_PREVIEW) return;
+  try {
+    const activeScreen = document.querySelector('.screen.active');
+    const screenId = activeScreen ? activeScreen.id.replace('screen-', '') : null;
+    // Nothing worth protecting on the welcome screen (nothing written yet), and 'done'
+    // means the journal is already submitted -- either way, no draft should linger.
+    if (!screenId || screenId === '0' || screenId === 'done') { clearDraft(); return; }
+    const fields = {};
+    document.querySelectorAll('textarea[id], input[id], select[id]').forEach(el => {
+      if (el.type === 'password') return; // never persist a password field
+      fields[el.id] = el.value;
+    });
+    // Part 3's trait-specific checkboxes (.tspec) are dynamically generated with no id,
+    // keyed only by their label text -- capture their checked values separately so a
+    // resume can re-check the ones that matched before the trait list was rebuilt.
+    const tspecChecked = Array.from(document.querySelectorAll('.tspec:checked')).map(c => c.value);
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      savedAt: Date.now(), screen: screenId, S: S, fields: fields, tspecChecked: tspecChecked,
+    }));
+  } catch (e) { console.warn('Draft autosave failed:', e); }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
+}
+
+let _draftSaveTimer = null;
+document.addEventListener('input', e => {
+  if (IS_PREVIEW || !e.target || !(e.target.id || e.target.classList.contains('tspec'))) return;
+  clearTimeout(_draftSaveTimer);
+  _draftSaveTimer = setTimeout(saveDraft, 800);
+});
+
+function checkForDraftAndOfferResume() {
+  if (IS_PREVIEW) return;
+  let draft;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
+  if (!draft || !draft.S || !draft.screen) return;
+  if (Date.now() - (draft.savedAt || 0) > DRAFT_MAX_AGE_MS) { clearDraft(); return; }
+
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:var(--trail-deep);color:white;text-align:center;padding:12px 16px;font-family:Barlow,sans-serif;font-size:.88rem;z-index:9999;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;';
+  banner.innerHTML =
+    '<span>📝 We found an unfinished journal' + (draft.S.name ? ' for ' + draft.S.name : '') + '. Pick up where you left off?</span>' +
+    '<button id="draft-resume-btn" style="background:var(--gold);color:var(--trail-deep);border:none;border-radius:6px;padding:6px 14px;font-weight:600;cursor:pointer;">Resume</button>' +
+    '<button id="draft-discard-btn" style="background:transparent;color:white;border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:6px 14px;cursor:pointer;">Start Fresh</button>';
+  document.body.appendChild(banner);
+
+  document.getElementById('draft-resume-btn').addEventListener('click', () => {
+    restoreDraft(draft);
+    banner.remove();
+  });
+  document.getElementById('draft-discard-btn').addEventListener('click', () => {
+    clearDraft();
+    banner.remove();
+  });
+}
+
+function restoreDraft(draft) {
+  Object.assign(S, draft.S);
+
+  // Refill visible text/textarea/select fields (Part 1-3 answers, CM "why", etc.)
+  Object.keys(draft.fields || {}).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = draft.fields[id];
+  });
+
+  // Re-sync the Mood Meter grid: S.eduring/enow already have the right data, but the
+  // buttons themselves render unselected until clicked/flagged, so mark the right ones.
+  ['during', 'now'].forEach(group => {
+    const key = group === 'during' ? 'eduring' : 'enow';
+    (S[key] || []).forEach(e => {
+      document.querySelectorAll('.ze-btn[data-group="' + group + '"]').forEach(btn => {
+        if (btn.dataset.val === e.name) btn.classList.add('on');
+      });
+    });
+    if (typeof updateSelectedDisplay === 'function') updateSelectedDisplay(group);
+  });
+
+  // Camp Mountaineer pre-page pickers -- only reachable if that's actually where the
+  // student left off, and only replayed here (rather than for every field) because
+  // selectCmReason()/selectCmInitiator() have their own visual + validation side effects
+  // that mirror a real click.
+  if (draft.screen === 'cm') {
+    if (S.cmReason) {
+      const cmBtn = document.querySelector('.cm-reason-btn[data-reason="' + S.cmReason + '"]');
+      if (cmBtn) selectCmReason(S.cmReason, cmBtn);
+    }
+    if (S.cmInitiatedBy) {
+      const initBtn = document.querySelector('.cm-init-btn[data-init="' + S.cmInitiatedBy + '"]');
+      if (initBtn) selectCmInitiator(S.cmInitiatedBy, initBtn);
+    }
+    if (S.cmChecklistAgreed) {
+      document.querySelectorAll('#cm-checklist-items .check-gate-item:not(.checked)').forEach(row => row.click());
+    }
+    if (S.cmEffortAgreed) {
+      document.querySelectorAll('#cm-effort-checklist .check-gate-item:not(.checked)').forEach(row => row.click());
+    }
+  }
+
+  // Mountaineer Peaks pick (screen 2p)
+  if (S.peak) {
+    const peakBtn = document.querySelector('.peak-btn[data-peak="' + S.peak + '"]');
+    if (peakBtn) selectPeak(S.peak, peakBtn);
+  }
+
+  // Part 3 trait + creative-challenge picks, plus the trait-specific checkboxes that
+  // only exist once a trait is picked (see pickTrait() -- it rebuilds #trait-spec-list).
+  if (S.trait) {
+    const traitBtn = document.querySelector('.trait-btn[data-t="' + S.trait + '"]');
+    if (traitBtn) {
+      pickTrait(traitBtn);
+      (draft.tspecChecked || []).forEach(val => {
+        const box = document.querySelector('.tspec[value="' + CSS.escape(val) + '"]');
+        if (box) box.checked = true;
+      });
+    }
+  }
+  if (S.creative) {
+    const creativeBtn = document.querySelector('.creative-btn[data-cv="' + S.creative + '"]');
+    if (creativeBtn) pickCreative(creativeBtn);
+  }
+
+  // Restore the header initial badge (normally set inside begin())
+  if (S.initial) {
+    const hi = document.getElementById('hdr-initial');
+    if (hi) { hi.textContent = S.initial; hi.classList.add('show'); }
+    const ri = document.getElementById('r-init');
+    if (ri) ri.textContent = S.initial;
+  }
+
+  goTo(draft.screen);
+}
+
+document.addEventListener('DOMContentLoaded', checkForDraftAndOfferResume);
+
 // ─── BANNED WORDS (for name field) ────────────────────────────────────────
 const BAD_NAMES = /^(undefined|null|none|na|n\/a|anonymous|student|kid|me|myself|i|unknown|idk)$/i;
 
@@ -3987,6 +4134,7 @@ function goTo(n) {
   // Show quality meter on all reflective screens except welcome (0) and done
   const noMeter = [0, 'done'];
   document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
+  saveDraft();
 }
 
 // ─── PART 1 TAKEAWAY + STAFF CHECK-IN GATES ────────────────────────────────
@@ -4348,12 +4496,14 @@ async function checkPW() {
 // different moments, even though technically it's one action.
 function startNewJournal() {
   if (confirm('Start a fresh journal for the next student? This clears this session.')) {
+    clearDraft();
     window.location.href = window.location.pathname + window.location.search;
   }
 }
 
 function closeOutJournal() {
   if (confirm('Close out this journal? This clears this session.')) {
+    clearDraft();
     window.location.href = window.location.pathname + window.location.search;
   }
 }
@@ -4692,6 +4842,7 @@ function buildBICLink() {
 }
 async function doSubmit() {
   if (S.tier === 'full' && !validatePart3()) return;
+  clearDraft();
   goTo('done');
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
 
