@@ -4100,7 +4100,12 @@ async function scheduleFuCheckin() {
       squad: squad || null,
       notes: 'Single follow-up · ' + eventDate + ' at ' + eventTime + ' · ' + fuDuration + 'min · From Trail Journal',
       calendar_status: { followup: 'pending' },
-    }}, /* admin */ true);
+    }});
+    // Not an admin call: this runs on the student's own device with nobody signed in as
+    // staff, so it must not send adminPassword (see enforceAdminGate_ in 05_AdminAuth.gs --
+    // followup_records insert/update and singleEvent sendFollowupEmails calls are exempted
+    // from the staff-password gate specifically so this works with zero login on either
+    // end).
   } catch(e) { console.warn('Save error:', e); }
 
   // Fixed: this used to send singleEvent/eventDate/eventTime/duration to a backend
@@ -4125,7 +4130,7 @@ async function scheduleFuCheckin() {
       eventDate, eventTime, duration: fuDuration,
       outcome, attendees, summaryText,
       submittedBy: document.getElementById('staff-email')?.value?.trim() || '',
-    }}, /* admin */ true);
+    }});
     success = result?.results?.followup === 'sent' || result?.success || (result?.ok && !result?.errors?.length);
   } catch(e) {
     console.error('Follow-up send error:', e);
@@ -4133,7 +4138,7 @@ async function scheduleFuCheckin() {
 
   // Update record with outcome
   if (record?.id) {
-    callBackend({ action: 'update', table: 'followup_records', match: { id: record.id }, patch: { calendar_status: { followup: success ? 'sent' : 'failed' } } }, /* admin */ true).catch(() => {});
+    callBackend({ action: 'update', table: 'followup_records', match: { id: record.id }, patch: { calendar_status: { followup: success ? 'sent' : 'failed' } } }).catch(() => {});
   }
 
   if (success) {
