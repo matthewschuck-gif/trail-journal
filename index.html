@@ -4557,6 +4557,13 @@ function buildEmailBody(result, p1, p2, p3) {
     (S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? 'Effort Agreement Confirmed: ' + (S.cmEffortAgreed ? 'Yes' : 'No') : ''),
   ].filter(Boolean).join('\n');
 
+  // Full prose case narrative -- the AI's fuller "in addition to the key information"
+  // write-up, distinct from the terse 2-3 sentence summary below. Placed right after the
+  // intro so staff read the whole story first, then the quick-reference structured data.
+  const blockNarrative = result.narrativeReport
+    ? ['=== STUDENT NARRATIVE REPORT ===', result.narrativeReport].join('\n')
+    : '';
+
   const blockIncident = [
     '=== INCIDENT SUMMARY ===',
     result.summary || '—',
@@ -4647,7 +4654,7 @@ function buildEmailBody(result, p1, p2, p3) {
     : '';
 
   const blocks = [
-    blockIntro, blockIncident, blockHope, blockWhatHappened, blockMakingRight,
+    blockIntro, blockNarrative, blockIncident, blockHope, blockWhatHappened, blockMakingRight,
     blockGrowthPlan, blockConsequences, blockRepairPlan, blockStudentGoal,
     blockRestorativeQ, blockCpsScript, blockFollowUpFlags, blockResourceBank, blockClash,
   ];
@@ -4700,7 +4707,7 @@ async function doSubmit() {
   });
 
   const result = await callEdge('summary', {
-    initial: S.initial, part1: p1, part2: p2, part3: p3,
+    initial: S.initial, name: S.name, part1: p1, part2: p2, part3: p3,
     location: S.location, peak: S.peak, tier: S.tier,
     cmReason: S.cmReason, cmInitiatedBy: S.cmInitiatedBy, cmWhy: S.cmWhy,
     cmEffortAgreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,

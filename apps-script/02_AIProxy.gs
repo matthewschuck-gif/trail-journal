@@ -317,22 +317,37 @@ function buildAiPrompt_(type, payload) {
        // requirements -- see CM_REASON_REQUIRES_EFFORT_ in index.html.
        (payload.cmReason === 'ISS' ? ' | Student Checklist confirmed: ' + (payload.cmChecklistAgreed ? 'Yes' : 'No') +
          ' | Effort Agreement confirmed: ' + (payload.cmEffortAgreed ? 'Yes' : 'No') : '') + '\n') : '';
+    // Prior visits were already being sent up from the client (priorCount/priorReflections)
+    // but nothing in this prompt actually used them -- folding them in here gives the
+    // narrative report real pattern-over-time grounding instead of treating every
+    // submission as a first-time incident.
+    const priorNote = (payload.priorCount && payload.priorCount > 0)
+      ? ('PRIOR REFLECTIONS: This student has completed ' + payload.priorCount + ' prior Trail Journal reflection(s). ' +
+         (payload.priorReflections && payload.priorReflections.length
+           ? 'Recent history: ' + payload.priorReflections.map(function(r) {
+               return (r.created_at ? new Date(r.created_at).toLocaleDateString() : 'earlier') + ' -- insight: ' + (r.insight_level || 'not recorded') + (r.trait ? ', trait: ' + r.trait : '');
+             }).join(' | ') + '.'
+           : '') + '\n') : '';
+    const studentLabel = payload.name || ('the student (initial ' + payload.initial + ')');
     return 'Experienced middle school AP reviewing a completed Camp Mountaineer Trail Journal. Uses CPS, restorative practices, logical consequences.\n\n' +
-      'STUDENT (initial: ' + payload.initial + '):\n' +
+      'STUDENT (initial: ' + payload.initial + (payload.name ? ', name: ' + payload.name : '') + '):\n' +
       (payload.location ? ('Location: ' + payload.location + ' | ') : '') +
       (payload.peak ? ('Mountaineer Peaks area: ' + payload.peak + '\n') : '\n') +
       cmNote +
+      priorNote +
       'PART 1: What happened: ' + p1.whatHappened + ' | Why: ' + p1.why + ' | Emotions during (' + p1.intensityDuring + '/5): ' +
       ((p1.emotionsDuring || []).join(',')) + ' | Emotions now (' + p1.intensityNow + '/5): ' + ((p1.emotionsNow || []).join(',')) +
-      ' | CPS problem: ' + p1.cpsUnsolvedProblem + ' | My concern: ' + p1.cpsMyConcern + ' | Their concern: ' + p1.cpsTheirConcern + '\n' +
+      ' | CPS problem: ' + p1.cpsUnsolvedProblem + ' | My concern: ' + p1.cpsMyConcern + ' | Their concern: ' + p1.cpsTheirConcern +
+      ' | Part 1 takeaway: ' + (p1.takeaway || 'n/a') + '\n' +
       'PART 2: People hurt: ' + ((p2.hurtPeople || []).join(',')) + ' | Make right: ' + p2.makeRight + ' | Consequences: ' +
       ((p2.selectedConsequences || []).join('-')) + ' | Plan: ' + p2.plan + ' | Different: ' + p2.different + '\n' +
       'PART 3: Trait: ' + p3.trait + ' | Specifics: ' + ((p3.traitSpecifics || []).join(',')) + ' | Why trait: ' + p3.traitWhy + ' | Creative: ' + p3.creativeFormat + ' | Community/service action: ' + (p3.communityAction || 'n/a') + '\n\n' +
       tierNote + '\n\n' +
       'INSIGHT LEVEL: HIGH = honest effort throughout + named someone hurt + any self-awareness + non-dismissive. Short honest answers count as High. MEDIUM = partial/thin engagement, OR effort is present but the account exclusively blames others with zero ownership of their own role. LOW = clearly avoidant/dismissive throughout only. Default strongly toward HIGH.\n\n' +
       'OWNERSHIP: if the student\'s account (why/thinking/makeRight/different) blames others without acknowledging their own part, do not let insightReason validate the blame -- name the pattern plainly for staff (e.g. "student attributes the incident primarily to [person/group] with limited ownership of their own actions") so it surfaces in the follow-up conversation.\n\n' +
+      'NARRATIVE REPORT: Write a 4-6 paragraph prose case narrative for the staff record, referring to the student as "' + studentLabel + '" (not "the student" repeatedly). Cover, in flowing paragraphs (not bullets or fragments): (1) brief context -- where/when, and pathway if Camp Mountaineer; (2) what happened and why, in narrative form, grounded in their actual words, not generic; (3) their emotional arc during vs. now and what that shift (or lack of one) suggests; (4) an honest read on ownership/insight -- if they minimized their role or blamed others, say so plainly and professionally, don\'t soften it into vague language; (5) the restorative work covered -- who was named as affected, their repair plan, and the consequence/growth direction chosen; (6) if PRIOR REFLECTIONS were given above, one paragraph on the pattern over time (improving, repeating, escalating) -- omit this paragraph entirely if no prior history was given. Write like an experienced, plainspoken AP\'s case note: specific, professional, warm where warranted, direct where it matters. No trail/outdoor metaphors here -- that voice is for the student-facing reading, not this staff record.\n\n' +
       'Return this exact JSON:\n' +
-      '{"summary":"2-3 sentences","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
+      '{"summary":"2-3 sentences","narrativeReport":"4-6 paragraphs separated by \\n\\n","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
       '"practicePlan":{"title":"Your Practice Plan","days":[{"day":"Today","task":"action"},{"day":"Day 2-3","task":"next"},{"day":"Day 4-5","task":"building"},{"day":"By Friday","task":"measurable"}]},' +
       '"recommendedConsequences":[{"type":"Primary","description":"logical","rationale":"why"},{"type":"Supporting","description":"skill building","rationale":"why"}],' +
       '"repairPlan":"2-3 steps","hopeNote":"one sentence for staff","restorativeQuestions":["q1","q2","q3","q4"],' +

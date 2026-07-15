@@ -929,6 +929,7 @@ Required structure:
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_effort_agreed"> Effort Agreement Confirmed</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="initial"> Student Initial</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="insight" checked> Insight Level</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="narrative_report"> AI Narrative Report</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait" checked> LRG Trait</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="trait_specifics" checked> Trait Specifics</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="what_happened" checked> What Happened</label>
@@ -1372,6 +1373,9 @@ function openModal(r) {
       <div class="di"><div class="di-lbl">Creative format</div><div class="di-val">${p3.creativeFormat||'—'}${p3.creativePlan?' — '+p3.creativePlan:''}</div></div>
       ${p3.communityAction ? `<div class="di"><div class="di-lbl">Community/Service Action</div><div class="di-val">${p3.communityAction}</div></div>` : ''}
     </div>
+    ${ai.narrativeReport ? `<div class="ds"><h4>Narrative Report</h4>
+      <div class="di"><div class="di-val" style="white-space:pre-wrap;line-height:1.6">${ai.narrativeReport}</div></div>
+    </div>` : ''}
     ${Object.keys(ai).length ? `<div class="ds"><h4>AI Staff Summary</h4>
       <div class="di ${ibcls}"><div class="di-lbl">Insight Level</div><div class="di-val"><span class="badge ${ibadge}">${ins}</span>  ${ai.insightReason||''}</div></div>
       ${(ai.recommendedConsequences||[]).map(c=>`<div class="di dgold"><div class="di-lbl">${c.type}</div><div class="di-val"><strong>${c.description}</strong><br><span style="font-size:.78rem;color:var(--muted)">${c.rationale||''}</span></div></div>`).join('')}
@@ -1688,6 +1692,7 @@ const EXPORT_COLS = {
   cm_effort_agreed:{ label: 'Effort Agreement Confirmed', fn: r => r.cm_effort_agreed === true ? 'Yes' : (r.cm_effort_agreed === false ? 'No' : '') },
   initial:        { label: 'Initial',               fn: r => r.initial || '' },
   insight:        { label: 'Insight Level',         fn: r => r.insight_level || '' },
+  narrative_report:{ label: 'AI Narrative Report',  fn: r => (r.ai_staff_summary || {}).narrativeReport || '' },
   trait:          { label: 'LRG Trait',             fn: r => r.part3_json?.trait || '' },
   trait_specifics:{ label: 'Trait Specifics',       fn: r => (r.part3_json?.traitSpecifics || []).join('; ') },
   what_happened:  { label: 'What Happened',         fn: r => r.part1_json?.whatHappened || '' },
