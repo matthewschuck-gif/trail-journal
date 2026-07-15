@@ -1550,6 +1550,11 @@ body.squad-purple {
     <p style="font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--ink-mid);line-height:1.75">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. The AI will write a short reading just for you after Part 1, and help build a plan at the end. Take this seriously — your honest effort here is the first step back on the trail.</p>
   </div>
   <div class="nav-row"><div></div><button class="btn-next" onclick="begin()">Start My Journal →</button></div>
+  <p style="text-align:center;margin-top:14px">
+    <a href="#" onclick="event.preventDefault(); checkForDraftAndOfferResume(true);" style="font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);text-decoration:underline;cursor:pointer">
+      Reusing this device? Check for an unfinished journal from the last student
+    </a>
+  </p>
 </div>
 
 <!-- ═══ SCREEN CM: CAMP MOUNTAINEER CHECK-IN ═══ -->
@@ -2811,19 +2816,32 @@ document.addEventListener('input', e => {
   _draftSaveTimer = setTimeout(saveDraft, 800);
 });
 
-function checkForDraftAndOfferResume() {
+// manual=true when triggered by the "Reusing this device?" link on the welcome screen
+// (screen-0) rather than the automatic on-load check -- staff/students landing on a
+// device that never got a proper close-out (the end-screen reset wasn't clicked, or the
+// tab was reused without reloading) need an obvious, always-available way to either push
+// a leftover entry through to submission or clear it before starting fresh, not just a
+// banner that only fires once on page load and may have already been dismissed.
+function checkForDraftAndOfferResume(manual) {
   if (IS_PREVIEW) return;
   let draft;
   try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { draft = null; }
-  if (!draft || !draft.S || !draft.screen) return;
-  if (Date.now() - (draft.savedAt || 0) > DRAFT_MAX_AGE_MS) { clearDraft(); return; }
+  if (!draft || !draft.S || !draft.screen) {
+    if (manual) showDraftCheckNotice('✅ No unfinished journal found — you\'re clear to start fresh.');
+    return;
+  }
+  if (Date.now() - (draft.savedAt || 0) > DRAFT_MAX_AGE_MS) {
+    clearDraft();
+    if (manual) showDraftCheckNotice('✅ No unfinished journal found — you\'re clear to start fresh.');
+    return;
+  }
 
   const banner = document.createElement('div');
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:var(--trail-deep);color:white;text-align:center;padding:12px 16px;font-family:Barlow,sans-serif;font-size:.88rem;z-index:9999;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;';
   banner.innerHTML =
-    '<span>📝 We found an unfinished journal' + (draft.S.name ? ' for ' + draft.S.name : '') + '. Pick up where you left off?</span>' +
-    '<button id="draft-resume-btn" style="background:var(--gold);color:var(--trail-deep);border:none;border-radius:6px;padding:6px 14px;font-weight:600;cursor:pointer;">Resume</button>' +
-    '<button id="draft-discard-btn" style="background:transparent;color:white;border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:6px 14px;cursor:pointer;">Start Fresh</button>';
+    '<span>📝 We found an unfinished journal' + (draft.S.name ? ' for ' + draft.S.name : '') + '. Pick up where you left off, or clear it to start fresh?</span>' +
+    '<button id="draft-resume-btn" style="background:var(--gold);color:var(--trail-deep);border:none;border-radius:6px;padding:6px 14px;font-weight:600;cursor:pointer;">Resume &amp; Finish It</button>' +
+    '<button id="draft-discard-btn" style="background:transparent;color:white;border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:6px 14px;cursor:pointer;">Clear &amp; Start Fresh</button>';
   document.body.appendChild(banner);
 
   document.getElementById('draft-resume-btn').addEventListener('click', () => {
@@ -2834,6 +2852,14 @@ function checkForDraftAndOfferResume() {
     clearDraft();
     banner.remove();
   });
+}
+
+function showDraftCheckNotice(text) {
+  const note = document.createElement('div');
+  note.style.cssText = 'position:fixed;top:0;left:0;right:0;background:var(--trail-mid);color:white;text-align:center;padding:10px 16px;font-family:Barlow,sans-serif;font-size:.84rem;z-index:9999;';
+  note.textContent = text;
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 3000);
 }
 
 function restoreDraft(draft) {
