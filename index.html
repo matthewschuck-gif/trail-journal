@@ -3781,19 +3781,24 @@ function buildEmailBody(result, p1, p2, p3) {
 
   const resources = LRG_RESOURCES[p3.trait] || {};
 
-  const lines = [
+  const blockIntro = [
     'CAMP MOUNTAINEER — TRAIL JOURNAL STAFF SUMMARY',
     'Generated: ' + new Date().toLocaleString(),
-    'Student Initial: ' + S.initial,
+    'Student: ' + (S.name || S.initial || '—') + (S.grade ? ' (Grade ' + S.grade + ')' : ''),
     (S.squad ? 'Squad: ' + S.squad : ''),
-    '',
+  ].filter(Boolean).join('\n');
+
+  const blockIncident = [
     '=== INCIDENT SUMMARY ===',
     result.summary || '—',
     '',
     'Insight Level: ' + (result.insightLevel || '—'),
     result.insightReason || '',
-    '',
-    ...(result.hopeNote ? ['=== HOPE & AGENCY ===', result.hopeNote, ''] : []),
+  ].filter(Boolean).join('\n');
+
+  const blockHope = result.hopeNote ? ['=== HOPE & AGENCY ===', result.hopeNote].join('\n') : '';
+
+  const blockWhatHappened = [
     '=== WHAT HAPPENED ===',
     'Situation: ' + (p1.whatHappened || '—'),
     'Why: ' + (p1.why || '—'),
@@ -3803,7 +3808,9 @@ function buildEmailBody(result, p1, p2, p3) {
     'CPS — What was going on before: ' + (p1.cpsUnsolvedProblem || '—'),
     'CPS — What they cared about: ' + (p1.cpsMyConcern || '—'),
     'CPS — What the other person cared about: ' + (p1.cpsTheirConcern || '—'),
-    '',
+  ].join('\n');
+
+  const blockMakingRight = [
     '=== MAKING THINGS RIGHT ===',
     'People hurt: ' + (p2.hurtPeople || []).join(', '),
     'What student thinks should happen: ' + (p2.makeRight || '—'),
@@ -3812,54 +3819,77 @@ function buildEmailBody(result, p1, p2, p3) {
     'Plan: ' + (p2.plan || '—'),
     'Will do differently: ' + (p2.different || '—'),
     ...(p2.creativeChallenge ? ['Creative challenge response: ' + p2.creativeChallenge] : []),
-    '',
+  ].join('\n');
+
+  const blockGrowthPlan = [
     '=== GROWTH PLAN ===',
     'LRG Trait: ' + (p3.trait || '—'),
     'Specific areas: ' + (p3.traitSpecifics || []).join(', '),
     'Why this trait: ' + (p3.traitWhy || '—'),
     'Creative format: ' + (p3.creativeFormat || '—'),
     'Creative plan: ' + (p3.creativePlan || '—'),
-    '',
-    '=== RECOMMENDED CONSEQUENCES ===',
-    ...(result.recommendedConsequences || []).map(c => c.type + ': ' + c.description + '\n  Rationale: ' + c.rationale),
-    '',
-    '=== REPAIR PLAN ===',
-    result.repairPlan || '—',
-    '',
-    '=== STUDENT GOAL ===',
-    result.studentGoal || '—',
-    '',
-    '=== RESTORATIVE QUESTIONS ===',
-    ...(result.restorativeQuestions || []).map((q, i) => (i+1) + '. ' + q),
-    '',
-    '=== CPS CONFERENCE SCRIPT ===',
-    ...(result.cpsScript || []).map(l => l.speaker + ': "' + l.text + '"'),
-    '',
-    ...(result.followUpFlags?.length ? ['=== FOLLOW-UP FLAGS ===', ...(result.followUpFlags || []).map(f => '⚠️ ' + f), ''] : []),
-    '════════════════════════════════════════',
+  ].join('\n');
+
+  const blockConsequences = (result.recommendedConsequences && result.recommendedConsequences.length)
+    ? ['=== RECOMMENDED CONSEQUENCES ===', ...result.recommendedConsequences.map(c => c.type + ': ' + c.description + '\n  Rationale: ' + c.rationale)].join('\n')
+    : '';
+
+  const blockRepairPlan = ['=== REPAIR PLAN ===', result.repairPlan || '—'].join('\n');
+
+  const blockStudentGoal = ['=== STUDENT GOAL ===', result.studentGoal || '—'].join('\n');
+
+  const blockRestorativeQ = (result.restorativeQuestions && result.restorativeQuestions.length)
+    ? ['=== RESTORATIVE QUESTIONS ===', ...result.restorativeQuestions.map((q, i) => (i + 1) + '. ' + q)].join('\n')
+    : '';
+
+  const blockCpsScript = (result.cpsScript && result.cpsScript.length)
+    ? ['=== CPS CONFERENCE SCRIPT ===', ...result.cpsScript.map(l => l.speaker + ': "' + l.text + '"')].join('\n')
+    : '';
+
+  const blockFollowUpFlags = (result.followUpFlags && result.followUpFlags.length)
+    ? ['=== FOLLOW-UP FLAGS ===', ...result.followUpFlags.map(f => '⚠️ ' + f)].join('\n')
+    : '';
+
+  const blockResourceBank = [
     '=== LRG RESOURCE BANK — ' + (p3.trait || 'TRAIT').toUpperCase() + ' ===',
-    '════════════════════════════════════════',
+    'Behavior Bucket: ' + (resources.bucket || '—'),
+    'Lagging Skill Area: ' + (resources.bucketSkill || '—'),
     '',
-    'BEHAVIOR BUCKET: ' + (resources.bucket || '—'),
-    'LAGGING SKILL AREA: ' + (resources.bucketSkill || '—'),
-    '',
-    'LOOK FORS (LRG Glows & Grows Rubric):',
+    'Look Fors (LRG Glows & Grows Rubric):',
     ...(resources.lookFors || []).map(l => '  • ' + l),
     '',
-    'SUGGESTED FOLLOW-UP PROMPTS (Camp Mountaineer Prompt Calendar):',
+    'Suggested Follow-Up Prompts (Camp Mountaineer Prompt Calendar):',
     ...(resources.prompts || []).map(p => '  • ' + p),
     '',
-    'RECOMMENDED STRATEGIES:',
+    'Recommended Strategies:',
     ...(resources.strategies || []).map(s => '  • ' + s),
-    '',
-    'AI-SELECTED READING LIST:',
-    ...(result.studentReadingList || []).map(r => '  • ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n    ' + r.whyRelevant),
-    '',
-    ...(result.practicePlan ? ['WEEKLY PRACTICE PLAN:', ...(result.practicePlan.days || []).map(d => '  ' + d.day + ': ' + d.task), ''] : []),
-    (result.insightLevel === 'High' && S.squad ? '🏆 CLASH OF CLASSES: +1 point automatically awarded to ' + S.squad + ' Squad.' : ''),
-  ].filter(Boolean);
+    ...(result.studentReadingList && result.studentReadingList.length
+      ? ['', 'AI-Selected Reading List:', ...result.studentReadingList.map(r => '  • ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n    ' + r.whyRelevant)]
+      : []),
+    ...(result.practicePlan
+      ? ['', 'Weekly Practice Plan:', ...(result.practicePlan.days || []).map(d => '  ' + d.day + ': ' + d.task)]
+      : []),
+  ].join('\n');
 
-  return lines.join('\n');
+  const blockClash = (result.insightLevel === 'High' && S.squad)
+    ? '🏆 Clash of Classes: +1 point automatically awarded to ' + S.squad + ' Squad.'
+    : '';
+
+  const blocks = [
+    blockIntro, blockIncident, blockHope, blockWhatHappened, blockMakingRight,
+    blockGrowthPlan, blockConsequences, blockRepairPlan, blockStudentGoal,
+    blockRestorativeQ, blockCpsScript, blockFollowUpFlags, blockResourceBank, blockClash,
+  ];
+
+  // Every real section is now a single joined string with its own header baked in, and
+  // sections that don't apply (no hope note, no follow-up flags, etc.) are '' and get
+  // dropped here -- filtering the finished blocks, not individual spacer lines, is what
+  // guarantees a real blank line between every section below. The previous version's
+  // final .filter(Boolean) ran on the flat line array, which silently ate every
+  // intentional blank-line spacer along with the empty optional lines -- so every
+  // section ran straight into the next with no separation at all. That's the main
+  // reason the summary read as a wall of text.
+  return blocks.filter(Boolean).join('\n\n');
 }
 
 
