@@ -557,6 +557,13 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .con-cat input[type="checkbox"] { accent-color: var(--trail); margin-top: 1px; flex-shrink: 0; }
 .sel-count { font-size: 0.74rem; color: var(--ink-light); margin-top: 9px; }
+/* Highlights whichever of the 4 categories the earlier AI consequence_idea recommendation
+   (rendered on screen 2, right after Part 1) suggested -- see highlightSuggestedConsequenceCategory()
+   -- so that recommendation and this checklist read as one connected thread instead of two
+   separate AI moments. */
+.con-cat-suggested { border-color: var(--gold); background: var(--gold-light); position: relative; }
+.con-cat-suggested h4 { color: var(--gold-dark); }
+.con-cat-suggested h4::after { content: '✨ Suggested for you'; display: block; font-weight: 700; text-transform: none; letter-spacing: normal; color: var(--gold-dark); font-size: 0.68rem; margin-top: 4px; }
 
 /* ── DRAG RANK ── */
 .rank-reveal { display: none; margin-top: 20px; animation: trailIn 0.4s ease; }
@@ -959,6 +966,35 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .pw-btn:hover { opacity: 0.88; }
 .pw-error { font-size: 0.78rem; color: var(--red); margin-top: 8px; display: none; }
+
+/* ── STAFF REVIEW (at the check-in gates) ──────────────────────────────────
+   Lets the adult actually read what the student wrote before typing the password and
+   letting them continue -- previously staff had no visibility into Part 1/2 answers at
+   these gates at all. Collapsed by default so it doesn't overwhelm the screen; the adult
+   opens it deliberately. */
+.staff-review { text-align: left; max-width: 480px; margin: 0 auto 20px; }
+.staff-review-toggle {
+  width: 100%; padding: 10px 16px; background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 9px; font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.84rem;
+  color: var(--ink-mid); cursor: pointer; text-align: left; display: flex;
+  justify-content: space-between; align-items: center;
+}
+.staff-review-toggle:hover { border-color: var(--trail-mid); }
+.staff-review-body {
+  display: none; border: 1.5px solid var(--border); border-top: none;
+  border-radius: 0 0 9px 9px; padding: 14px 16px; background: white;
+  max-height: 340px; overflow-y: auto;
+}
+.staff-review.open .staff-review-body { display: block; }
+.staff-review.open .staff-review-toggle { border-radius: 9px 9px 0 0; }
+.sr-row { margin-bottom: 12px; }
+.sr-row:last-child { margin-bottom: 0; }
+.sr-label {
+  font-family: 'Barlow', sans-serif; font-size: 0.68rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 3px;
+}
+.sr-val { font-family: 'Barlow', sans-serif; font-size: 0.84rem; color: var(--ink); line-height: 1.55; white-space: pre-wrap; }
+.sr-val em { color: var(--ink-light); font-style: italic; }
 
 /* ── EMAIL FORM ── */
 .email-form {
@@ -1906,6 +1942,12 @@ body.squad-purple {
     <div class="pg-icon">🔐</div>
     <h3>Staff Check-In Required</h3>
     <p>Before continuing to Part 2, the adult in the room needs to enter the staff password to confirm the Part 1 check-in happened.</p>
+    <div class="staff-review" id="staff-review-1">
+      <button type="button" class="staff-review-toggle" onclick="toggleStaffReview('1')">
+        <span>👁 Review What They Wrote</span><span id="staff-review-1-arrow">▾</span>
+      </button>
+      <div class="staff-review-body" id="staff-review-1-body"></div>
+    </div>
     <div class="pw-input-row">
       <input type="password" class="pw-input" id="pw-input-1" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
       <button class="pw-btn" onclick="checkGatePassword('1')">Unlock</button>
@@ -2379,6 +2421,12 @@ body.squad-purple {
     <div class="pg-icon">🔐</div>
     <h3>Staff Check-In Required</h3>
     <p>Enter the staff password to confirm the Part 2 conference happened and unlock Part 3.</p>
+    <div class="staff-review" id="staff-review-2">
+      <button type="button" class="staff-review-toggle" onclick="toggleStaffReview('2')">
+        <span>👁 Review What They Wrote</span><span id="staff-review-2-arrow">▾</span>
+      </button>
+      <div class="staff-review-body" id="staff-review-2-body"></div>
+    </div>
     <div class="pw-input-row">
       <input type="password" class="pw-input" id="pw-input-2" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
       <button class="pw-btn" onclick="checkGatePassword('2')">Unlock</button>
@@ -2562,6 +2610,7 @@ body.squad-purple {
   <div class="email-form" id="email-form">
     <div class="jcard" style="background:var(--trail-light);border:2px solid var(--trail-mid)">
       <div class="jcard-label" style="color:var(--trail)">🔓 Staff Access Unlocked</div>
+      <div id="final-unlocked-by" style="font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);margin-bottom:14px"></div>
 
       <!-- SESSION ACTIONS -- once you're done with this student, use one of these to
            reset the device for the next journal rather than leaving this one on screen. -->
@@ -2770,6 +2819,10 @@ const S = {
   ftWhen: null,
   S_RESULT: null,
   _staffUnlocked: false,
+  // Which staff member's own password unlocked each check-in gate -- see
+  // checkStaffPassword_() in 05_AdminAuth.gs. Null for gates a given tier skips entirely.
+  gate1StaffName: null, gate2StaffName: null, finalStaffName: null,
+  suggestedConsequenceCategory: null,
 };
 
 // ─── LOCAL DRAFT AUTOSAVE / RESUME ─────────────────────────────────────────
@@ -4197,28 +4250,89 @@ function submitPart1Takeaway() {
   if (IS_PREVIEW || S.tier === 'office') { afterReading(); return; }
   document.getElementById('pause-block-1').style.display = 'none';
   document.getElementById('pw-gate-1').style.display = 'block';
+  renderStaffReview('1');
 }
 
 function revealGate2() {
   document.getElementById('pause-block-2').style.display = 'none';
   document.getElementById('pw-gate-2').style.display = 'block';
+  renderStaffReview('2');
+}
+
+// ─── STAFF REVIEW AT CHECK-IN GATES ────────────────────────────────────────
+// Previously staff had zero visibility into what the student actually wrote at either
+// pause point -- just a password box. This builds a read-only summary from the same
+// getPart1()/getPart2() getters used at submission time (the underlying fields are still
+// live in the DOM, just on a hidden screen), so what staff sees here is exactly what will
+// be saved. Collapsed by default via toggleStaffReview() -- opened deliberately, not
+// dumped on screen automatically.
+function escapeHtml_(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+function srRow(label, val) {
+  const shown = (val === undefined || val === null || val === '') ? '<em>(left blank)</em>' : escapeHtml_(val);
+  return '<div class="sr-row"><div class="sr-label">' + escapeHtml_(label) + '</div><div class="sr-val">' + shown + '</div></div>';
+}
+
+function renderStaffReview(gateNum) {
+  const body = document.getElementById('staff-review-' + gateNum + '-body');
+  if (!body) return;
+  let html = '';
+  if (gateNum === '1') {
+    const p1 = getPart1();
+    html =
+      srRow('What Happened', p1.whatHappened) +
+      srRow('Who Was Involved', p1.whoInvolved) +
+      srRow('Witnesses', p1.witnesses) +
+      srRow('Where', p1.where) +
+      srRow('When', p1.when) +
+      srRow('What They Were Thinking', p1.thinking) +
+      srRow('Why They Did It', p1.why) +
+      srRow('Emotions During', (p1.emotionsDuring || []).join(', ')) +
+      srRow('Emotions Now', (p1.emotionsNow || []).join(', ')) +
+      srRow('Did Their Emotions Change?', p1.emotionChange === 'yes' ? 'Yes' : p1.emotionChange === 'no' ? 'No' : '') +
+      srRow('Why (Emotion Change)', p1.emotionChangeReason) +
+      srRow('Takeaway', p1.takeaway);
+  } else {
+    const p2 = getPart2();
+    html =
+      srRow('People Hurt', (p2.hurtPeople || []).join(', ')) +
+      srRow('What Would Make It Right', p2.makeRight) +
+      srRow('Ideas Selected', (p2.selectedConsequences || []).join(', ')) +
+      srRow('Best Idea — Why', p2.bestIdea) +
+      srRow('Plan to Follow Through', p2.plan) +
+      srRow('What They\'ll Do Differently', p2.different) +
+      srRow('Creative Challenge Answer', p2.creativeChallenge);
+  }
+  body.innerHTML = html;
+}
+
+function toggleStaffReview(gateNum) {
+  const wrap = document.getElementById('staff-review-' + gateNum);
+  const arrow = document.getElementById('staff-review-' + gateNum + '-arrow');
+  const isOpen = wrap.classList.toggle('open');
+  if (arrow) arrow.textContent = isOpen ? '▴' : '▾';
 }
 
 // Shared staff check-in gate for both the Part1->Part2 and Part2->Part3 transitions.
 // Verified server-side the same way the final screen's checkPW() already does --
 // never compared client-side. gateNum is a string ('1' or '2') matching the ids above.
+// Verifies against the staff_users list (checkStaffPassword_ in 05_AdminAuth.gs) instead
+// of the old shared ADMIN_PASSWORD -- each staff member unlocks with their own password,
+// and the name that matched comes back so it can be shown and recorded (see onGatePassed).
 async function checkGatePassword(gateNum) {
   const err = document.getElementById('pw-error-' + gateNum);
   const input = document.getElementById('pw-input-' + gateNum);
   const pw = input.value;
-  if (IS_PREVIEW && pw === 'preview') { onGatePassed(gateNum); return; }
-  const prevPw = ADMIN_PW_VALUE;
-  ADMIN_PW_VALUE = pw;
+  if (IS_PREVIEW && pw === 'preview') { onGatePassed(gateNum, 'Preview Staff'); return; }
   try {
-    await callBackend({ action: 'query', table: 'site_config', filters: {} }, true);
-    onGatePassed(gateNum);
+    const result = await callBackend({ action: 'checkStaffPassword', password: pw });
+    if (!result || !result.ok) throw new Error('Incorrect password');
+    onGatePassed(gateNum, result.name);
   } catch (e) {
-    ADMIN_PW_VALUE = prevPw;
     err.textContent = 'Incorrect password. Try again.';
     err.style.display = 'block';
     doShake(input);
@@ -4227,9 +4341,10 @@ async function checkGatePassword(gateNum) {
   }
 }
 
-function onGatePassed(gateNum) {
-  if (gateNum === '1') { afterReading(); return; }
-  if (gateNum === '2') { goTo(4); return; }
+function onGatePassed(gateNum, staffName) {
+  showDraftCheckNotice('🔓 Unlocked by ' + (staffName || 'Staff'));
+  if (gateNum === '1') { S.gate1StaffName = staffName || null; afterReading(); return; }
+  if (gateNum === '2') { S.gate2StaffName = staffName || null; goTo(4); return; }
 }
 
 // ─── TIER-AWARE NAVIGATION ─────────────────────────────────────────────────
@@ -4499,6 +4614,12 @@ function renderConsequenceIdea(result) {
     return;
   }
 
+  // Connects this recommendation to the "Choose Up to 3 Ideas" checklist the student
+  // reaches later in Part 2 -- see highlightSuggestedConsequenceCategory() and the
+  // .con-cat-suggested CSS rule, so the two AI moments read as one thread.
+  S.suggestedConsequenceCategory = result.suggestedCategory || null;
+  highlightSuggestedConsequenceCategory();
+
   const style = CONSEQUENCE_CATEGORY_STYLE_[result.category] || { bg: 'var(--gold-light)', border: 'var(--gold)' };
   card.innerHTML =
     `<div style="background:${style.bg};border:1.5px solid ${style.border};border-radius:10px;padding:18px">` +
@@ -4508,24 +4629,42 @@ function renderConsequenceIdea(result) {
       (result.example
         ? `<div style="font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--ink-light);font-style:italic;line-height:1.6"><strong style="display:block;font-style:normal;font-weight:800;text-transform:uppercase;font-size:.68rem;letter-spacing:.06em;margin-bottom:4px;opacity:.8">Example</strong>${result.example}</div>`
         : '') +
+      (result.suggestedCategory
+        ? `<div style="font-family:'Barlow',sans-serif;font-size:.8rem;color:var(--gold-dark);font-weight:700;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.08)">💡 When you get to Part 2, look under "${result.suggestedCategory}" first — it'll be marked as a match.</div>`
+        : '') +
     `</div>`;
+}
+
+function highlightSuggestedConsequenceCategory() {
+  const cat = S.suggestedConsequenceCategory;
+  document.querySelectorAll('.con-cat').forEach(el => {
+    const h4 = el.querySelector('h4');
+    const matches = !!cat && !!h4 && h4.textContent.includes(cat);
+    el.classList.toggle('con-cat-suggested', matches);
+  });
 }
 
 // Password checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
+// Same staff_users check as the mid-journal gates (see checkGatePassword) -- replaces the
+// old ADMIN_PW_VALUE/site_config ping, which in testing turned out not to actually be
+// gated by anything (site_config was never in the admin-only table list), so any input
+// would have unlocked this screen. This fixes that as a side effect of the individual-
+// password change, not just adds names to the unlock.
 async function checkPW() {
   const err = document.getElementById('pw-error');
   const pw = document.getElementById('pw-input').value;
   if (IS_PREVIEW && pw === 'preview') {
+    S.finalStaffName = 'Preview Staff';
     unlockStaffSection();
     return;
   }
-  ADMIN_PW_VALUE = pw;
   try {
-    await callBackend({ action: 'query', table: 'site_config', filters: {} }, true);
+    const result = await callBackend({ action: 'checkStaffPassword', password: pw });
+    if (!result || !result.ok) throw new Error('Incorrect password');
+    S.finalStaffName = result.name;
     unlockStaffSection();
   } catch (e) {
-    ADMIN_PW_VALUE = null;
     err.textContent = 'Incorrect password. Try again.';
     err.style.display = 'block';
     doShake(document.getElementById('pw-input'));
@@ -4557,6 +4696,11 @@ function closeOutJournal() {
 function unlockStaffSection() {
   document.getElementById('pw-gate').style.display = 'none';
   document.getElementById('email-form').classList.add('show');
+  const unlockedByEl = document.getElementById('final-unlocked-by');
+  if (unlockedByEl) unlockedByEl.textContent = S.finalStaffName ? ('Unlocked by ' + S.finalStaffName) : '';
+  if (S.finalStaffName && S.sessionId) {
+    callBackend({ action: 'update', table: 'reflections', match: { session_id: S.sessionId }, patch: { final_unlocked_by: S.finalStaffName } }).catch(e => console.error('final_unlocked_by save error:', e));
+  }
   buildBICLink();
   loadCoCLeaderboard();
   populateStaffFTContext();
@@ -4761,12 +4905,19 @@ function buildEmailBody(result, p1, p2, p3) {
     : '';
 
   const blockIncident = [
-    '=== INCIDENT SUMMARY ===',
+    '=== INCIDENT & REPAIR SUMMARY (Part 1-2) ===',
     result.summary || '—',
     '',
     'Insight Level: ' + (result.insightLevel || '—'),
     result.insightReason || '',
   ].filter(Boolean).join('\n');
+
+  // Separate from blockIncident above on purpose -- this is Part 3's forward-looking
+  // growth/environment piece (trait + creative product + community action), not a repeat
+  // of the repair summary. Only exists for the full tier, where Part 3 was collected.
+  const blockGrowthSummary = result.growthSummary
+    ? ['=== GROWTH & ENVIRONMENT IMPACT SUMMARY (Part 3) ===', result.growthSummary].join('\n')
+    : '';
 
   const blockHope = result.hopeNote ? ['=== HOPE & AGENCY ===', result.hopeNote].join('\n') : '';
 
@@ -4850,7 +5001,7 @@ function buildEmailBody(result, p1, p2, p3) {
     : '';
 
   const blocks = [
-    blockIntro, blockNarrative, blockIncident, blockHope, blockWhatHappened, blockMakingRight,
+    blockIntro, blockNarrative, blockIncident, blockGrowthSummary, blockHope, blockWhatHappened, blockMakingRight,
     blockGrowthPlan, blockConsequences, blockRepairPlan, blockStudentGoal,
     blockRestorativeQ, blockCpsScript, blockFollowUpFlags, blockResourceBank, blockClash,
   ];
@@ -4900,7 +5051,12 @@ async function doSubmit() {
     cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
     cm_checklist_confirmed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmChecklistAgreed : null,
     part1_json: p1, part2_json: p2, part3_json: p3,
-    prior_count: S.priorCount || 0, status: 'submitted'
+    prior_count: S.priorCount || 0, status: 'submitted',
+    // Which staff member unlocked each check-in gate -- see checkStaffPassword_() in
+    // 05_AdminAuth.gs. gate1/gate2 are already known by submission time; final_unlocked_by
+    // isn't set until AFTER this row exists (the final unlock happens on this same screen,
+    // post-submission) -- see the patch in unlockStaffSection() below.
+    gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
   });
 
   const result = await callEdge('summary', {

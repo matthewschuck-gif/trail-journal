@@ -1558,7 +1558,8 @@ function openModal(r) {
     ${Object.keys(ai).length ? `<div class="ds"><h4>AI Staff Summary</h4>
       <div class="di ${ibcls}"><div class="di-lbl">Insight Level</div><div class="di-val"><span class="badge ${ibadge}">${ins}</span>  ${ai.insightReason||''}</div></div>
       ${(ai.recommendedConsequences||[]).map(c=>`<div class="di dgold"><div class="di-lbl">${c.type}</div><div class="di-val"><strong>${c.description}</strong><br><span style="font-size:.78rem;color:var(--muted)">${c.rationale||''}</span></div></div>`).join('')}
-      <div class="di"><div class="di-lbl">Repair Plan</div><div class="di-val">${ai.repairPlan||'—'}</div></div>
+      <div class="di"><div class="di-lbl">Repair Plan (Part 1-2)</div><div class="di-val">${ai.repairPlan||'—'}</div></div>
+      ${ai.growthSummary ? `<div class="di dgreen"><div class="di-lbl">Growth &amp; Environment Impact (Part 3)</div><div class="di-val">${ai.growthSummary}</div></div>` : ''}
       ${(ai.restorativeQuestions||[]).map(q=>`<div class="di dgreen"><div class="di-lbl">Restorative Question</div><div class="di-val">💬 ${q}</div></div>`).join('')}
       ${(ai.followUpFlags||[]).map(f=>`<div class="di dflag">⚠️ ${f}</div>`).join('')}
     </div>` : ''}

@@ -63,11 +63,23 @@ function callAiProxy_(type, payload) {
   return parsed;
 }
 
+// Prepended to every AI prompt below so Claude always has the actual setting in view --
+// a public middle school in Ephrata, PA -- rather than writing generically. Keeps age
+// range, tone, and any location-specific assumptions grounded in reality instead of
+// Claude inferring (or not) a school context on its own.
+const SCHOOL_CONTEXT_ = 'You are working with a student at Ephrata Middle School, a public middle school (grades 7-8) in Ephrata, Pennsylvania. Keep tone, vocabulary, and any assumptions about the setting appropriate to that age group and context.\n\n';
+
 /**
- * Builds the exact prompt text for each type, word-for-word from the live function.
- * Returns null for an unrecognized type.
+ * Builds the exact prompt text for each type, word-for-word from the live function, with
+ * SCHOOL_CONTEXT_ prepended to every one. Returns null for an unrecognized type (no context
+ * prepended in that case -- there's no prompt to prepend it to).
  */
 function buildAiPrompt_(type, payload) {
+  const built = buildAiPromptInner_(type, payload);
+  return built === null ? null : SCHOOL_CONTEXT_ + built;
+}
+
+function buildAiPromptInner_(type, payload) {
   if (type === 'article') {
     const p = payload.part1;
     // Grade 7 and grade 8 read at meaningfully different levels at this age -- keep the
@@ -160,24 +172,35 @@ function buildAiPrompt_(type, payload) {
     // Replaces the old static "Four Buckets" explainer tab (which showed the same 4
     // generic categories to every student regardless of situation) with a personalized
     // recommendation, generated right after Part 1 -- same timing as the 'article' call.
-    // Grounded in the EMS Logical Consequences staff guide: Responsive Classroom's 3
-    // foundational categories, with Curwin & Mendler's Discipline with Dignity framework
-    // (Community, Teach Skills, Offer Choices, Transform, Inspire, Plan, Altruistic) as
-    // optional supporting texture. This is guidance ahead of Part 2, not a final decision
-    // -- the student still ranks and chooses their own consequence ideas there.
-    return 'You are a compassionate school counselor helping a middle school student at Camp Mountaineer understand what kind of logical consequence tends to fit a situation like theirs, before they choose their own in the next step.\n\n' +
+    // Grounded directly in EMS_Logical_Consequences_Guide.docx: Responsive Classroom's 3
+    // foundational categories, the 3 Rs test (Related/Respectful/Reasonable) used to check
+    // whether something actually counts as logical rather than punitive, and Curwin &
+    // Mendler's Discipline with Dignity 8-type menu (Community, Teach Skills, Offer
+    // Choices, Transform, Inspire, Plan, Logical, Altruistic) as supporting texture for the
+    // example. This is guidance ahead of Part 2, not a final decision -- the student still
+    // ranks and chooses their own consequence ideas there.
+    //
+    // ALSO returns suggestedCategory, one of the exact 4 bucket names shown on that next
+    // screen's "Choose Up to 3 Ideas" checklist (Service / Repair / Skill Building /
+    // Creative Product) -- see con-cat headers in index.html. That screen highlights
+    // whichever bucket matches, so this recommendation and the checklist the student
+    // actually picks from are visibly the same thread instead of two disconnected AI
+    // moments.
+    return 'You are a compassionate school counselor helping a middle school student at Camp Mountaineer understand what kind of logical consequence tends to fit a situation like theirs, before they choose their own in the next step. Ground your reasoning in the EMS Logical Consequences framework below -- don\'t invent categories outside it.\n\n' +
       'The three foundational categories (Responsive Classroom):\n' +
       '- "You Break It, You Fix It": something was broken, a mess was made, or harm was done to a person or relationship -- the student repairs it directly.\n' +
       '- "Loss of Privilege": behavior didn\'t meet the expectations tied to a privilege or material -- that privilege is removed, briefly and directly connected to the misuse.\n' +
       '- "Space & Time": the student needs a chance to calm down, regroup, and return -- not isolation or shame, called "Space and Time" at the middle school level.\n\n' +
+      'The 3 Rs test -- a real logical consequence should be all three: Related (directly connected to the behavior, not arbitrary), Respectful (preserves dignity, no public humiliation), Reasonable (appropriate to the student\'s age and the situation).\n\n' +
+      'Supporting menu (Curwin & Mendler, for texture in your example -- not the primary category): Community (bring family in as partner), Teach Skills (they can\'t be punished into knowing something -- teach it), Offer Choices (real agency, not a threat), Transform (turn a traditional punishment into something meaningful), Inspire (offer hope, not just consequence), Plan (a concrete behavioral plan for next time), Logical (directly tied to the rule, future-focused), Altruistic (doing something positive for someone else, which is both consequence and healer).\n\n' +
       (payload.peak ? ('Mountaineer Peaks connection: this incident relates most to "' + payload.peak + '."\n\n') : '') +
       'What happened: ' + payload.whatHappened + '\n' +
       'Why: ' + payload.why + '\n' +
       'Thinking at the time: ' + payload.thinking + '\n' +
       'Emotions during: ' + ((payload.emotionsDuring || []).join(', ')) + '\n' +
       'Emotions now: ' + ((payload.emotionsNow || []).join(', ')) + '\n\n' +
-      'Pick the ONE category that best fits this specific situation. In 2-3 warm sentences, explain why it fits -- reference their actual situation, not a generic definition. Then give ONE concrete example of what that could look like for them. Speak directly to the student ("you"), second person, warm but honest. This is meant to help them think it through, not tell them what will happen -- they choose the actual consequence themselves next.\n\n' +
-      'Return ONLY valid JSON: {"category":"You Break It, You Fix It" or "Loss of Privilege" or "Space & Time","categoryIcon":"one emoji","whyThisFits":"2-3 sentences","example":"1-2 sentence concrete example"}';
+      'Pick the ONE foundational category that best fits this specific situation. In 2-3 warm sentences, explain why it fits -- reference their actual situation and, where natural, name which of the 3 Rs makes it fit (not a generic definition). Then give ONE concrete example of what that could look like for them, optionally flavored by one of the supporting-menu ideas above if it makes the example more specific. Also decide which ONE of these four practical buckets the example falls into -- Service, Repair, Skill Building, or Creative Product -- these are the exact categories the student picks real ideas from on the very next screen, so this must be one of those four exact words. Speak directly to the student ("you"), second person, warm but honest. This is meant to help them think it through, not tell them what will happen -- they choose the actual consequence themselves next.\n\n' +
+      'Return ONLY valid JSON: {"category":"You Break It, You Fix It" or "Loss of Privilege" or "Space & Time","categoryIcon":"one emoji","whyThisFits":"2-3 sentences","example":"1-2 sentence concrete example","suggestedCategory":"Service" or "Repair" or "Skill Building" or "Creative Product"}';
   }
 
   if (type === 'consequence_nudge') {
@@ -355,8 +378,11 @@ function buildAiPrompt_(type, payload) {
       'INSIGHT LEVEL: HIGH = honest effort throughout + named someone hurt + any self-awareness + non-dismissive. Short honest answers count as High. MEDIUM = partial/thin engagement, OR effort is present but the account exclusively blames others with zero ownership of their own role. LOW = clearly avoidant/dismissive throughout only. Default strongly toward HIGH.\n\n' +
       'OWNERSHIP: if the student\'s account (why/thinking/makeRight/different) blames others without acknowledging their own part, do not let insightReason validate the blame -- name the pattern plainly for staff (e.g. "student attributes the incident primarily to [person/group] with limited ownership of their own actions") so it surfaces in the follow-up conversation.\n\n' +
       'NARRATIVE REPORT: Write a 4-6 paragraph prose case narrative for the staff record, referring to the student as "' + studentLabel + '" (not "the student" repeatedly). Cover, in flowing paragraphs (not bullets or fragments): (1) brief context -- where/when, and pathway if Camp Mountaineer; (2) what happened and why, in narrative form, grounded in their actual words, not generic; (3) their emotional arc during vs. now and what that shift (or lack of one) suggests; (4) an honest read on ownership/insight -- if they minimized their role or blamed others, say so plainly and professionally, don\'t soften it into vague language; (5) the restorative work covered -- who was named as affected, their repair plan, and the consequence/growth direction chosen; (6) if PRIOR REFLECTIONS were given above, one paragraph on the pattern over time (improving, repeating, escalating) -- omit this paragraph entirely if no prior history was given. Write like an experienced, plainspoken AP\'s case note: specific, professional, warm where warranted, direct where it matters. No trail/outdoor metaphors here -- that voice is for the student-facing reading, not this staff record.\n\n' +
+      'TWO-PIECE SUMMARY: "summary" and "growthSummary" cover different territory -- do not let them blur together or repeat the same point twice.\n' +
+      '- "summary" (2-3 sentences) is about THIS event and Part 2\'s repair: what happened, and how the student is making it right with the specific people/harm from this incident. Always write this one.\n' +
+      '- "growthSummary" (2-3 sentences) is about Part 3 ONLY -- write it ONLY if tier is FULL (Part 3 was actually collected; return an empty string "" otherwise). This is NOT a repeat of the repair -- it\'s forward-looking: how the trait they chose, their creative product, and their community/service action are meant to improve their behavior and their broader school environment going forward, beyond just squaring things with the people from this one incident.\n\n' +
       'Return this exact JSON:\n' +
-      '{"summary":"2-3 sentences","narrativeReport":"4-6 paragraphs separated by \\n\\n","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
+      '{"summary":"2-3 sentences -- this event + Part 2 repair","growthSummary":"2-3 sentences -- Part 3 forward-looking growth/environment impact, or empty string if tier is not full","narrativeReport":"4-6 paragraphs separated by \\n\\n","insightLevel":"Low or Medium or High","insightReason":"1-2 sentences","studentGoal":"one goal second person",' +
       '"practicePlan":{"title":"Your Practice Plan","days":[{"day":"Today","task":"action"},{"day":"Day 2-3","task":"next"},{"day":"Day 4-5","task":"building"},{"day":"By Friday","task":"measurable"}]},' +
       '"recommendedConsequences":[{"type":"Primary","description":"logical","rationale":"why"},{"type":"Supporting","description":"skill building","rationale":"why"}],' +
       '"repairPlan":"2-3 steps","hopeNote":"one sentence for staff","restorativeQuestions":["q1","q2","q3","q4"],' +
