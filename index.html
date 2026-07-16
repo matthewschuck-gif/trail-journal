@@ -1617,7 +1617,7 @@ body.squad-purple {
 
   <div class="jcard" id="cm-checklist-wrap" style="display:none">
     <div class="jcard-label">✅ Camp Mountaineer Student Checklist</div>
-    <div class="jcard-sub">Start-of-day steps for the ISS-alternative pathway — check each one off as you complete it. Wording pulled directly from the Camp Mountaineer Student Checklist; edit CM_STUDENT_CHECKLIST_ITEMS_ near the top of the script below to tweak it.</div>
+    <div class="jcard-sub">Please read each item below as you start your day in Camp Mountaineer. Read each carefully as you are going to be held to each of the expectations listed.</div>
     <div class="check-gate" id="cm-checklist-items"></div>
     <div class="gate-unlock" id="cm-checklist-unlock">
       <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
@@ -1635,7 +1635,7 @@ body.squad-purple {
 
   <div class="jcard" id="cm-effort-wrap" style="display:none">
     <div class="jcard-label">📜 Camp Mountaineer Effort Agreement</div>
-    <div class="jcard-sub">Camp Mountaineer is a structured time to reset, reflect, and make things right. Before you continue, confirm with the adult in the room that you understand and agree to each expectation below. Wording pulled directly from the Camp Mountaineer Effort Agreement; edit CM_EFFORT_AGREEMENT_ITEMS_ near the top of the script below to tweak it.</div>
+    <div class="jcard-sub">Camp Mountaineer is a structured time to reset, reflect, and make things right. Before you continue, confirm with the adult in the room that you understand and agree to each expectation below.</div>
     <div class="check-gate" id="cm-effort-checklist"></div>
     <div class="gate-unlock" id="cm-effort-unlock">
       <div style="background:var(--trail-light);border:2px solid var(--trail-mid);border-radius:9px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.88rem;color:var(--trail);line-height:1.65;margin-bottom:14px">
@@ -1784,10 +1784,10 @@ body.squad-purple {
     <div class="jcard-sub">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
 
     <div class="zone-tabs" role="tablist">
-      <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High energy, hard feelings</small></button>
-      <button class="zone-tab zt-yellow" role="tab" aria-selected="false" onclick="showZone('during','yellow',this)">🟡 Yellow Zone<br><small>High energy, good feelings</small></button>
-      <button class="zone-tab zt-blue" role="tab" aria-selected="false" onclick="showZone('during','blue',this)">🔵 Blue Zone<br><small>Low energy, hard feelings</small></button>
-      <button class="zone-tab zt-green" role="tab" aria-selected="false" onclick="showZone('during','green',this)">🟢 Green Zone<br><small>Low energy, good feelings</small></button>
+      <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High Energy, Unpleasant</small></button>
+      <button class="zone-tab zt-yellow" role="tab" aria-selected="false" onclick="showZone('during','yellow',this)">🟡 Yellow Zone<br><small>High Energy, Pleasant</small></button>
+      <button class="zone-tab zt-blue" role="tab" aria-selected="false" onclick="showZone('during','blue',this)">🔵 Blue Zone<br><small>Low Energy, Unpleasant</small></button>
+      <button class="zone-tab zt-green" role="tab" aria-selected="false" onclick="showZone('during','green',this)">🟢 Green Zone<br><small>Low Energy, Pleasant</small></button>
     </div>
 
     <div class="zone-intro zi-red" id="zi-during-red">These emotions are high-energy and difficult. They're not bad — they're powerful signals. Anger can mean something important was crossed. Fear can mean you felt unsafe. They're telling you something.</div>
@@ -3032,7 +3032,7 @@ const CM_STUDENT_CHECKLIST_ITEMS_ = [
   'Sign the Effort Agreement.',
   'Sit in your assigned area.',
   'Begin Camp Mountaineer Reflection Part 1.',
-  'Complete all portions of your reflections and work. Accept all feedback and redirection from adults.',
+  'You commit to completing all portions of the your reflections and work. You agree to accept all feedback and redirection from adults.',
 ];
 const CM_EFFORT_AGREEMENT_ITEMS_ = [
   'Complete all assigned academic work to the best of my ability.',
@@ -3492,14 +3492,11 @@ const EMOTIONS = {
     { name:'Furious', emoji:'🤬', def:'A very intense form of anger — like anger with the volume all the way up.', msg:'Fury is telling you that something felt deeply unjust or violating.' },
     { name:'Livid', emoji:'😤', def:'So angry you can barely contain it. Your whole body feels it.', msg:'When you\'re livid, your brain is trying to protect something that matters to you.' },
     { name:'Enraged', emoji:'💢', def:'The most extreme form of anger — a feeling of explosive, overwhelming rage.', msg:'Rage is a signal of deep pain underneath. Something hurt badly.' },
-    { name:'Frustrated', emoji:'😣', def:'The feeling when something keeps blocking what you\'re trying to do or say.', msg:'Frustration means you care about the outcome and feel stuck.' },
     { name:'Irritated', emoji:'😒', def:'A mild but sharp feeling of annoyance — like a pebble in your shoe.', msg:'Irritation is a small alarm telling you something isn\'t working for you.' },
-    { name:'Annoyed', emoji:'🙄', def:'Feeling bothered or slightly angry by repeated behavior or situations.', msg:'Annoyance is telling you a boundary has been nudged one too many times.' },
     { name:'Anxious', emoji:'😰', def:'A worried, uneasy feeling — your brain scanning for danger even when it\'s not certain there is any.', msg:'Anxiety is trying to protect you by preparing you. It means something feels uncertain.' },
     { name:'Nervous', emoji:'😬', def:'A jittery, on-edge feeling — like your body is bracing for something.', msg:'Nervousness means you care about what\'s about to happen.' },
     { name:'Worried', emoji:'😟', def:'Thinking over and over about something that might go wrong.', msg:'Worry means you\'re trying to solve a problem before it happens.' },
     { name:'Panicked', emoji:'😱', def:'Sudden intense fear that makes it hard to think straight. Everything feels urgent.', msg:'Panic is your brain\'s alarm system going off — it\'s trying to keep you safe.' },
-    { name:'Frightened', emoji:'😨', def:'Scared by something that feels threatening or dangerous.', msg:'Fear is one of your oldest protectors. It\'s trying to keep you out of danger.' },
     { name:'Terrified', emoji:'🙀', def:'Extreme fear — your whole body goes into survival mode.', msg:'Terror means your brain decided something was a serious threat.' },
     { name:'Tense', emoji:'😤', def:'A tight, coiled feeling — like your body is waiting for something to happen.', msg:'Tension means your nervous system is on guard.' },
     { name:'Stressed', emoji:'🤯', def:'Feeling like there\'s too much to handle and not enough resources to handle it.', msg:'Stress is telling you that demands feel bigger than your capacity right now.' },
@@ -3512,27 +3509,22 @@ const EMOTIONS = {
     { name:'Envious', emoji:'😑', def:'Wanting what someone else has. You don\'t just want to lose their thing — you want it for yourself. (Atlas of the Heart)', msg:'Envy is telling you something about what you value and wish you had.' },
     { name:'Resentful', emoji:'😤', def:'Long-held anger that hasn\'t been expressed — like anger that\'s been sitting and hardening.', msg:'Resentment is a sign something hurt and was never fully addressed.' },
     { name:'Bitter', emoji:'😬', def:'A cold, hardened feeling from being hurt repeatedly without resolution.', msg:'Bitterness is a signal that wounds went untended for a long time.' },
-    { name:'Shocked', emoji:'😲', def:'Completely caught off guard — your brain hasn\'t caught up yet.', msg:'Shock is your system saying: this was not what I expected.' },
   ],
   yellow: [
     { name:'Excited', emoji:'🤩', def:'High energy and anticipation — something good is coming or happening.', msg:'Excitement means something matters a lot to you.' },
     { name:'Elated', emoji:'😄', def:'Extremely happy — like joy with wings.', msg:'Elation signals that something deeply good happened.' },
     { name:'Ecstatic', emoji:'🥳', def:'Pure intense joy that feels almost uncontainable.', msg:'Ecstasy is a peak positive emotion. Pay attention to what caused it.' },
     { name:'Enthusiastic', emoji:'🙌', def:'Energized and eager about something — ready to go.', msg:'Enthusiasm means you\'re engaged with something meaningful.' },
-    { name:'Motivated', emoji:'🔥', def:'Feeling driven and ready to take action toward something.', msg:'Motivation is telling you that a goal matters to you.' },
-    { name:'Inspired', emoji:'✨', def:'Feeling moved and energized by something outside yourself — an idea, a person, a moment.', msg:'Inspiration is a signal to follow whatever lit that spark.' },
-    { name:'Proud', emoji:'💪', def:'Feeling good about something you or someone you care about did.', msg:'Pride signals that something aligned with your values.' },
-    { name:'Confident', emoji:'😎', def:'Feeling sure of yourself and your abilities.', msg:'Confidence is telling you that you feel prepared or capable.' },
-    { name:'Hopeful', emoji:'🌟', def:'Believing something good is possible even when you\'re not sure.', msg:'Hope is a powerful messenger — it means you haven\'t given up.' },
     { name:'Playful', emoji:'😜', def:'Feeling light, silly, and in the mood to have fun.', msg:'Playfulness is a green light — your brain is in a low-threat state.' },
     { name:'Amused', emoji:'😂', def:'Finding something funny or entertaining.', msg:'Amusement is a connector — it brings people together.' },
-    { name:'Cheerful', emoji:'😊', def:'A light, upbeat feeling — things feel good.', msg:'Cheerfulness is a signal that you feel safe and at ease.' },
     { name:'Thrilled', emoji:'🎉', def:'Intensely happy or excited about something happening.', msg:'Thrills signal high positive energy — something really lit you up.' },
     { name:'Overconfident', emoji:'😏', def:'Feeling more sure of yourself than the situation warrants — like you can\'t fail.', msg:'Overconfidence can lead to risky decisions. This feeling is worth examining.' },
     { name:'Surprised', emoji:'😲', def:'Caught off guard — but by something neutral or positive.', msg:'Surprise means your brain got information it wasn\'t expecting.' },
     { name:'Curious', emoji:'🤔', def:'Drawn toward something unknown — wanting to explore or understand.', msg:'Curiosity is one of the most powerful messengers — follow it.' },
     { name:'Energized', emoji:'⚡', def:'Feeling full of power and ready to move.', msg:'Energy is telling you your body and mind are charged up.' },
-    { name:'Freudenfreude', emoji:'🫶', def:'Feeling genuine joy in someone else\'s happiness or success. (Tiffany Watt Smith — opposite of schadenfreude)', msg:'Freudenfreude deepens connection and is one of the most prosocial feelings we have.' },
+    { name:'Annoyed', emoji:'🙄', def:'Feeling bothered or slightly angry by repeated behavior or situations.', msg:'Annoyance is telling you a boundary has been nudged one too many times.' },
+    { name:'Shocked', emoji:'😲', def:'Completely caught off guard — your brain hasn\'t caught up yet.', msg:'Shock is your system saying: this was not what I expected.' },
+    { name:'Frustrated', emoji:'😣', def:'The feeling when something keeps blocking what you\'re trying to do or say.', msg:'Frustration means you care about the outcome and feel stuck.' },
   ],
   blue: [
     { name:'Sad', emoji:'😢', def:'A quiet, heavy feeling of loss, disappointment, or grief.', msg:'Sadness is telling you that something mattered to you deeply.' },
@@ -3556,6 +3548,7 @@ const EMOTIONS = {
     { name:'Vulnerable', emoji:'🫂', def:'Feeling open and exposed — uncertain whether you\'re safe to be real. (Atlas of the Heart)', msg:'Vulnerability is not weakness. Brown says it\'s the birthplace of courage and connection.' },
     { name:'Forlorn', emoji:'😩', def:'Feeling abandoned or completely alone — like no one is coming.', msg:'Forlorn is one of the loneliest feelings. It\'s a call for belonging.' },
     { name:'Powerless', emoji:'😮', def:'Feeling like nothing you do will make a difference or change anything.', msg:'Powerlessness is telling you that you need agency — to find one thing you can actually control.' },
+    { name:'Frightened', emoji:'😨', def:'Scared by something that feels threatening or dangerous.', msg:'Fear is one of your oldest protectors. It\'s trying to keep you out of danger.' },
   ],
   green: [
     { name:'Calm', emoji:'😌', def:'Peaceful and steady — your nervous system is at rest.', msg:'Calmness is your brain\'s home base. It\'s where good thinking happens.' },
@@ -3578,6 +3571,10 @@ const EMOTIONS = {
     { name:'Proud', emoji:'⭐', def:'Feeling good about yourself or someone close to you.', msg:'Healthy pride acknowledges growth and effort.' },
     { name:'Inspired', emoji:'💡', def:'Feeling moved and energized by something meaningful.', msg:'Inspiration in a calm state is sustainable motivation.' },
     { name:'Awe', emoji:'🌄', def:'Feeling small but connected — moved by something vast or beautiful. (Atlas of the Heart)', msg:'Awe expands perspective and shrinks the ego in the best way.' },
+    { name:'Motivated', emoji:'🔥', def:'Feeling driven and ready to take action toward something.', msg:'Motivation is telling you that a goal matters to you.' },
+    { name:'Confident', emoji:'😎', def:'Feeling sure of yourself and your abilities.', msg:'Confidence is telling you that you feel prepared or capable.' },
+    { name:'Cheerful', emoji:'😊', def:'A light, upbeat feeling — things feel good.', msg:'Cheerfulness is a signal that you feel safe and at ease.' },
+    { name:'Freudenfreude', emoji:'🫶', def:'Feeling genuine joy in someone else\'s happiness or success. (Tiffany Watt Smith — opposite of schadenfreude)', msg:'Freudenfreude deepens connection and is one of the most prosocial feelings we have.' },
   ]
 };
 
