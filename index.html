@@ -234,6 +234,10 @@ body::before {
 .jcard-sub {
   font-size: 0.87rem; color: var(--ink-light); margin-bottom: 14px; line-height: 1.6;
 }
+.peak-loc-poster-img {
+  width: 100%; height: auto; border-radius: 10px; margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12); display: block;
+}
 
 /* ── FORM ELEMENTS ── */
 textarea, input[type="text"], select {
@@ -1987,6 +1991,9 @@ body.squad-purple {
 
   <div class="jcard">
     <div class="jcard-label" id="peak-loc-label">What This Looks Like Where It Happened</div>
+    <!-- Decorative -- the exact same content is repeated as accessible text in
+         #peak-loc-reference right below, so this doesn't need its own alt text. -->
+    <img id="peak-loc-poster" class="peak-loc-poster-img" alt="" aria-hidden="true" style="display:none">
     <div id="peak-loc-reference"></div>
   </div>
 
@@ -4545,6 +4552,21 @@ const LOCATION_PEAKS_DISPLAY_ = {
   },
 };
 
+// Maps a location to its 11x17 Mountaineer Peaks poster image (assets/peaks/), extracted
+// from the EMS-Mountaineer-Peaks.pptx deck. Classroom has no dedicated poster in that deck
+// -- each teacher is making their own with the Peaks language -- so Classroom and any other
+// unmapped value (e.g. 'Other') fall back to the condensed all-locations summary poster.
+const PEAKS_POSTER_IMAGE_ = {
+  'Hallways': 'hallways',
+  'Cafeteria': 'cafeteria',
+  'Auditorium': 'auditorium',
+  'Bathroom': 'bathroom',
+  'Media Center': 'media-center',
+  'Traveling To & From School': 'traveling-to-from-school',
+  'Digital Environment': 'digital-environment',
+};
+const PEAKS_POSTER_FALLBACK_ = 'all-locations-summary';
+
 // Renders the location-specific Peaks reference on screen-2p, keyed off Part 1's "Where
 // did it happen?" dropdown. Called from afterReading() right before goTo('2p') -- q-where
 // is still readable at that point since screen-1 stays in the DOM (just hidden), only its
@@ -4556,6 +4578,14 @@ function renderLocationReference() {
   if (!box) return;
   const where = gv('q-where');
   const ref = LOCATION_PEAKS_DISPLAY_[where];
+
+  const posterImg = document.getElementById('peak-loc-poster');
+  if (posterImg) {
+    const posterFile = PEAKS_POSTER_IMAGE_[where] || PEAKS_POSTER_FALLBACK_;
+    posterImg.src = 'assets/peaks/' + posterFile + '.png';
+    posterImg.alt = '';
+    posterImg.style.display = 'block';
+  }
 
   if (!ref) {
     label.textContent = 'What This Looks Like';
