@@ -94,7 +94,13 @@ function enforceAdminGate_(body) {
     // followup_records: the staff "mark complete" action, identified by its patch touching
     // the completion columns -- gated even though table+action alone (update) is otherwise
     // exempt for the student's own calendar_status update.
-    (body.table === 'followup_records' && body.action === 'update' && body.patch && Object.prototype.hasOwnProperty.call(body.patch, 'completed'));
+    (body.table === 'followup_records' && body.action === 'update' && body.patch && Object.prototype.hasOwnProperty.call(body.patch, 'completed')) ||
+    // Peaks poster uploads/resets (06_PeaksPosters.gs) are a staff-only tool. Reads of
+    // site_config stay open (the student page needs to fetch overrides with no login), but
+    // writes to it are gated here too, as a backstop in case anything ever calls the generic
+    // insert/update actions on that table directly instead of going through those functions.
+    (body.action === 'uploadPeaksPoster' || body.action === 'resetPeaksPoster') ||
+    (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;
   return requireStaffPassword_(body.adminPassword);

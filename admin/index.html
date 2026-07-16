@@ -210,6 +210,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('editor')" id="nav-editor"><span class="si" aria-hidden="true">✏️</span>Content Editor</button>
       <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si" aria-hidden="true">🤖</span>AI Prompts</button>
       <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si" aria-hidden="true">🧩</span>Widgets</button>
+      <button class="sb-item" onclick="showPage('peaks')" id="nav-peaks"><span class="si" aria-hidden="true">🖼️</span>Peaks Posters</button>
       <div class="sb-section">Tools</div>
       <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si" aria-hidden="true">📬</span>Parent Letters</button>
       <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si" aria-hidden="true">📈</span>Pattern Analysis</button>
@@ -872,6 +873,18 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
     </div>
 
+    <div class="page" id="page-peaks">
+      <div class="page-hd">
+        <h2>Mountaineer Peaks Posters</h2>
+        <p>Replace the 11x17 poster shown for any location on the student journal's Peaks screen — no code deploy needed. Students automatically see the poster matching where their incident happened.</p>
+      </div>
+      <div class="ed-panel">
+        <div class="ed-sec" id="peaks-poster-grid">
+          <p style="color:var(--muted);font-size:.84rem">Loading…</p>
+        </div>
+      </div>
+    </div>
+
     <!-- FEATURE 4: PARENT LETTERS -->
     <div class="page" id="page-letters">
       <div class="page-hd">
@@ -1334,6 +1347,110 @@ async function callBackend(body, admin) {
   return json.data;
 }
 
+// ── PEAKS POSTERS ─────────────────────────────────────────────────────────
+// Keys/files match assets/peaks/ (see index.html's PEAKS_POSTER_IMAGE_/PEAKS_POSTER_FALLBACK_
+// and 06_PeaksPosters.gs's PEAKS_POSTER_LOCATIONS_). 'Summary' is the synthetic key for the
+// condensed all-locations poster used as the Classroom/Other fallback on the student side.
+const PEAKS_POSTER_LOCATIONS_ADMIN_ = [
+  { key: 'Hallways', file: 'hallways', label: 'Hallways' },
+  { key: 'Cafeteria', file: 'cafeteria', label: 'Cafeteria' },
+  { key: 'Auditorium', file: 'auditorium', label: 'Auditorium' },
+  { key: 'Bathroom', file: 'bathroom', label: 'Bathroom' },
+  { key: 'Media Center', file: 'media-center', label: 'Media Center' },
+  { key: 'Traveling To & From School', file: 'traveling-to-from-school', label: 'Traveling To & From School' },
+  { key: 'Digital Environment', file: 'digital-environment', label: 'Digital Environment' },
+  { key: 'Summary', file: 'all-locations-summary', label: 'Classroom / Other (all-locations summary poster)' },
+];
+let peaksPosterOverridesAdmin_ = {};
+
+async function loadPeaksPostersPage() {
+  const grid = document.getElementById('peaks-poster-grid');
+  grid.innerHTML = '<p style="color:var(--muted);font-size:.84rem">Loading current posters…</p>';
+  peaksPosterOverridesAdmin_ = {};
+  try {
+    const rows = await callBackend({ action: 'query', table: 'site_config', filters: {} }, true);
+    (rows || []).forEach(row => {
+      if (row.key && row.key.indexOf('peaks_poster_override_') === 0 && row.value) {
+        peaksPosterOverridesAdmin_[row.key.slice('peaks_poster_override_'.length)] = row.value;
+      }
+    });
+  } catch (e) {
+    // Non-fatal -- grid still renders below with bundled defaults.
+  }
+
+  grid.innerHTML = PEAKS_POSTER_LOCATIONS_ADMIN_.map(loc => {
+    const override = peaksPosterOverridesAdmin_[loc.key];
+    const src = override || ('../assets/peaks/' + loc.file + '.png');
+    const safeKey = loc.key.replace(/[^a-zA-Z0-9]/g, '_');
+    const escKey = loc.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return '<div class="ed-field" style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">' +
+        '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">' +
+          '<img src="' + src + '" alt="" style="width:160px;height:auto;border-radius:6px;border:1px solid var(--border);flex-shrink:0">' +
+          '<div style="flex:1;min-width:220px">' +
+            '<div class="ed-lbl" style="margin-bottom:4px">' + loc.label + '</div>' +
+            '<div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">' + (override ? '✓ Custom poster uploaded' : 'Using bundled default') + '</div>' +
+            '<input type="file" accept="image/*" id="peaks-file-' + safeKey + '" style="font-size:.8rem;margin-bottom:8px;color:var(--text);display:block">' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+              '<button class="save-btn" onclick="uploadPeaksPosterFile(\'' + escKey + '\', \'peaks-file-' + safeKey + '\', \'peaks-status-' + safeKey + '\')">Upload New Poster</button>' +
+              (override ? '<button class="save-btn" style="background:var(--navy3)" onclick="resetPeaksPosterOverride(\'' + escKey + '\', \'peaks-status-' + safeKey + '\')">Reset to Default</button>' : '') +
+            '</div>' +
+            '<div class="save-ok" id="peaks-status-' + safeKey + '" style="display:none;margin-top:8px"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function peaksReadFileAsBase64_(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadPeaksPosterFile(location, inputId, statusId) {
+  const input = document.getElementById(inputId);
+  const status = document.getElementById(statusId);
+  const file = input.files && input.files[0];
+  if (!file) {
+    status.textContent = 'Choose an image file first.';
+    status.style.display = 'block';
+    status.style.color = '#e05252';
+    return;
+  }
+  status.textContent = '⏳ Uploading…';
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  try {
+    const base64 = await peaksReadFileAsBase64_(file);
+    await callBackend({ action: 'uploadPeaksPoster', payload: {
+      location: location, filename: file.name, mimeType: file.type || 'image/png', base64: base64,
+    }}, true);
+    status.textContent = '✓ Uploaded';
+    status.style.color = '#3fb950';
+    loadPeaksPostersPage();
+  } catch (e) {
+    status.textContent = 'Upload failed: ' + e.message;
+    status.style.color = '#e05252';
+  }
+}
+
+async function resetPeaksPosterOverride(location, statusId) {
+  const status = document.getElementById(statusId);
+  status.textContent = '⏳ Resetting…';
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  try {
+    await callBackend({ action: 'resetPeaksPoster', payload: { location: location } }, true);
+    loadPeaksPostersPage();
+  } catch (e) {
+    status.textContent = 'Reset failed: ' + e.message;
+    status.style.color = '#e05252';
+  }
+}
+
 // ── AUTH ──────────────────────────────────────────────────────────────────
 // Password is checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
@@ -1370,6 +1487,7 @@ function showPage(name) {
   document.getElementById('nav-' + name).classList.add('active');
   if (name === 'dashboard') loadDash();
   if (name === 'submissions') loadSubs();
+  if (name === 'peaks') loadPeaksPostersPage();
 }
 
 // ── BACKEND (PostgREST-style query-string emulator over the Apps Script router) ────────

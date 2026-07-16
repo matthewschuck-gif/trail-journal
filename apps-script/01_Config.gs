@@ -291,3 +291,26 @@ function newUuid_() {
 function nowIso_() {
   return new Date().toISOString();
 }
+
+// --- site_config key/value helpers (upsert/delete -- genericUpdate_ in 03_Router.gs throws
+// if no row matches, so config values that may or may not exist yet need their own helper) ---
+function setSiteConfigValue_(key, value) {
+  const sheet = getSheet_(TABS.SITE_CONFIG);
+  const data = sheet.getDataRange().getValues();
+  const now = nowIso_();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(key)) {
+      sheet.getRange(i + 1, 1, 1, 3).setValues([[key, value, now]]);
+      return;
+    }
+  }
+  sheet.appendRow([key, value, now]);
+}
+
+function deleteSiteConfigValue_(key) {
+  const sheet = getSheet_(TABS.SITE_CONFIG);
+  const data = sheet.getDataRange().getValues();
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][0]) === String(key)) sheet.deleteRow(i + 1);
+  }
+}

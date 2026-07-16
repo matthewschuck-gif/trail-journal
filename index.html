@@ -2776,6 +2776,26 @@ async function callBackend(body, admin) {
   return json.data;
 }
 
+// Populated on load from site_config (see 06_PeaksPosters.gs) -- lets Matt swap out a
+// Mountaineer Peaks poster from the admin dashboard without a code deploy. Keyed the same
+// way PEAKS_POSTER_IMAGE_ is: a real location string, or 'Summary' for the Classroom/Other
+// fallback poster. Fire-and-forget -- if this fails (offline, etc.) the bundled
+// assets/peaks/ defaults are used, same as before this existed.
+let PEAKS_POSTER_OVERRIDES_ = {};
+async function loadPeaksPosterOverrides_() {
+  try {
+    const rows = await callBackend({ action: 'query', table: 'site_config', filters: {} });
+    (rows || []).forEach(row => {
+      if (row.key && row.key.indexOf('peaks_poster_override_') === 0 && row.value) {
+        PEAKS_POSTER_OVERRIDES_[row.key.slice('peaks_poster_override_'.length)] = row.value;
+      }
+    });
+  } catch (e) {
+    // Non-fatal -- bundled defaults still work.
+  }
+}
+document.addEventListener('DOMContentLoaded', loadPeaksPosterOverrides_);
+
 // ─── STATE ────────────────────────────────────────────────────────────────
 // ─── UTILITIES ───────────────────────────────────────────────────────────
 function generateUUID() {
@@ -4581,8 +4601,10 @@ function renderLocationReference() {
 
   const posterImg = document.getElementById('peak-loc-poster');
   if (posterImg) {
-    const posterFile = PEAKS_POSTER_IMAGE_[where] || PEAKS_POSTER_FALLBACK_;
-    posterImg.src = 'assets/peaks/' + posterFile + '.png';
+    const hasDedicated = !!PEAKS_POSTER_IMAGE_[where];
+    const posterFile = hasDedicated ? PEAKS_POSTER_IMAGE_[where] : PEAKS_POSTER_FALLBACK_;
+    const overrideKey = hasDedicated ? where : 'Summary';
+    posterImg.src = PEAKS_POSTER_OVERRIDES_[overrideKey] || ('assets/peaks/' + posterFile + '.png');
     posterImg.alt = '';
     posterImg.style.display = 'block';
   }
