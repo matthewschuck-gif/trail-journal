@@ -134,6 +134,21 @@ body::before {
 .step-pip.active { color: var(--trail); border-bottom-color: var(--trail); font-weight: 700; }
 .step-pip.done { color: var(--gold-dark); border-bottom-color: var(--gold); }
 
+/* ── READ ALOUD (ACCESSIBILITY) ── */
+.read-aloud-fab {
+  position: fixed; bottom: 20px; left: 20px; z-index: 400;
+  background: white; border: 1px solid var(--border); color: var(--trail);
+  border-radius: 999px; padding: 11px 18px; font-family: 'Barlow', sans-serif;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  box-shadow: var(--shadow-warm); display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.read-aloud-fab:hover { background: var(--paper-mid); }
+.read-aloud-fab[aria-pressed="true"] { background: var(--trail); color: white; border-color: var(--trail); }
+@media (max-width: 600px) {
+  .read-aloud-fab { padding: 10px 14px; font-size: 0.76rem; bottom: 12px; left: 12px; }
+}
+
 /* ── QUALITY METER ── */
 .quality-float {
   position: fixed; bottom: 20px; right: 20px; z-index: 300;
@@ -2796,6 +2811,85 @@ async function loadPeaksPosterOverrides_() {
 }
 document.addEventListener('DOMContentLoaded', loadPeaksPosterOverrides_);
 
+// ─── READ ALOUD (ACCESSIBILITY) ────────────────────────────────────────────
+// On-demand text-to-speech for whatever's currently on screen -- the question/instructions,
+// AI-generated content (Peaks guidance, consequence ideas, summaries), everything. Built on
+// the browser's built-in Web Speech API (SpeechSynthesis) -- no external service, no API key,
+// works offline. On-demand only (never speaks unless the student taps the button), and stops
+// automatically the moment they navigate to a new screen (see goTo() above) so it never
+// narrates a screen they've already left.
+let RA_SPEAKING_ = false;
+
+function raSupported_() {
+  return typeof window.speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined';
+}
+
+// Elements that are technically inside the active screen's DOM but shouldn't be read aloud:
+// decorative/aria-hidden icons, the dev-only preview-mode bypass buttons, and anything
+// explicitly hidden with an inline display:none (some toggles here use inline styles rather
+// than a class, e.g. error banners before they're shown).
+function raGetScreenText_() {
+  const active = document.querySelector('.screen.active');
+  if (!active) return '';
+  const clone = active.cloneNode(true);
+  clone.querySelectorAll('script, style, [aria-hidden="true"], #cm-preview-bypass, #lc-preview-bypass, #cm-checklist-preview-bypass')
+    .forEach(el => el.remove());
+  clone.querySelectorAll('[style*="display:none"], [style*="display: none"]').forEach(el => el.remove());
+  let text = clone.innerText || clone.textContent || '';
+  text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return text;
+}
+
+function raUpdateButton_() {
+  const btn = document.getElementById('read-aloud-btn');
+  if (!btn) return;
+  btn.innerHTML = RA_SPEAKING_ ? '⏸️ Stop Reading' : '🔊 Read Screen Aloud';
+  btn.setAttribute('aria-pressed', String(RA_SPEAKING_));
+}
+
+function raStop_() {
+  if (raSupported_()) window.speechSynthesis.cancel();
+  RA_SPEAKING_ = false;
+  raUpdateButton_();
+}
+
+function raToggle_() {
+  if (!raSupported_()) return;
+  if (RA_SPEAKING_) { raStop_(); return; }
+  const text = raGetScreenText_();
+  if (!text) return;
+  window.speechSynthesis.cancel(); // clear anything stray queued up
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.95;
+  utter.onend = () => { RA_SPEAKING_ = false; raUpdateButton_(); };
+  utter.onerror = () => { RA_SPEAKING_ = false; raUpdateButton_(); };
+  RA_SPEAKING_ = true;
+  raUpdateButton_();
+  window.speechSynthesis.speak(utter);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!raSupported_()) return; // no button at all on browsers without Web Speech support
+  const btn = document.createElement('button');
+  btn.id = 'read-aloud-btn';
+  btn.type = 'button';
+  btn.className = 'read-aloud-fab';
+  btn.setAttribute('aria-pressed', 'false');
+  btn.setAttribute('aria-label', 'Read the current screen aloud');
+  btn.innerHTML = '🔊 Read Screen Aloud';
+  btn.addEventListener('click', raToggle_);
+  document.body.appendChild(btn);
+});
+
+// Some browsers (notably Chrome) silently stop firing queued speech if the tab loses focus
+// mid-utterance for too long; pausing/resuming on visibility change keeps a long AI summary
+// from just going silent without any visible state change on the button.
+document.addEventListener('visibilitychange', () => {
+  if (!raSupported_() || !RA_SPEAKING_) return;
+  if (document.hidden) window.speechSynthesis.pause();
+  else window.speechSynthesis.resume();
+});
+
 // ─── STATE ────────────────────────────────────────────────────────────────
 // ─── UTILITIES ───────────────────────────────────────────────────────────
 function generateUUID() {
@@ -4240,6 +4334,7 @@ const PIP_SCREENS = [0,1,2,'2b','2c',3,'3b',4,'done'];
 const SCREEN_PROGRESS = {0:0,cm:7,1:14,2:28,'2p':34,'2b':40,'2c':52,3:62,'3b':72,4:84,office:90,done:100};
 
 function goTo(n) {
+  raStop_();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + n).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
