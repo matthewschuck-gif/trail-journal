@@ -35,6 +35,31 @@ function requireStaffPassword_(providedPassword) {
 }
 
 /**
+ * Looks up a password against the staff_users sheet (name + password per row, see
+ * migrateAddStaffUsersTab_() in 01_Config.gs) and returns which staff member it belongs to.
+ * Powers the two mid-journal check-in gates and the final screen unlock -- each of those
+ * three uses its OWN password lookup here instead of the shared ADMIN_PASSWORD, so a gate
+ * unlock can be attributed to a specific person. Deliberately separate from
+ * requireStaffPassword_()/ADMIN_PASSWORD above, which still gates the admin dashboard --
+ * two different secrets on purpose, since this list is meant to be handed out more widely
+ * (any adult who might supervise a check-in) than dashboard access should be. Not routed
+ * through enforceAdminGate_ below -- this function IS the gate for its own action.
+ */
+function checkStaffPassword_(password) {
+  if (!password) return { ok: false };
+  const sheet = getSheet_(TABS.STAFF_USERS);
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const name = data[i][0];
+    const pw = data[i][1];
+    if (pw !== '' && pw !== null && String(pw) === String(password)) {
+      return { ok: true, name: name || 'Staff' };
+    }
+  }
+  return { ok: false };
+}
+
+/**
  * Called from the router for every request. Throws if this action needs the staff password
  * and the request didn't include a correct one. Silently passes through for anonymous
  * student-facing actions (journal + responder form inserts, and student-facing AI types).

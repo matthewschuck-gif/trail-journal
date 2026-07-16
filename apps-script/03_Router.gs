@@ -65,6 +65,9 @@ function handleRequest_(e, method) {
       case 'ai':
         result = callAiProxy_(body.type, body.payload);
         break;
+      case 'checkStaffPassword':
+        result = checkStaffPassword_(body.password);
+        break;
       case 'sendFollowupEmails':
         result = sendFollowupEmails_(body.payload);
         break;

@@ -43,6 +43,7 @@ const TABS = {
   FOLLOWUP_RECORDS: 'followup_records',
   INCIDENT_REPORTS: 'incident_reports',
   SITE_CONFIG: 'site_config',
+  STAFF_USERS: 'staff_users',
 };
 
 // Exact column order per tab -- matches the original Postgres schema field-for-field.
@@ -83,6 +84,12 @@ const SCHEMA = {
     // screen-cm in index.html. Appended at the end -- see
     // migrateAddCampMountaineerColumns_() below.
     'cm_reason', 'cm_initiated_by', 'cm_why', 'cm_effort_agreed', 'cm_checklist_confirmed',
+    // Which staff member's individual password unlocked each check-in gate (see
+    // staff_users / checkStaffPassword_ in 05_AdminAuth.gs) -- the accountability trail
+    // that replacing the shared password was for. gate1/gate2 are null for tiers that
+    // skip that gate (office has neither; detention has only gate1). Appended at the end --
+    // see migrateAddStaffGateColumns_() below.
+    'gate1_unlocked_by', 'gate2_unlocked_by', 'final_unlocked_by',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -123,6 +130,15 @@ const SCHEMA = {
     'status', 'assigned_to', 'staff_notes', 'follow_up_action', 'closed_at', 'closed_by',
   ],
   [TABS.SITE_CONFIG]: ['key', 'value', 'updated_at'],
+  // Individual staff passwords for the mid-journal check-in gates and the final screen
+  // unlock -- replaces the single shared ADMIN_PASSWORD for those three specific unlock
+  // points so each gate records WHICH staff member approved it. The admin DASHBOARD login
+  // still uses ADMIN_PASSWORD separately (05_AdminAuth.gs) -- kept intentionally distinct
+  // since dashboard access is a more sensitive surface than "an adult supervised this
+  // check-in." Passwords are plain text in this sheet, same trust model as ADMIN_PASSWORD
+  // living in Script Properties -- protect this tab's sharing settings accordingly. See
+  // migrateAddStaffUsersTab_() below for one-time setup and the starting name list.
+  [TABS.STAFF_USERS]: ['name', 'password'],
 };
 
 /**
@@ -172,6 +188,40 @@ function migrateAddCampMountaineerColumns_() {
 function migrateAddFollowupCompletionColumns_() {
   const result = addMissingColumns_(TABS.FOLLOWUP_RECORDS, ['completed', 'completed_at', 'completed_by', 'completion_notes']);
   SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before the gate-unlock
+ * tracking columns were added to the reflections schema above.
+ */
+function migrateAddStaffGateColumns_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['gate1_unlocked_by', 'gate2_unlocked_by', 'final_unlocked_by']);
+  SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE to create the staff_users tab and seed it with your starting staff list.
+ * Creates the tab if it doesn't exist yet, and only seeds names if the tab is empty (safe
+ * to re-run -- it will never overwrite existing rows). Passwords are left BLANK on purpose:
+ * go to the staff_users tab afterward and type a password into column B next to each name
+ * yourself. "Guest" is meant to be shared with any adult not on the list -- give it a
+ * password too and anyone can use it, still distinct from every named staff member's own.
+ */
+function migrateAddStaffUsersTab_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(TABS.STAFF_USERS);
+  if (!sheet) sheet = ss.insertSheet(TABS.STAFF_USERS);
+  const headers = SCHEMA[TABS.STAFF_USERS];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.setFrozenRows(1);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#2c4a35').setFontColor('#ffffff');
+
+  if (sheet.getLastRow() < 2) {
+    const names = ['Mr. Miller', 'Mrs. Rigg', 'Mr. Schuck', 'Guest', 'Mrs. Mincarelli',
+      'Mrs. Mowbray', 'Mrs. Lugar', 'Dr. Montagna', 'Mrs. Wagner', 'Mrs. Judge', 'Mr. Kuhn'];
+    sheet.getRange(2, 1, names.length, 1).setValues(names.map(function (n) { return [n]; }));
+  }
+  SpreadsheetApp.getUi().alert('staff_users tab ready. Now go type a password into column B next to each name before that person can unlock a gate -- passwords are intentionally left blank here.');
 }
 
 /**
