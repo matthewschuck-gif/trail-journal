@@ -3155,13 +3155,12 @@ const LOCATION_TIER_ = {
   'Lunch Detention': 'detention',
   'Morning Detention': 'detention',
   'Afterschool Detention': 'detention',
-  // Removal from Lunch is intentionally 'full', not 'detention' -- Matt wants the complete
-  // Part 1 + Part 2 + Part 3 reflection here (Peaks expectations, before/now emotion zones,
-  // three solutions, follow-through plan), not the short Part-1-only detention flow. The
-  // student still picks their actual incident location (e.g. Cafeteria) on Part 1's "Where
-  // did it happen?" dropdown, which already drives the Peaks reference card independently
-  // of this welcome-screen consequence picker -- no LOCATION_PEAKS_DISPLAY_ change needed.
-  'Removal from Lunch': 'full',
+  // Removal from Lunch is a short consequence like Lunch Detention -- Part 1 + Part 2 only,
+  // no growth plan. The student still picks their actual incident location (e.g. Cafeteria)
+  // on Part 1's "Where did it happen?" dropdown, which already drives the Peaks reference
+  // card independently of this welcome-screen consequence picker -- no LOCATION_PEAKS_DISPLAY_
+  // change needed.
+  'Removal from Lunch': 'detention',
   'Office': 'office',
   // ISS and Camp Mountaineer both route into the Camp Mountaineer pre-page (screen-cm)
   // before Part 1 -- the tier value set here is only a placeholder until the student
