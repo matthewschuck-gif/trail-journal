@@ -1566,6 +1566,9 @@ body.squad-purple {
         <button class="squad-btn location-btn" data-loc="Afterschool Detention" onclick="selectLocation('Afterschool Detention',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
           <span class="sq-icon">🕓</span>Afterschool Detention
         </button>
+        <button class="squad-btn location-btn" data-loc="Removal from Lunch" onclick="selectLocation('Removal from Lunch',this)" style="background:var(--gold-light);color:var(--gold-dark);border-color:var(--gold)">
+          <span class="sq-icon">🚫</span>Removal from Lunch
+        </button>
         <button class="squad-btn location-btn" data-loc="Office" onclick="selectLocation('Office',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">
           <span class="sq-icon">🏫</span>Office
         </button>
@@ -3152,6 +3155,13 @@ const LOCATION_TIER_ = {
   'Lunch Detention': 'detention',
   'Morning Detention': 'detention',
   'Afterschool Detention': 'detention',
+  // Removal from Lunch is intentionally 'full', not 'detention' -- Matt wants the complete
+  // Part 1 + Part 2 + Part 3 reflection here (Peaks expectations, before/now emotion zones,
+  // three solutions, follow-through plan), not the short Part-1-only detention flow. The
+  // student still picks their actual incident location (e.g. Cafeteria) on Part 1's "Where
+  // did it happen?" dropdown, which already drives the Peaks reference card independently
+  // of this welcome-screen consequence picker -- no LOCATION_PEAKS_DISPLAY_ change needed.
+  'Removal from Lunch': 'full',
   'Office': 'office',
   // ISS and Camp Mountaineer both route into the Camp Mountaineer pre-page (screen-cm)
   // before Part 1 -- the tier value set here is only a placeholder until the student
