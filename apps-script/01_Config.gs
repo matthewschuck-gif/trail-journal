@@ -185,7 +185,7 @@ function migrateAddNameGradeColumns_() {
   const results = [];
   results.push(addMissingColumns_(TABS.REFLECTIONS, ['student_name', 'grade']));
   results.push(addMissingColumns_(TABS.PANEL_SESSIONS, ['grade']));
-  SpreadsheetApp.getUi().alert(results.join('\n'));
+  safeAlert_(results.join('\n'));
 }
 
 /**
@@ -195,7 +195,7 @@ function migrateAddNameGradeColumns_() {
  */
 function migrateAddLocationPeakColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['location', 'peak']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -205,7 +205,7 @@ function migrateAddLocationPeakColumns_() {
  */
 function migrateAddCampMountaineerColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['cm_reason', 'cm_initiated_by', 'cm_why', 'cm_effort_agreed', 'cm_checklist_confirmed']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -214,7 +214,7 @@ function migrateAddCampMountaineerColumns_() {
  */
 function migrateAddFollowupCompletionColumns_() {
   const result = addMissingColumns_(TABS.FOLLOWUP_RECORDS, ['completed', 'completed_at', 'completed_by', 'completion_notes']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -223,7 +223,7 @@ function migrateAddFollowupCompletionColumns_() {
  */
 function migrateAddStaffGateColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['gate1_unlocked_by', 'gate2_unlocked_by', 'final_unlocked_by']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -233,7 +233,7 @@ function migrateAddStaffGateColumns_() {
  */
 function migrateAddReflectionTextColumn_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['reflection_text']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -244,7 +244,7 @@ function migrateAddReflectionTextColumn_() {
  */
 function migrateAddClashFlagColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['clash_flagged', 'clash_points_awarded']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -253,7 +253,7 @@ function migrateAddClashFlagColumns_() {
  */
 function migrateAddSquadColumn_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['squad']);
-  SpreadsheetApp.getUi().alert(result);
+  safeAlert_(result);
 }
 
 /**
@@ -278,7 +278,7 @@ function migrateAddStaffUsersTab_() {
       'Mrs. Mowbray', 'Mrs. Lugar', 'Dr. Montagna', 'Mrs. Wagner', 'Mrs. Judge', 'Mr. Kuhn'];
     sheet.getRange(2, 1, names.length, 1).setValues(names.map(function (n) { return [n]; }));
   }
-  SpreadsheetApp.getUi().alert('staff_users tab ready. Now go type a password into column B next to each name before that person can unlock a gate -- passwords are intentionally left blank here.');
+  safeAlert_('staff_users tab ready. Now go type a password into column B next to each name before that person can unlock a gate -- passwords are intentionally left blank here.');
 }
 
 /**
@@ -296,7 +296,23 @@ function setupWeeklyDigestTrigger_() {
     .onWeekDay(ScriptApp.WeekDay.MONDAY)
     .atHour(6)
     .create();
-  SpreadsheetApp.getUi().alert('Weekly digest trigger installed: sendWeeklyDigest_ will run every Monday around 6am. Optionally set a WEEKLY_DIGEST_EMAIL script property to send it somewhere other than the office notify address.');
+  safeAlert_('Weekly digest trigger installed: sendWeeklyDigest_ will run every Monday around 6am. Optionally set a WEEKLY_DIGEST_EMAIL script property to send it somewhere other than the office notify address.');
+}
+
+// SpreadsheetApp.getUi() only works when called from an actual open Sheets UI session (e.g.
+// a custom menu item) -- it throws when a function is run directly from the Apps Script
+// editor's own Run button instead, which is how every setup/migrate*_ function here is
+// normally run. That's a cosmetic failure only: it happens on the confirmation popup at the
+// END of each of those functions, after the real work (writing columns/headers) already
+// finished. This swallows that specific failure and logs the same message to the execution
+// log instead (View -> Logs, or Ctrl+Enter in the editor), so running from the editor never
+// LOOKS like it failed when it actually succeeded.
+function safeAlert_(msg) {
+  try {
+    SpreadsheetApp.getUi().alert(msg);
+  } catch (e) {
+    Logger.log(msg);
+  }
 }
 
 function addMissingColumns_(tabName, cols) {
@@ -325,7 +341,7 @@ function setupSpreadsheet() {
   const def = ss.getSheetByName('Sheet1');
   if (def && ss.getSheets().length > 1) ss.deleteSheet(def);
 
-  SpreadsheetApp.getUi().alert('Done -- all 6 tabs created with headers. incident_reports contains real student PII: set sharing/protection on that tab before going further.');
+  safeAlert_('Done -- all 6 tabs created with headers. incident_reports contains real student PII: set sharing/protection on that tab before going further.');
 }
 
 function getSheet_(tabName) {
