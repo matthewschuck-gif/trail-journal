@@ -409,16 +409,33 @@ function formatTimeLabel_(h, m) {
 // is selected I want the final piece to be a submission and a summary email for the data to
 // be stored" -- this fires automatically from doSubmit() on every tier/pathway, no staff
 // login or manual step involved. Recipient is resolved server-side (never trusts a
-// client-supplied address) so a submission can't redirect its own copy elsewhere. Override
-// by setting the OFFICE_NOTIFY_EMAIL Script Property; falls back to the address Matt gave.
+// client-supplied address) so a submission can't redirect its own copy elsewhere.
+//
+// Recipients are a comma-joined list stored in site_config under 'office_record_recipients'
+// (edited from the admin dashboard's Notifications page via setOfficeRecordRecipients_ below --
+// no code deploy needed to add/remove an address). MailApp.sendEmail accepts a comma-joined
+// 'to' string directly. Falls back to the legacy OFFICE_NOTIFY_EMAIL Script Property (in case
+// that was already set from before this existed), then to Matt's own address.
 function getOfficeNotifyEmail_() {
+  const configured = getSiteConfigValue_('office_record_recipients', '');
+  if (configured) return configured;
   try {
     const v = getProp_('OFFICE_NOTIFY_EMAIL');
     if (v) return v;
   } catch (e) {
     // getProp_ throws when the property isn't set -- that's expected until Matt adds one.
   }
-  return 'emsoffice@easdpa.org';
+  return 'matthew_schuck@easdpa.org';
+}
+
+/**
+ * payload: { value } -- comma-separated email addresses. Gated admin-only, same pattern as
+ * uploadPeaksPoster_/resetPeaksPoster_ in 06_PeaksPosters.gs (see enforceAdminGate_).
+ */
+function setOfficeRecordRecipients_(payload) {
+  const value = ((payload && payload.value) || '').trim();
+  setSiteConfigValue_('office_record_recipients', value);
+  return { ok: true, value: value };
 }
 
 function sendOfficeRecordEmail_(payload) {

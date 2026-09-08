@@ -100,6 +100,7 @@ function enforceAdminGate_(body) {
     // writes to it are gated here too, as a backstop in case anything ever calls the generic
     // insert/update actions on that table directly instead of going through those functions.
     (body.action === 'uploadPeaksPoster' || body.action === 'resetPeaksPoster') ||
+    (body.action === 'setOfficeRecordRecipients') ||
     (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;

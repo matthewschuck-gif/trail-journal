@@ -83,6 +83,9 @@ function handleRequest_(e, method) {
       case 'resetPeaksPoster':
         result = resetPeaksPoster_(body.payload);
         break;
+      case 'setOfficeRecordRecipients':
+        result = setOfficeRecordRecipients_(body.payload);
+        break;
       default:
         throw new Error('Unknown action: ' + body.action);
     }

@@ -211,6 +211,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('prompts')" id="nav-prompts"><span class="si" aria-hidden="true">🤖</span>AI Prompts</button>
       <button class="sb-item" onclick="showPage('widgets')" id="nav-widgets"><span class="si" aria-hidden="true">🧩</span>Widgets</button>
       <button class="sb-item" onclick="showPage('peaks')" id="nav-peaks"><span class="si" aria-hidden="true">🖼️</span>Peaks Posters</button>
+      <button class="sb-item" onclick="showPage('notifications')" id="nav-notifications"><span class="si" aria-hidden="true">📧</span>Notifications</button>
       <div class="sb-section">Tools</div>
       <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si" aria-hidden="true">📬</span>Parent Letters</button>
       <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si" aria-hidden="true">📈</span>Pattern Analysis</button>
@@ -886,6 +887,25 @@ tr:hover td{background:rgba(255,255,255,.02);}
       </div>
     </div>
 
+    <!-- NOTIFICATIONS -->
+    <div class="page" id="page-notifications">
+      <div class="page-hd">
+        <h2>Notifications</h2>
+        <p>Every completed journal automatically emails a summary copy here for the record — no code deploy needed to change who gets it.</p>
+      </div>
+      <div class="ed-panel">
+        <div class="ed-sec">
+          <h4>Office Record Recipients</h4>
+          <div class="ed-field">
+            <label class="ed-lbl">Email addresses (comma-separated)</label>
+            <input class="ed-inp" id="notif-recipients" placeholder="matthew_schuck@easdpa.org, someone.else@easdpa.org">
+            <p style="font-size:.76rem;color:var(--muted);margin-top:6px">Leave blank to fall back to the default address.</p>
+          </div>
+          <div class="ed-actions"><button class="save-btn" onclick="saveOfficeRecordRecipients()">Save</button><div class="save-ok" id="notif-status" style="display:none"></div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- FEATURE 4: PARENT LETTERS -->
     <div class="page" id="page-letters">
       <div class="page-hd">
@@ -1452,6 +1472,35 @@ async function resetPeaksPosterOverride(location, statusId) {
   }
 }
 
+// ── NOTIFICATIONS (office record recipients) ───────────────────────────────
+async function loadNotificationsPage() {
+  const input = document.getElementById('notif-recipients');
+  const status = document.getElementById('notif-status');
+  status.style.display = 'none';
+  try {
+    const rows = await callBackend({ action: 'query', table: 'site_config', filters: { key: 'office_record_recipients' } }, true);
+    input.value = (rows && rows[0] && rows[0].value) || '';
+  } catch (e) {
+    // Non-fatal -- field just starts blank if the row doesn't exist yet.
+  }
+}
+
+async function saveOfficeRecordRecipients() {
+  const input = document.getElementById('notif-recipients');
+  const status = document.getElementById('notif-status');
+  status.textContent = '⏳ Saving…';
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  try {
+    await callBackend({ action: 'setOfficeRecordRecipients', payload: { value: input.value.trim() } }, true);
+    status.textContent = '✓ Saved';
+    status.style.color = '#3fb950';
+  } catch (e) {
+    status.textContent = 'Save failed: ' + e.message;
+    status.style.color = '#e05252';
+  }
+}
+
 // ── AUTH ──────────────────────────────────────────────────────────────────
 // Password is checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
@@ -1489,6 +1538,7 @@ function showPage(name) {
   if (name === 'dashboard') loadDash();
   if (name === 'submissions') loadSubs();
   if (name === 'peaks') loadPeaksPostersPage();
+  if (name === 'notifications') loadNotificationsPage();
 }
 
 // ── BACKEND (PostgREST-style query-string emulator over the Apps Script router) ────────

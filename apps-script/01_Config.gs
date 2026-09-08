@@ -294,6 +294,18 @@ function nowIso_() {
 
 // --- site_config key/value helpers (upsert/delete -- genericUpdate_ in 03_Router.gs throws
 // if no row matches, so config values that may or may not exist yet need their own helper) ---
+function getSiteConfigValue_(key, fallback) {
+  const sheet = getSheet_(TABS.SITE_CONFIG);
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(key)) {
+      const v = data[i][1];
+      return (v === '' || v === null || v === undefined) ? fallback : v;
+    }
+  }
+  return fallback;
+}
+
 function setSiteConfigValue_(key, value) {
   const sheet = getSheet_(TABS.SITE_CONFIG);
   const data = sheet.getDataRange().getValues();
