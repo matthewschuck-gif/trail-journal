@@ -117,7 +117,7 @@ const JSON_COLUMNS = {
 
 // --- Default values applied on insert, mirroring the Postgres column defaults ---
 const DEFAULTS = {
-  reflections: { status: 'submitted', has_flags: false, prior_count: 0, panel_completed: false },
+  reflections: { status: 'submitted', has_flags: false, prior_count: 0, panel_completed: false, clash_flagged: false, clash_points_awarded: false },
   responder_reflections: { status: 'submitted' },
   panel_sessions: { status: 'open', clash_point_awarded: false },
   incident_reports: { status: 'open' },
