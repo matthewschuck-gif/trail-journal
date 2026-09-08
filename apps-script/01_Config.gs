@@ -90,6 +90,15 @@ const SCHEMA = {
     // skip that gate (office has neither; detention has only gate1). Appended at the end --
     // see migrateAddStaffGateColumns_() below.
     'gate1_unlocked_by', 'gate2_unlocked_by', 'final_unlocked_by',
+    // Flattened, human-readable version of the entire reflection -- every Part 1/2/3
+    // answer verbatim, same content as the "FULL REFLECTION" section of the automatic
+    // office-record email (buildEmailBody() in index.html; see blockFullReflection there).
+    // Written once, right after the AI summary comes back (see the reflection_text patch
+    // in doSubmit()), so the raw part1_json/part2_json/part3_json blobs always have a
+    // plain-text sibling column that's actually readable/searchable/exportable straight out
+    // of the Sheet -- no JSON parsing needed to see what a student actually wrote. Appended
+    // at the end, same safe pattern as every other migrate*_ helper below.
+    'reflection_text',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -196,6 +205,16 @@ function migrateAddFollowupCompletionColumns_() {
  */
 function migrateAddStaffGateColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['gate1_unlocked_by', 'gate2_unlocked_by', 'final_unlocked_by']);
+  SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before reflection_text was
+ * added to the reflections schema above. Same safe append-only behavior as the other
+ * migrate*_ helpers.
+ */
+function migrateAddReflectionTextColumn_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['reflection_text']);
   SpreadsheetApp.getUi().alert(result);
 }
 

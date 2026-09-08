@@ -40,31 +40,52 @@
 const BRAND_PURPLE_ = '#490E6F';
 const BRAND_PURPLE_DEEP_ = '#33094F';
 const BRAND_GOLD_ = '#FFE100';
+const DEFAULT_THEME_ = { primary: BRAND_PURPLE_, primaryDeep: BRAND_PURPLE_DEEP_, accent: BRAND_GOLD_, emoji: '📋', label: '' };
 
-function emailShell_(icon, title, subtitle, bodyHtml) {
+// ── CLASH OF CLASSES SQUAD THEMES ───────────────────────────────────────────
+// Mirrors the squad CSS custom properties in index.html (body.squad-*) so the automatic
+// office-record email (sendOfficeRecordEmail_) reads as branded to the student's own squad
+// at a glance, not just a generic purple/gold shell. Accent colors are picked brighter than
+// the in-app CSS vars on purpose -- those were tuned for text/borders on a light page
+// background, this is a light-text-on-dark-header context (see emailShell_).
+const SQUAD_THEMES_ = {
+  GOLD:   { primary: '#8a5a00', primaryDeep: '#5a3a00', accent: '#FFD84D', emoji: '🟡', label: 'Gold' },
+  BLACK:  { primary: '#2a2a2a', primaryDeep: '#111111', accent: '#e5e5e5', emoji: '⚫', label: 'Black' },
+  GREY:   { primary: '#4a5568', primaryDeep: '#2d3748', accent: '#cbd5e0', emoji: '⚪', label: 'Grey' },
+  PURPLE: { primary: '#5c3d8f', primaryDeep: '#3a2060', accent: '#d6bcfa', emoji: '🟣', label: 'Purple' },
+};
+
+function squadTheme_(squad) {
+  return SQUAD_THEMES_[String(squad || '').trim().toUpperCase()] || DEFAULT_THEME_;
+}
+
+function emailShell_(icon, title, subtitle, bodyHtml, theme) {
+  theme = theme || DEFAULT_THEME_;
   return '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5">' +
-    '<div style="background:linear-gradient(135deg,' + BRAND_PURPLE_ + ' 0%,' + BRAND_PURPLE_DEEP_ + ' 100%);padding:26px 24px;border-bottom:4px solid ' + BRAND_GOLD_ + '">' +
+    '<div style="background:linear-gradient(135deg,' + theme.primary + ' 0%,' + theme.primaryDeep + ' 100%);padding:26px 24px;border-bottom:4px solid ' + theme.accent + '">' +
       '<div style="font-size:26px;margin-bottom:6px">' + icon + '</div>' +
       '<h2 style="margin:0;color:#fff;font-weight:normal;font-size:20px">' + title + '</h2>' +
-      (subtitle ? '<p style="margin:6px 0 0;color:' + BRAND_GOLD_ + ';font-size:13px;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '') +
+      (subtitle ? '<p style="margin:6px 0 0;color:' + theme.accent + ';font-size:13px;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '') +
     '</div>' +
     '<div style="padding:22px 24px;background:#fffbf5">' + bodyHtml + '</div>' +
-    '<div style="background:' + BRAND_PURPLE_DEEP_ + ';padding:14px;text-align:center;font-size:11px;color:' + BRAND_GOLD_ + ';font-family:Verdana,sans-serif">Camp Mountaineer &middot; Trail Journal</div>' +
+    '<div style="background:' + theme.primaryDeep + ';padding:14px;text-align:center;font-size:11px;color:' + theme.accent + ';font-family:Verdana,sans-serif">Camp Mountaineer &middot; Trail Journal</div>' +
   '</div>';
 }
 
-function emailInfoRow_(label, value) {
-  return '<p style="margin:0 0 10px;font-family:Verdana,sans-serif;font-size:13px;color:#3a3a3a"><strong style="color:' + BRAND_PURPLE_ + '">' + label + ':</strong> ' + value + '</p>';
+function emailInfoRow_(label, value, theme) {
+  theme = theme || DEFAULT_THEME_;
+  return '<p style="margin:0 0 10px;font-family:Verdana,sans-serif;font-size:13px;color:#3a3a3a"><strong style="color:' + theme.primary + '">' + label + ':</strong> ' + value + '</p>';
 }
 
-function emailCallout_(title, body, opts) {
+function emailCallout_(title, body, opts, theme) {
   opts = opts || {};
+  theme = theme || DEFAULT_THEME_;
   const bg = opts.bg || '#FFF9DC';
-  const border = opts.border || BRAND_PURPLE_;
+  const border = opts.border || theme.primary;
   // Full border, not a left-side stripe -- a colored-accent-stripe box is a dated,
   // AI-slop-adjacent look; a full rounded border reads as an intentional callout card.
   return '<div style="background:' + bg + ';border:1.5px solid ' + border + ';padding:12px 14px;margin:14px 0;border-radius:8px;font-family:Verdana,sans-serif">' +
-    (title ? '<strong style="color:' + BRAND_PURPLE_ + ';font-size:13px">' + title + '</strong><br/>' : '') +
+    (title ? '<strong style="color:' + theme.primary + ';font-size:13px">' + title + '</strong><br/>' : '') +
     '<span style="font-size:13px;color:#3a3a3a;line-height:1.6">' + body + '</span></div>';
 }
 
@@ -80,8 +101,9 @@ function icsFooterNote_(filename) {
 // for the exact shape). This turns each '===' marker into a real purple/gold section
 // header, each bullet run into a real <ul>, and each 'Label: value' line into a bolded
 // label + value row -- instead of one long unbroken paragraph per section.
-function formatSummaryHtml_(rawText) {
+function formatSummaryHtml_(rawText, theme) {
   if (!rawText) return '';
+  theme = theme || DEFAULT_THEME_;
 
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -92,8 +114,8 @@ function formatSummaryHtml_(rawText) {
   const LABEL_RE = /^([A-Za-z][A-Za-z0-9 &'()\/-]{1,42}):\s*(.*)$/;
 
   function sectionHeaderHtml(title) {
-    return '<div style="margin:20px 0 10px;padding-bottom:5px;border-bottom:2px solid ' + BRAND_GOLD_ + '">' +
-      '<span style="font-family:Verdana,sans-serif;font-size:12px;font-weight:bold;letter-spacing:.04em;text-transform:uppercase;color:' + BRAND_PURPLE_ + '">' +
+    return '<div style="margin:20px 0 10px;padding-bottom:5px;border-bottom:2px solid ' + theme.accent + '">' +
+      '<span style="font-family:Verdana,sans-serif;font-size:12px;font-weight:bold;letter-spacing:.04em;text-transform:uppercase;color:' + theme.primary + '">' +
       esc(title) + '</span></div>';
   }
 
@@ -134,7 +156,7 @@ function formatSummaryHtml_(rawText) {
       const lm = trimmed.match(LABEL_RE);
       if (lm) {
         html += '<p style="margin:0 0 8px;font-family:Verdana,sans-serif;font-size:13px;color:#3a3a3a;line-height:1.6">' +
-          '<strong style="color:' + BRAND_PURPLE_ + '">' + esc(lm[1]) + ':</strong> ' + esc(lm[2]) + '</p>';
+          '<strong style="color:' + theme.primary + '">' + esc(lm[1]) + ':</strong> ' + esc(lm[2]) + '</p>';
       } else {
         html += '<p style="margin:0 0 8px;font-family:Verdana,sans-serif;font-size:13px;color:#3a3a3a;line-height:1.6">' + esc(trimmed) + '</p>';
       }
@@ -155,7 +177,7 @@ function formatSummaryHtml_(rawText) {
       out += renderBodyLines(lines.slice(1));
     } else if (idx === 0) {
       // Intro block: first line is the staff-summary title, the rest are label rows.
-      out += '<p style="margin:0 0 4px;font-family:Georgia,serif;font-size:15px;font-weight:bold;color:' + BRAND_PURPLE_ + '">' + esc(lines[0]) + '</p>';
+      out += '<p style="margin:0 0 4px;font-family:Georgia,serif;font-size:15px;font-weight:bold;color:' + theme.primary + '">' + esc(lines[0]) + '</p>';
       out += renderBodyLines(lines.slice(1));
     } else {
       out += renderBodyLines(lines);
@@ -438,24 +460,33 @@ function setOfficeRecordRecipients_(payload) {
   return { ok: true, value: value };
 }
 
+// squad is optional -- themes the whole email (header gradient, accent border, section
+// headers) to the student's own Clash of Classes squad color instead of the generic
+// purple/gold shell, so this reads as "this specific kid's report" at a glance in an inbox.
+// Falls back to the default brand theme when squad is missing/unrecognized (e.g. very old
+// rows, or a student who skipped the squad picker).
 function sendOfficeRecordEmail_(payload) {
   const studentLabel = payload.studentLabel || 'Student';
   const grade = payload.grade;
   const location = payload.location;
   const tier = payload.tier;
+  const squad = payload.squad || '';
   const summaryText = payload.summaryText || '';
   const toEmail = getOfficeNotifyEmail_();
+  const theme = squadTheme_(squad);
 
-  const subject = '[Trail Journal] New submission -- ' + studentLabel + (location ? ' (' + location + ')' : '');
-  const summaryHtml = formatSummaryHtml_(summaryText);
+  const squadTag = theme.label ? theme.emoji + ' ' + theme.label + ' Squad' : '';
+  const subject = '[Trail Journal] ' + theme.emoji + ' New submission -- ' + studentLabel + (location ? ' (' + location + ')' : '');
+  const summaryHtml = formatSummaryHtml_(summaryText, theme);
 
   const body =
-    emailInfoRow_('Student', studentLabel + (grade ? ' (Grade ' + grade + ')' : '')) +
-    (location ? emailInfoRow_('Location', location) : '') +
-    (tier ? emailInfoRow_('Journal Length', tier.charAt(0).toUpperCase() + tier.slice(1) + ' tier') : '') +
-    '<div style="margin-top:16px;padding-top:14px;border-top:2px solid ' + BRAND_GOLD_ + '">' + summaryHtml + '</div>';
+    emailInfoRow_('🎓 Student', studentLabel + (grade ? ' (Grade ' + grade + ')' : ''), theme) +
+    (squadTag ? emailInfoRow_('🏅 Squad', squadTag, theme) : '') +
+    (location ? emailInfoRow_('📍 Location', location, theme) : '') +
+    (tier ? emailInfoRow_('🧭 Journal Length', tier.charAt(0).toUpperCase() + tier.slice(1) + ' tier', theme) : '') +
+    '<div style="margin-top:16px;padding-top:14px;border-top:2px solid ' + theme.accent + '">' + summaryHtml + '</div>';
 
-  const html = emailShell_('&#128220;', 'Trail Journal Submission', studentLabel, body);
+  const html = emailShell_('📬', 'Trail Journal Submission', studentLabel + (squadTag ? ' · ' + squadTag : ''), body, theme);
 
   sendViaMail_({ to: toEmail, subject: subject, html: html });
 

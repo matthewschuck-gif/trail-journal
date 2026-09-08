@@ -1775,9 +1775,28 @@ body.squad-purple {
 
   <div class="jcard" id="jc-why">
     <div class="jcard-label" id="lbl-why">Why Did You Do It?</div>
-    <div class="jcard-sub">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
+    <div class="jcard-sub" id="sub-why">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
     <textarea id="q-why" aria-labelledby="lbl-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
     <div class="val-msg" id="e-why">This is the most important one. Write whatever is true for you, even if it's hard to explain.</div>
+  </div>
+
+  <!-- TEAM: only shown for Removal from Lunch, matching the "Lunchtime Redirection Reflection"
+       paper form's Team field (M/O/U/N/T/S/Building MTSS Team). Hidden + not required for
+       every other location -- see applyLocationContent_() and validatePart1(). -->
+  <div class="jcard hidden" id="jc-team">
+    <div class="jcard-label" id="lbl-team">Team</div>
+    <div class="jcard-sub">Which team referred this consequence?</div>
+    <select id="q-team">
+      <option value="">Select a team…</option>
+      <option value="M">M</option>
+      <option value="O">O</option>
+      <option value="U">U</option>
+      <option value="N">N</option>
+      <option value="T">T</option>
+      <option value="S">S</option>
+      <option value="Building MTSS Team">Building MTSS Team</option>
+    </select>
+    <div class="val-msg" id="e-team">Pick which team this falls under.</div>
   </div>
 
   <!-- CPS FLIP CARDS -->
@@ -1838,8 +1857,8 @@ body.squad-purple {
 
   <!-- EMOTIONS: ZONE-BASED PICKER -->
   <div class="jcard" id="jc-emo-during">
-    <div class="jcard-label">How Were You Feeling?</div>
-    <div class="jcard-sub">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
+    <div class="jcard-label" id="lbl-emo-during">How Were You Feeling?</div>
+    <div class="jcard-sub" id="sub-emo-during">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
 
     <div class="zone-tabs" role="tablist">
       <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('during','red',this)">🔴 Red Zone<br><small>High Energy, Unpleasant</small></button>
@@ -1877,8 +1896,8 @@ body.squad-purple {
   </div>
 
   <div class="jcard">
-    <div class="jcard-label">How Do You Feel Right Now?</div>
-    <div class="jcard-sub">Sitting here reflecting — pick up to 3 emotions you feel <strong>right now</strong>. Notice if anything has shifted.</div>
+    <div class="jcard-label" id="lbl-emo-now">How Do You Feel Right Now?</div>
+    <div class="jcard-sub" id="sub-emo-now">Sitting here reflecting — pick up to 3 emotions you feel <strong>right now</strong>. Notice if anything has shifted.</div>
 
     <div class="zone-tabs" role="tablist">
       <button class="zone-tab zt-red" role="tab" aria-selected="false" onclick="showZone('now','red',this)">🔴 Red Zone</button>
@@ -1909,7 +1928,7 @@ body.squad-purple {
 
   <div class="jcard">
     <div class="jcard-label" id="lbl-yn">Did Your Emotions Change?</div>
-    <div class="jcard-sub">Compare how you felt during the situation vs. how you feel right now. A shift in feelings is worth paying attention to.</div>
+    <div class="jcard-sub" id="sub-yn">Compare how you felt during the situation vs. how you feel right now. A shift in feelings is worth paying attention to.</div>
     <div class="yn-group">
       <button class="yn-btn" id="yn-y" onclick="setYN('yes')">YES</button>
       <button class="yn-btn" id="yn-n" onclick="setYN('no')">NO</button>
@@ -3041,6 +3060,7 @@ function showDraftCheckNotice(text) {
 
 function restoreDraft(draft) {
   Object.assign(S, draft.S);
+  applyLocationContent_();
 
   // Refill visible text/textarea/select fields (Part 1-3 answers, CM "why", etc.)
   Object.keys(draft.fields || {}).forEach(id => {
@@ -3176,6 +3196,49 @@ function selectLocation(loc, btn) {
   S.tier = LOCATION_TIER_[loc] || 'full';
   document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+  applyLocationContent_();
+}
+
+// Default wording for the elements Removal from Lunch overrides below -- captured here so
+// switching back to any other location restores the original generic copy instead of
+// leaving a stale override in place.
+const DEFAULT_CONTENT_ = {
+  'lbl-why': 'Why Did You Do It?',
+  'sub-why': 'What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.',
+  'lbl-emo-during': 'How Were You Feeling?',
+  'sub-emo-during': 'Emotions are messengers — they\'re telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.',
+  'lbl-emo-now': 'How Do You Feel Right Now?',
+  'sub-emo-now': 'Sitting here reflecting — pick up to 3 emotions you feel <strong>right now</strong>. Notice if anything has shifted.',
+  'lbl-yn': 'Did Your Emotions Change?',
+  'sub-yn': 'Compare how you felt during the situation vs. how you feel right now. A shift in feelings is worth paying attention to.',
+};
+
+// Removal from Lunch is a short (detention-tier) journal like the others, but its content
+// is drawn from the actual "Lunchtime Redirection Reflection" paper form Matt uses for this
+// consequence, so the wording here is matched to that form rather than the generic copy
+// every other detention-tier location shares. Every other location is untouched.
+const LOCATION_CONTENT_ = {
+  'Removal from Lunch': {
+    'lbl-why': 'Why Did You Do It? Describe Your Reasoning.',
+    'sub-why': 'What was your goal or rationale for completing this action?',
+    'lbl-emo-during': 'What Emotions Were You Experiencing?',
+    'sub-emo-during': 'Browse the zones below and pick up to 3 emotions you were experiencing <strong>at the time</strong>. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.',
+    'lbl-emo-now': 'What Do You Feel Now?',
+    'sub-emo-now': 'What do you feel now about what happened? Pick up to 3 emotions you feel <strong>right now</strong>.',
+    'lbl-yn': 'Was There a Change in Emotions Picked?',
+    'sub-yn': 'Think about why there was (or wasn\'t) a change between then and now.',
+  },
+};
+
+function applyLocationContent_() {
+  const overrides = LOCATION_CONTENT_[S.location] || {};
+  Object.keys(DEFAULT_CONTENT_).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = overrides[id] || DEFAULT_CONTENT_[id];
+  });
+
+  const teamCard = document.getElementById('jc-team');
+  if (teamCard) teamCard.classList.toggle('hidden', S.location !== 'Removal from Lunch');
 }
 
 function selectPeak(peak, btn) {
@@ -3401,6 +3464,11 @@ function validatePart1() {
     ['q-think','e-think','Even if you weren\'t sure what you were thinking, write that. Honest is what matters here.'],
     ['q-why','e-why','This is the most important one. Write whatever is true for you, even if it\'s hard to explain.'],
   ];
+  // Team is only asked (and only required) for Removal from Lunch -- see jc-team/
+  // applyLocationContent_(). Every other location never shows this field at all.
+  if (S.location === 'Removal from Lunch') {
+    checks.push(['q-team','e-team','Pick which team this falls under.']);
+  }
   checks.forEach(([fid, eid, msg]) => {
     const el = document.getElementById(fid);
     if (thin(el.value)) {
@@ -4528,6 +4596,9 @@ function getPart1() {
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
     takeaway: gv('q-part1-takeaway'),
+    // Only meaningful for Removal from Lunch (see LOCATION_CONTENT_/jc-team) -- empty
+    // string for every other location, same as every other not-applicable field here.
+    team: gv('q-team'),
   };
 }
 function getPart2() {
@@ -5156,10 +5227,61 @@ function buildEmailBody(result, p1, p2, p3) {
     ? '🏆 Clash of Classes: +1 point automatically awarded to ' + S.squad + ' Squad.'
     : '';
 
+  // Every raw answer, verbatim, labeled -- separate from the AI-written narrative/summary
+  // blocks above (which paraphrase and select what's relevant). This is the actual data:
+  // nothing summarized, nothing dropped, so the office record email is a genuine full
+  // report even if the AI summary above missed or compressed something. Part 3 fields
+  // only appear for the 'full' tier, where Part 3 was actually collected.
+  const blockFullReflection = [
+    '=== 📝 FULL REFLECTION — EVERY ANSWER, VERBATIM ===',
+    '--- Part 1: What Happened ---',
+    'What happened: ' + (p1.whatHappened || '—'),
+    'Who else was involved: ' + (p1.whoInvolved || '—'),
+    'Who witnessed it: ' + (p1.witnesses || '—'),
+    'Where: ' + (p1.where || '—'),
+    'When / what were you doing: ' + (p1.when || '—'),
+    'What were you thinking: ' + (p1.thinking || '—'),
+    (p1.team ? 'Team: ' + p1.team : ''),
+    'Why did you do it: ' + (p1.why || '—'),
+    'Emotions during (' + (p1.intensityDuring || '—') + '/5): ' + (p1.emotionsDuring || []).join(', '),
+    'Emotions now (' + (p1.intensityNow || '—') + '/5): ' + (p1.emotionsNow || []).join(', '),
+    'Did emotions change: ' + (p1.emotionChange === 'yes' ? 'Yes' : p1.emotionChange === 'no' ? 'No' : '—'),
+    'Why (or why not): ' + (p1.emotionChangeReason || '—'),
+    'Crossing Paths — what was going on before: ' + (p1.cpsUnsolvedProblem || '—'),
+    'Crossing Paths — what I cared about: ' + (p1.cpsMyConcern || '—'),
+    'Crossing Paths — what they cared about: ' + (p1.cpsTheirConcern || '—'),
+    '',
+    '--- Part 2: Making Things Right ---',
+    'People hurt: ' + (p2.hurtPeople || []).join(', '),
+    'What should happen: ' + (p2.makeRight || '—'),
+    'Consequences chosen (ranked): ' + (p2.selectedConsequences || []).join(' → '),
+    'Best idea: ' + (p2.bestIdea || '—'),
+    'Follow-through plan: ' + (p2.plan || '—'),
+    'What I\'ll do differently: ' + (p2.different || '—'),
+    (p2.creativeChallenge ? 'Creative challenge response: ' + p2.creativeChallenge : ''),
+    ...(S.tier === 'full' ? [
+      '',
+      '--- Part 3: Growth Plan ---',
+      'LRG Trait: ' + (p3.trait || '—'),
+      'Specific areas: ' + (p3.traitSpecifics || []).join(', '),
+      'Why this trait: ' + (p3.traitWhy || '—'),
+      'Skill strategy: ' + (p3.selectedSkill ? (p3.selectedSkill.domain + ' — ' + p3.selectedSkill.strategy) : '—'),
+      'Creative format: ' + (p3.creativeFormat || '—'),
+      'Creative plan: ' + (p3.creativePlan || '—'),
+      (p3.communityAction ? 'Community/service action: ' + p3.communityAction : ''),
+      'Follow-through — when: ' + (p3.followThrough?.when || '—'),
+      'Follow-through — needs: ' + (p3.followThrough?.needs || '—'),
+      'Follow-through — audience: ' + (p3.followThrough?.audience || '—'),
+      'Follow-through — if stuck: ' + (p3.followThrough?.stuckPlan || '—'),
+      'Hope level (1-4, "Where are you right now?"): ' + (p3.hopeLevel != null ? p3.hopeLevel : '—'),
+      'What would make this feel fair: ' + (p3.fairReflect || '—'),
+    ] : []),
+  ].filter(Boolean).join('\n');
+
   const blocks = [
     blockIntro, blockNarrative, blockIncident, blockGrowthSummary, blockHope, blockWhatHappened, blockMakingRight,
     blockGrowthPlan, blockConsequences, blockRepairPlan, blockStudentGoal,
-    blockRestorativeQ, blockCpsScript, blockFollowUpFlags, blockResourceBank, blockClash,
+    blockRestorativeQ, blockCpsScript, blockFollowUpFlags, blockResourceBank, blockClash, blockFullReflection,
   ];
 
   // Every real section is now a single joined string with its own header baked in, and
@@ -5239,7 +5361,7 @@ async function doSubmit() {
   // for the office, not something the student's screen should ever wait on or show an
   // error for.
   callBackend({ action: 'sendOfficeRecordEmail', payload: {
-    studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier,
+    studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier, squad: S.squad,
     summaryText: buildEmailBody(result || {}, p1, p2, p3),
   }}).catch(e => console.error('Office record email error:', e));
 
@@ -5248,7 +5370,14 @@ async function doSubmit() {
 
     // Feature 5: save goal + insight level to Supabase
     if (result.studentGoal || result.insightLevel) {
-      callBackend({ action: 'update', table: 'reflections', match: { session_id: S.sessionId }, patch: { goal: result.studentGoal||null, insight_level: result.insightLevel||null } }).catch(e => console.error(e));
+      // reflection_text: same full verbatim report that goes out in the office-record
+      // email (buildEmailBody's blockFullReflection) -- written back to the Sheet as one
+      // plain-text column so the raw part1_json/part2_json/part3_json blobs have a
+      // human-readable sibling, no JSON parsing needed to review a submission.
+      callBackend({ action: 'update', table: 'reflections', match: { session_id: S.sessionId }, patch: {
+        goal: result.studentGoal||null, insight_level: result.insightLevel||null,
+        reflection_text: buildEmailBody(result || {}, p1, p2, p3),
+      }}).catch(e => console.error(e));
     }
 
     // Feature 9: Clash bridge
