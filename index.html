@@ -158,6 +158,47 @@ body::before {
   opacity: 0; transform: translateY(8px); transition: all 0.35s;
 }
 .quality-float.show { opacity: 1; transform: translateY(0); }
+.rot-btn {
+  position: fixed; bottom: 20px; left: 20px; z-index: 300;
+  background: white; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 0.76rem; font-weight: 700;
+  color: var(--ink-mid); box-shadow: var(--shadow-warm); cursor: pointer;
+  opacity: 0; transform: translateY(8px); transition: all 0.35s; pointer-events: none;
+}
+.rot-btn.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.rot-btn:hover { color: var(--red); border-color: var(--red); }
+.rot-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.rot-modal-overlay.show { display: flex; }
+.rot-modal-box {
+  background: white; border-radius: 14px; padding: 28px 24px; max-width: 420px; width: 100%;
+  text-align: center; box-shadow: var(--shadow-warm);
+}
+.rot-cancel {
+  margin-top: 14px; background: none; border: none; font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem; color: var(--ink-light); text-decoration: underline; cursor: pointer;
+}
+.rot-status { font-size: 0.82rem; margin-top: 12px; font-family: 'Barlow', sans-serif; }
+.admin-test-panel {
+  position: fixed; top: 8px; left: 8px; z-index: 9998;
+  background: #1a1330; border: 1px solid #4a2d7f; border-radius: 10px;
+  padding: 10px 12px; max-width: 320px; box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  font-family: 'Barlow', sans-serif;
+}
+.atp-title { color: #c9a84c; font-size: 0.7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+.atp-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.atp-row button {
+  background: #2d1f52; color: #e8e0ff; border: 1px solid #4a2d7f; border-radius: 6px;
+  padding: 4px 8px; font-size: 0.68rem; cursor: pointer; font-family: 'Barlow', sans-serif;
+}
+.atp-row button:hover { background: #4a2d7f; }
+.atp-fill-btn {
+  width: 100%; background: #c9a84c; color: #2d1f00; border: none; border-radius: 7px;
+  padding: 7px 10px; font-size: 0.74rem; font-weight: 700; cursor: pointer;
+}
+.atp-fill-btn:hover { opacity: 0.88; }
 .q-label {
   font-size: 0.65rem; font-weight: 700; color: var(--ink-light);
   letter-spacing: 0.07em; text-transform: uppercase;
@@ -1522,6 +1563,48 @@ body.squad-purple {
   <div class="q-msg" id="qmsg">Keep going — add more detail.</div>
 </div>
 
+<!-- ADMIN TEST PANEL -- preview-mode only (?preview=true), for jumping directly between
+     screens and generating a throwaway test submission without hand-typing every field.
+     Shown/hidden via the existing IS_PREVIEW block below. -->
+<div class="admin-test-panel" id="admin-test-panel" style="display:none">
+  <div class="atp-title">🧪 Admin Test Panel</div>
+  <div class="atp-row">
+    <button onclick="goTo(0)">Welcome</button>
+    <button onclick="goTo('cm')">CM</button>
+    <button onclick="goTo(1)">Part 1</button>
+    <button onclick="goTo(2)">Reading</button>
+    <button onclick="goTo('2p')">Peaks</button>
+    <button onclick="goTo('office')">Office</button>
+    <button onclick="goTo('2b')">Part 2</button>
+    <button onclick="goTo('2c')">Fair</button>
+    <button onclick="goTo(3)">Part 3</button>
+    <button onclick="goTo('3b')">Check-In 2</button>
+    <button onclick="goTo(4)">Plan</button>
+    <button onclick="goTo('done')">Done</button>
+  </div>
+  <button class="atp-fill-btn" onclick="fillDummyEntryAndSubmit()">🎲 Fill Dummy Data &amp; Submit</button>
+</div>
+
+<!-- RAN OUT OF TIME -- lets an adult save whatever's been written so far to the Sheet
+     (status 'incomplete') if a student won't finish the journal in the period, instead of
+     losing progress or forcing a rushed finish. Same visibility toggle as qmeter (goTo()) --
+     hidden on the welcome screen and the done screen, shown everywhere in between. -->
+<button class="rot-btn" id="rot-btn" onclick="openRanOutOfTimeModal()">⏰ Ran Out of Time</button>
+<div class="rot-modal-overlay" id="rot-modal">
+  <div class="rot-modal-box">
+    <div class="pg-icon">⏰</div>
+    <h3>Save & Stop Here</h3>
+    <p>An adult can enter the staff password to save everything written so far. This marks the record as incomplete — it does not submit the journal as finished, and the student can still resume on this device later.</p>
+    <div class="pw-input-row">
+      <input type="password" class="pw-input" id="rot-pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')submitRanOutOfTime()">
+      <button class="pw-btn" onclick="submitRanOutOfTime()">Save Progress</button>
+    </div>
+    <div class="pw-error" id="rot-pw-error">Incorrect password. Try again.</div>
+    <div class="rot-status" id="rot-status"></div>
+    <button class="rot-cancel" onclick="closeRanOutOfTimeModal()">Cancel</button>
+  </div>
+</div>
+
 <!-- FEATURE 1: LIVE INSIGHT INDICATOR (staff-facing, subtle) -->
 <div class="insight-live" id="insight-live">
   <div class="il-label">Insight Signal</div>
@@ -1602,12 +1685,41 @@ body.squad-purple {
       </div>
       <div class="squad-hint">Select your squad — earns a point on High insight reflections</div>
     </div>
+    <div style="margin-top:18px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Team</div>
+      <div class="squad-picker" id="team-picker">
+        <button class="squad-btn team-btn" data-team="M" onclick="selectTeam('M',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">M</button>
+        <button class="squad-btn team-btn" data-team="O" onclick="selectTeam('O',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">O</button>
+        <button class="squad-btn team-btn" data-team="U" onclick="selectTeam('U',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">U</button>
+        <button class="squad-btn team-btn" data-team="N" onclick="selectTeam('N',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">N</button>
+        <button class="squad-btn team-btn" data-team="T" onclick="selectTeam('T',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">T</button>
+        <button class="squad-btn team-btn" data-team="S" onclick="selectTeam('S',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">S</button>
+        <button class="squad-btn team-btn" data-team="Building MTSS Team" onclick="selectTeam('Building MTSS Team',this)" style="background:var(--paper-mid);color:var(--ink-mid);border-color:var(--border)">Building MTSS Team</button>
+      </div>
+      <div class="squad-hint">Which team referred this consequence?</div>
+      <div class="val-msg" id="e-team">Pick which team this falls under.</div>
+    </div>
   </div>
   <div class="jcard">
     <div class="jcard-label">📖 Before You Begin</div>
     <p style="font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--ink-mid);line-height:1.75">This journal has three parts. Between each part you'll pause for a short conversation with the adult in the room. The AI will write a short reading just for you after Part 1, and help build a plan at the end. Take this seriously — your honest effort here is the first step back on the trail.</p>
   </div>
-  <div class="nav-row"><div></div><button class="btn-next" onclick="begin()">Start My Journal →</button></div>
+  <div class="nav-row" id="welcome-nav-row"><div></div><button class="btn-next" onclick="begin()">Start My Journal →</button></div>
+
+  <!-- STAFF PASSWORD GATE -- new entry gate, added between demographics and Part 1 so an
+       adult is present from the very start (previously the first check-in was only after
+       Part 1). Same per-staff password lookup as pw-gate-1/pw-gate-2 (checkGatePassword/
+       checkStaffPassword_) -- see begin()/onGatePassed(). -->
+  <div class="pw-gate" id="pw-gate-0" style="display:none">
+    <div class="pg-icon">🔐</div>
+    <h3>Staff Check-In Required</h3>
+    <p>Before starting Part 1, the adult in the room needs to enter the staff password to confirm they're present.</p>
+    <div class="pw-input-row">
+      <input type="password" class="pw-input" id="pw-input-0" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('0')">
+      <button class="pw-btn" onclick="checkGatePassword('0')">Unlock</button>
+    </div>
+    <div class="pw-error" id="pw-error-0">Incorrect password. Try again.</div>
+  </div>
   <p style="text-align:center;margin-top:14px">
     <a href="#" onclick="event.preventDefault(); checkForDraftAndOfferResume(true);" style="font-family:'Barlow',sans-serif;font-size:.78rem;color:var(--ink-light);text-decoration:underline;cursor:pointer">
       Reusing this device? Check for an unfinished journal from the last student
@@ -1778,25 +1890,6 @@ body.squad-purple {
     <div class="jcard-sub" id="sub-why">What was your goal? What were you trying to get, prove, or avoid? Be honest with yourself.</div>
     <textarea id="q-why" aria-labelledby="lbl-why" placeholder="I did it because… I was trying to… I thought that…" rows="4"></textarea>
     <div class="val-msg" id="e-why">This is the most important one. Write whatever is true for you, even if it's hard to explain.</div>
-  </div>
-
-  <!-- TEAM: only shown for Removal from Lunch, matching the "Lunchtime Redirection Reflection"
-       paper form's Team field (M/O/U/N/T/S/Building MTSS Team). Hidden + not required for
-       every other location -- see applyLocationContent_() and validatePart1(). -->
-  <div class="jcard hidden" id="jc-team">
-    <div class="jcard-label" id="lbl-team">Team</div>
-    <div class="jcard-sub">Which team referred this consequence?</div>
-    <select id="q-team">
-      <option value="">Select a team…</option>
-      <option value="M">M</option>
-      <option value="O">O</option>
-      <option value="U">U</option>
-      <option value="N">N</option>
-      <option value="T">T</option>
-      <option value="S">S</option>
-      <option value="Building MTSS Team">Building MTSS Team</option>
-    </select>
-    <div class="val-msg" id="e-team">Pick which team this falls under.</div>
   </div>
 
   <!-- CPS FLIP CARDS -->
@@ -2940,6 +3033,8 @@ if (IS_PREVIEW) {
     if (cmBypass) cmBypass.style.display = 'block';
     const cmChecklistBypass = document.getElementById('cm-checklist-preview-bypass');
     if (cmChecklistBypass) cmChecklistBypass.style.display = 'block';
+    const testPanel = document.getElementById('admin-test-panel');
+    if (testPanel) testPanel.style.display = 'block';
   });
 }
 
@@ -2964,8 +3059,11 @@ const S = {
   _staffUnlocked: false,
   // Which staff member's own password unlocked each check-in gate -- see
   // checkStaffPassword_() in 05_AdminAuth.gs. Null for gates a given tier skips entirely.
-  gate1StaffName: null, gate2StaffName: null, finalStaffName: null,
+  gate0StaffName: null, gate1StaffName: null, gate2StaffName: null, finalStaffName: null,
   suggestedConsequenceCategory: null,
+  team: null,
+  _afterGate0Dest: null,
+  _partialSaved: false,
 };
 
 // ─── LOCAL DRAFT AUTOSAVE / RESUME ─────────────────────────────────────────
@@ -3199,6 +3297,13 @@ function selectLocation(loc, btn) {
   applyLocationContent_();
 }
 
+function selectTeam(team, btn) {
+  S.team = team;
+  document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  hideErr('e-team');
+}
+
 // Default wording for the elements Removal from Lunch overrides below -- captured here so
 // switching back to any other location restores the original generic copy instead of
 // leaving a stale override in place.
@@ -3236,9 +3341,6 @@ function applyLocationContent_() {
     const el = document.getElementById(id);
     if (el) el.innerHTML = overrides[id] || DEFAULT_CONTENT_[id];
   });
-
-  const teamCard = document.getElementById('jc-team');
-  if (teamCard) teamCard.classList.toggle('hidden', S.location !== 'Removal from Lunch');
 }
 
 function selectPeak(peak, btn) {
@@ -3402,10 +3504,86 @@ function selectCmInitiator(who, btn) {
   hideErr('e-cm-init');
 }
 
+// ─── ADMIN TEST PANEL: DUMMY ENTRY ─────────────────────────────────────────
+// Fills every field getPart1()/getPart2()/getPart3() read from with plausible test data,
+// then jumps straight to submission -- for quickly generating a throwaway test row without
+// hand-typing a full journal. Preview-only (see admin-test-panel). Sets values directly
+// (DOM + S.*) rather than clicking through each screen, so it works regardless of which
+// tier/location is currently selected -- fields that don't exist for the current tier are
+// simply skipped (setVal/setChecked are defensive), same as gv()'s own behavior.
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function setChecked(selector, count) {
+  const els = document.querySelectorAll(selector);
+  for (let i = 0; i < Math.min(count, els.length); i++) els[i].checked = true;
+}
+
+async function fillDummyEntryAndSubmit() {
+  S.grade = S.grade || '8';
+  S.location = S.location || 'Lunch Detention';
+  S.tier = LOCATION_TIER_[S.location] || 'full';
+  S.squad = S.squad || 'Gold';
+  S.team = S.team || 'M';
+  S.peak = S.peak || 'Be Present';
+  S.name = S.name || 'Test Student';
+  S.initial = S.initial || 'T';
+
+  // Part 1
+  setVal('q-what', 'I pushed a classmate in the hallway during a passing period.');
+  setVal('q-who', 'Jordan');
+  setVal('q-witness', 'Alex and Ms. Rivera');
+  setVal('q-where', 'Hallways');
+  setVal('q-when', 'Passing time after 3rd period');
+  setVal('q-think', "I thought it would be funny and didn't think about how it would land.");
+  setVal('q-why', 'I was annoyed and wanted to get a reaction.');
+  setVal('cps1', "We'd been joking around all week.");
+  setVal('cps2', 'Looking tough in front of friends.');
+  setVal('cps3', "They probably didn't expect it and felt embarrassed.");
+  setVal('q-part1-takeaway', "I want to think before I act when I'm trying to get a laugh.");
+  S.eduring = [{ name: 'Annoyed', zone: 'red', intensity: 3 }, { name: 'Amused', zone: 'yellow', intensity: 2 }];
+  S.enow = [{ name: 'Regretful', zone: 'blue', intensity: 3 }];
+  S.yn = 'yes';
+  setVal('q-yn', 'I felt worse once I saw how upset they were.');
+
+  // Part 2 (office tier's own repair field is filled too -- harmless if it doesn't exist)
+  setVal('q-office-repair', 'I will apologize and help clean the hallway area.');
+  const hurtInputs = document.querySelectorAll('.hurt-p');
+  if (hurtInputs[0]) hurtInputs[0].value = 'Jordan';
+  if (hurtInputs[1]) hurtInputs[1].value = 'Ms. Rivera';
+  setChecked('.cc', 2);
+  setVal('q-bestidea', 'Apologizing in person shows I actually mean it.');
+  setVal('q-plan', 'I will apologize to Jordan at lunch today with a staff member present.');
+  setVal('q-diff', "Walk away instead of trying to get a laugh at someone else's expense.");
+  setVal('q-makeright', "Apologize and check in with Jordan to make sure they're okay.");
+  setVal('cc-answer', 'I would ask a teacher to help set up a time to talk it through.');
+
+  // Part 3
+  const traitBtn = document.querySelector('.trait-btn');
+  if (traitBtn) pickTrait(traitBtn);
+  setChecked('.tspec', 1);
+  setVal('q-traitwhy', 'I need to think about how my actions affect other people before I act.');
+  setVal('q-community', 'I could help set up chairs for the pep rally this week.');
+  const creativeBtn = document.querySelector('.creative-btn');
+  if (creativeBtn) pickCreative(creativeBtn);
+  setVal('q-creative', 'A short comic strip showing what I should have done instead.');
+  const ftBtn = document.querySelector('.ft-when-btn');
+  if (ftBtn) pickFTWhen(ftBtn);
+  setVal('q-ft-needs', 'A few minutes of quiet time to draw.');
+  setVal('q-ft-audience', 'My homeroom teacher');
+  setVal('q-ft-stuck', 'I will ask a friend for a drawing idea.');
+  S.hopeLevel = S.hopeLevel || 3;
+  setVal('q-fair-reflect', 'As long as I actually get to make it right, that feels fair.');
+
+  goTo('done');
+  await doSubmit();
+}
+
 function begin() {
   // Admin preview bypass — skip name/grade requirement
   if (IS_PREVIEW) {
-    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8'; S.location = S.location || 'Camp Mountaineer'; S.tier = S.tier || 'full'; S.peak = S.peak || 'Be Present';
+    S.initial = 'A'; S.name = 'Preview Student'; S.grade = S.grade || '8'; S.location = S.location || 'Camp Mountaineer'; S.tier = S.tier || 'full'; S.peak = S.peak || 'Be Present'; S.team = S.team || 'M';
     document.getElementById('hdr-initial').textContent = 'A';
     document.getElementById('hdr-initial').classList.add('show');
     document.getElementById('r-init').textContent = 'A';
@@ -3417,6 +3595,8 @@ function begin() {
   if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { doShake(document.getElementById('name-inp')); return; }
   if (!S.grade) { doShake(document.getElementById('grade-picker')); return; }
   if (!S.location) { doShake(document.getElementById('location-picker')); return; }
+  if (!S.team) { showErr('e-team'); doShake(document.getElementById('team-picker')); return; }
+  hideErr('e-team');
   S.name = raw;
   S.initial = raw[0].toUpperCase();
   document.getElementById('name-inp').value = '';
@@ -3428,8 +3608,13 @@ function begin() {
   // pathway/reason, initiator, and why before Part 1 too. See afterCm() for the
   // validation + routing into Part 1, and CM_REASON_TIER_ for how the pathway picked
   // there (not this location) ends up deciding the actual tier.
-  if (S.location === 'Camp Mountaineer' || S.location === 'ISS') { goTo('cm'); return; }
-  goTo(1);
+  S._afterGate0Dest = (S.location === 'Camp Mountaineer' || S.location === 'ISS') ? 'cm' : 1;
+  // New staff check-in gate, right here before Part 1 begins, so an adult is present from
+  // the very start (previously the first check-in was only after Part 1 -- see pw-gate-1).
+  // Same in-place reveal pattern as that gate: hide the button that got them here, show the
+  // gate below it. See onGatePassed() for what happens once it's unlocked.
+  document.getElementById('welcome-nav-row').style.display = 'none';
+  document.getElementById('pw-gate-0').style.display = 'block';
 }
 
 function afterCm() {
@@ -3464,11 +3649,6 @@ function validatePart1() {
     ['q-think','e-think','Even if you weren\'t sure what you were thinking, write that. Honest is what matters here.'],
     ['q-why','e-why','This is the most important one. Write whatever is true for you, even if it\'s hard to explain.'],
   ];
-  // Team is only asked (and only required) for Removal from Lunch -- see jc-team/
-  // applyLocationContent_(). Every other location never shows this field at all.
-  if (S.location === 'Removal from Lunch') {
-    checks.push(['q-team','e-team','Pick which team this falls under.']);
-  }
   checks.forEach(([fid, eid, msg]) => {
     const el = document.getElementById(fid);
     if (thin(el.value)) {
@@ -3606,11 +3786,11 @@ const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 // ─── SQUAD SELECTION ──────────────────────────────────────────────────────
 function selectSquad(name, btn) {
   S.squad = name;
-  // Scoped to exclude .grade-btn -- grade buttons also carry the shared .squad-btn base
-  // class for styling, so an unscoped '.squad-btn' query here was clearing the grade
-  // button's 'selected' state (gold border) every time a squad color was picked,
-  // visually deselecting the grade even though S.grade itself was still set correctly.
-  document.querySelectorAll('.squad-btn:not(.grade-btn):not(.location-btn)').forEach(b => b.classList.remove('selected'));
+  // Scoped to exclude .grade-btn/.location-btn/.team-btn -- those buttons also carry the
+  // shared .squad-btn base class for styling, so an unscoped '.squad-btn' query here was
+  // clearing their 'selected' state every time a squad color was picked, visually
+  // deselecting them even though their own S.* value was still set correctly.
+  document.querySelectorAll('.squad-btn:not(.grade-btn):not(.location-btn):not(.team-btn)').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   // Apply squad theme to body
@@ -4357,6 +4537,7 @@ function goTo(n) {
   // Show quality meter on all reflective screens except welcome (0) and done
   const noMeter = [0, 'done'];
   document.getElementById('qmeter').classList.toggle('show', !noMeter.includes(n));
+  document.getElementById('rot-btn').classList.toggle('show', !noMeter.includes(n));
   saveDraft();
 }
 
@@ -4467,6 +4648,7 @@ async function checkGatePassword(gateNum) {
 
 function onGatePassed(gateNum, staffName) {
   showDraftCheckNotice('🔓 Unlocked by ' + (staffName || 'Staff'));
+  if (gateNum === '0') { S.gate0StaffName = staffName || null; goTo(S._afterGate0Dest); return; }
   if (gateNum === '1') { S.gate1StaffName = staffName || null; afterReading(); return; }
   if (gateNum === '2') { S.gate2StaffName = staffName || null; goTo(4); return; }
 }
@@ -4521,9 +4703,6 @@ function getPart1() {
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
     takeaway: gv('q-part1-takeaway'),
-    // Only meaningful for Removal from Lunch (see LOCATION_CONTENT_/jc-team) -- empty
-    // string for every other location, same as every other not-applicable field here.
-    team: gv('q-team'),
   };
 }
 function getPart2() {
@@ -4565,10 +4744,81 @@ async function callEdge(type, payload) {
 }
 
 // ─── SAVE TO SUPABASE ────────────────────────────────────────────────────
+// Upsert-aware: if submitRanOutOfTime() already inserted a row for this session (an early,
+// incomplete save), a real completed submission later must UPDATE that same row instead of
+// inserting a second one for the same session_id -- genericInsert_ always appends, it has
+// no upsert logic of its own.
 async function saveRow(row) {
   try {
-    await callBackend({ action: 'insert', table: 'reflections', row: row });
+    if (S._partialSaved) {
+      await callBackend({ action: 'update', table: 'reflections', match: { session_id: row.session_id }, patch: row });
+    } else {
+      await callBackend({ action: 'insert', table: 'reflections', row: row });
+    }
   } catch(e) { console.error('Save error:', e); }
+}
+
+// ─── RAN OUT OF TIME ────────────────────────────────────────────────────
+// Lets an adult save whatever's been written so far as an incomplete record, instead of a
+// student losing progress or being rushed to finish. Reuses the same staff-password check
+// as the mid-journal gates (checkStaffPassword_), but isn't tied to any one screen -- it can
+// be used from wherever the student happens to be when time runs out.
+function openRanOutOfTimeModal() {
+  document.getElementById('rot-modal').classList.add('show');
+  document.getElementById('rot-pw-input').value = '';
+  document.getElementById('rot-pw-error').style.display = 'none';
+  document.getElementById('rot-status').textContent = '';
+}
+
+function closeRanOutOfTimeModal() {
+  document.getElementById('rot-modal').classList.remove('show');
+}
+
+async function submitRanOutOfTime() {
+  const input = document.getElementById('rot-pw-input');
+  const err = document.getElementById('rot-pw-error');
+  const status = document.getElementById('rot-status');
+  const pw = input.value;
+  err.style.display = 'none';
+
+  let staffName = 'Staff';
+  if (IS_PREVIEW && pw === 'preview') {
+    staffName = 'Preview Staff';
+  } else {
+    try {
+      const result = await callBackend({ action: 'checkStaffPassword', password: pw });
+      if (!result || !result.ok) throw new Error('Incorrect password');
+      staffName = result.name || 'Staff';
+    } catch (e) {
+      err.style.display = 'block';
+      doShake(input);
+      input.value = '';
+      return;
+    }
+  }
+
+  status.style.color = 'var(--ink-light)';
+  status.textContent = '⏳ Saving…';
+
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  await saveRow({
+    session_id: S.sessionId, initial: S.initial,
+    student_name: S.name, grade: S.grade, squad: S.squad || null, team: S.team || null,
+    location: S.location, peak: S.peak,
+    cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
+    cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
+    cm_checklist_confirmed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmChecklistAgreed : null,
+    part1_json: p1, part2_json: p2, part3_json: p3,
+    prior_count: S.priorCount || 0, status: 'incomplete',
+    gate0_unlocked_by: S.gate0StaffName || null,
+    gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
+    ran_out_of_time_by: staffName,
+  });
+  S._partialSaved = true;
+
+  status.style.color = '#3fb950';
+  status.textContent = '✓ Saved — you can keep working, or close this device. Nothing is lost.';
+  setTimeout(closeRanOutOfTimeModal, 2500);
 }
 
 // ─── PART 1 SUBMIT ────────────────────────────────────────────────────────
@@ -5040,6 +5290,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Generated: ' + new Date().toLocaleString(),
     'Student: ' + (S.name || S.initial || '—') + (S.grade ? ' (Grade ' + S.grade + ')' : ''),
     (S.squad ? 'Squad: ' + S.squad : ''),
+    (S.team ? 'Team: ' + S.team : ''),
     (S.location ? 'Location: ' + S.location : ''),
     (S.peak ? 'Mountaineer Peaks Area: ' + S.peak : ''),
     (S.cmReason ? 'Camp Mountaineer Pathway: ' + S.cmReason : ''),
@@ -5166,7 +5417,6 @@ function buildEmailBody(result, p1, p2, p3) {
     'Where: ' + (p1.where || '—'),
     'When / what were you doing: ' + (p1.when || '—'),
     'What were you thinking: ' + (p1.thinking || '—'),
-    (p1.team ? 'Team: ' + p1.team : ''),
     'Why did you do it: ' + (p1.why || '—'),
     'Emotions during (' + (p1.intensityDuring || '—') + '/5): ' + (p1.emotionsDuring || []).join(', '),
     'Emotions now (' + (p1.intensityNow || '—') + '/5): ' + (p1.emotionsNow || []).join(', '),
@@ -5248,7 +5498,7 @@ async function doSubmit() {
 
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
-    student_name: S.name, grade: S.grade, squad: S.squad || null,
+    student_name: S.name, grade: S.grade, squad: S.squad || null, team: S.team || null,
     location: S.location, peak: S.peak,
     cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
     cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
@@ -5259,6 +5509,7 @@ async function doSubmit() {
     // 05_AdminAuth.gs. gate1/gate2 are already known by submission time; final_unlocked_by
     // isn't set until AFTER this row exists (the final unlock happens on this same screen,
     // post-submission) -- see the patch in unlockStaffSection() below.
+    gate0_unlocked_by: S.gate0StaffName || null,
     gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
   });
 

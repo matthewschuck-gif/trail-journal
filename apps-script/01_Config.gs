@@ -117,6 +117,21 @@ const SCHEMA = {
     // page later (see awardClashPoint_ in 07_ClashOfClasses.gs) knows which squad to award
     // the point to -- without this column there was no way to recover that after the fact.
     'squad',
+    // Which team referred this consequence (M/O/U/N/T/S/Building MTSS Team) -- collected
+    // on the welcome screen for every location now (not just Removal from Lunch, where it
+    // started -- see the paper form that came from). Top-level like squad/location/peak,
+    // not nested in part1_json, since it's demographic info, not Part 1 content.
+    'team',
+    // Records which staff member unlocked the NEW entry gate (pw-gate-0 in index.html) --
+    // added between the welcome/demographic screen and Part 1 so an adult must be present
+    // from the very start, not just at the two existing mid-journal check-ins. Same
+    // accountability-trail pattern as gate1_unlocked_by/gate2_unlocked_by above.
+    'gate0_unlocked_by',
+    // Which staff member authorized an early/incomplete save via the "Ran out of time"
+    // button (see submitRanOutOfTime() in index.html) -- null for every normal completed
+    // submission. Lets admin tell a genuinely-finished reflection apart from one a student
+    // didn't get to finish in the period, and who approved cutting it short.
+    'ran_out_of_time_by',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -253,6 +268,25 @@ function migrateAddClashFlagColumns_() {
  */
 function migrateAddSquadColumn_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['squad']);
+  safeAlert_(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before team was added to the
+ * reflections schema above. Same safe append-only behavior as the other migrate*_ helpers.
+ */
+function migrateAddTeamColumn_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['team']);
+  safeAlert_(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before gate0_unlocked_by and
+ * ran_out_of_time_by were added to the reflections schema above. Same safe append-only
+ * behavior as the other migrate*_ helpers.
+ */
+function migrateAddGate0AndRanOutOfTimeColumns_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['gate0_unlocked_by', 'ran_out_of_time_by']);
   safeAlert_(result);
 }
 

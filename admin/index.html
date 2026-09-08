@@ -308,6 +308,16 @@ tr:hover td{background:rgba(255,255,255,.02);}
                   <option>Office</option><option>ISS</option><option>Camp Mountaineer</option><option>Other</option>
                 </select>
               </div>
+              <div class="ed-field"><label class="ed-lbl">Clash of Classes Squad</label>
+                <select class="ed-inp" id="imp-squad"><option value="">—</option><option>Black</option><option>Gold</option><option>Grey</option><option>Purple</option></select>
+              </div>
+              <div class="ed-field"><label class="ed-lbl">Team</label>
+                <select class="ed-inp" id="imp-team">
+                  <option value="">—</option>
+                  <option>M</option><option>O</option><option>U</option><option>N</option><option>T</option><option>S</option>
+                  <option>Building MTSS Team</option>
+                </select>
+              </div>
               <div class="ed-field"><label class="ed-lbl">Tier (which parts were completed)</label>
                 <select class="ed-inp" id="imp-tier">
                   <option value="office">Office (Part 1 only)</option>
@@ -1066,6 +1076,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="name" checked> Student Name</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="grade" checked> Grade</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="squad"> Clash of Classes Squad</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="team"> Team</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="location" checked> Location</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="peak"> Mountaineer Peaks Area</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_reason"> Camp Mountaineer Pathway</label>
@@ -2033,6 +2044,7 @@ const EXPORT_COLS = {
   name:           { label: 'Student Name',          fn: r => r.student_name || '' },
   grade:          { label: 'Grade',                 fn: r => r.grade || '' },
   squad:          { label: 'Clash of Classes Squad', fn: r => r.squad || '' },
+  team:           { label: 'Team',                  fn: r => r.team || '' },
   location:       { label: 'Location',              fn: r => r.location || '' },
   peak:           { label: 'Mountaineer Peaks Area', fn: r => r.peak || '' },
   cm_reason:      { label: 'Camp Mountaineer Pathway', fn: r => r.cm_reason || '' },
@@ -2423,6 +2435,8 @@ async function submitImportForm() {
     initial: name[0].toUpperCase(),
     student_name: name,
     grade: gv('imp-grade'),
+    squad: gv('imp-squad') || null,
+    team: gv('imp-team') || null,
     location: gv('imp-location'),
     insight_level: gv('imp-insight') || 'Medium',
     status: 'submitted',
