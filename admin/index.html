@@ -1065,6 +1065,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="date" checked> Submission Date</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="name" checked> Student Name</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="grade" checked> Grade</label>
+            <label class="exp-col-label"><input type="checkbox" class="exp-col" value="squad"> Clash of Classes Squad</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="location" checked> Location</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="peak"> Mountaineer Peaks Area</label>
             <label class="exp-col-label"><input type="checkbox" class="exp-col" value="cm_reason"> Camp Mountaineer Pathway</label>
@@ -1981,7 +1982,7 @@ function copyBrief() { navigator.clipboard.writeText(document.getElementById('br
 
 // ── FEATURE 9: CLASH FLAGS ────────────────────────────────────────────────
 async function loadClashFlags() {
-  const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,student_name,grade,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
+  const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,student_name,grade,squad,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
   if (!data || !data.length) {
     document.getElementById('clash-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏆</div><p>No High insight flags yet.</p></div>';
     return;
@@ -1989,28 +1990,37 @@ async function loadClashFlags() {
   const rows = data.map(r => {
     const d = new Date(r.created_at).toLocaleDateString();
     const awarded = r.clash_points_awarded;
+    const squad = (r.squad || '—').toUpperCase();
+    const noSquad = !r.squad;
     return `<tr>
       <td><strong>${r.student_name||r.initial||'?'}</strong></td>
       <td>${r.grade||'—'}</td>
+      <td>${squad}</td>
       <td>${d}</td>
       <td>${(r.part3_json?.trait||'—').split('&')[0]}</td>
       <td style="color:var(--green);font-weight:700">High</td>
-      <td>${awarded ? '<span style="color:var(--green)">✓ Awarded</span>' : '<span style="color:var(--muted)">Pending</span>'}</td>
-      <td>${!awarded ? `<button class="save-btn" style="padding:5px 12px;font-size:.74rem" onclick="awardPoint('${r.session_id}',this)">Award Point</button>` : ''}</td>
+      <td>${awarded ? '<span style="color:var(--green)">✓ Awarded</span>' : (noSquad ? '<span style="color:var(--muted)">No squad on file</span>' : '<span style="color:var(--muted)">Pending</span>')}</td>
+      <td>${!awarded && !noSquad ? `<button class="save-btn" style="padding:5px 12px;font-size:.74rem" onclick="awardPoint('${r.session_id}',this)">Award Point</button>` : ''}</td>
     </tr>`;
   }).join('');
   document.getElementById('clash-tbl-body').innerHTML =
-    `<table><thead><tr><th>Name</th><th>Grade</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table><thead><tr><th>Name</th><th>Grade</th><th>Squad</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+// Writes directly to the real clashofclasses.org backend (a separate Google Sheet's
+// "events" tab) via awardClashPoint_ in apps-script/07_ClashOfClasses.gs -- see that file
+// for why this replaced the old automatic client-side Supabase write. Admin-gated (staff
+// password already sent as part of every `true`-flagged callBackend call).
 async function awardPoint(sessionId, btn) {
   btn.textContent = 'Awarding…'; btn.disabled = true;
-  await sb('reflections?session_id=eq.' + sessionId, {
-    method:'PATCH', headers:{Prefer:'return=minimal'},
-    body: JSON.stringify({ clash_points_awarded: true })
-  });
-  btn.closest('tr').querySelector('td:nth-child(5)').innerHTML = '<span style="color:var(--green)">✓ Awarded</span>';
-  btn.closest('td').innerHTML = '';
+  try {
+    await callBackend({ action: 'awardClashPoint', payload: { sessionId } }, true);
+    btn.closest('tr').querySelector('td:nth-child(5)').innerHTML = '<span style="color:var(--green)">✓ Awarded</span>';
+    btn.closest('td').innerHTML = '';
+  } catch (e) {
+    alert('Could not award point: ' + e.message);
+    btn.textContent = 'Award Point'; btn.disabled = false;
+  }
 }
 
 // ── EXPORT TO SHEETS ──────────────────────────────────────────────────────
@@ -2022,6 +2032,7 @@ const EXPORT_COLS = {
   date:           { label: 'Date',                  fn: r => r.created_at ? new Date(r.created_at).toLocaleDateString() : '' },
   name:           { label: 'Student Name',          fn: r => r.student_name || '' },
   grade:          { label: 'Grade',                 fn: r => r.grade || '' },
+  squad:          { label: 'Clash of Classes Squad', fn: r => r.squad || '' },
   location:       { label: 'Location',              fn: r => r.location || '' },
   peak:           { label: 'Mountaineer Peaks Area', fn: r => r.peak || '' },
   cm_reason:      { label: 'Camp Mountaineer Pathway', fn: r => r.cm_reason || '' },

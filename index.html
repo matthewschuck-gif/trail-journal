@@ -3594,89 +3594,14 @@ async function checkPriorReflections(initial) {
   } catch(e) { return []; }
 }
 
-// ─── CLASH OF CLASSES BRIDGE — SUPABASE ──────────────────────────────────
+// ─── CLASH OF CLASSES BRIDGE — SUPABASE (leaderboard READ only) ──────────
+// Point AWARDING no longer happens here -- see awardClashPoint_ in
+// apps-script/07_ClashOfClasses.gs, triggered by staff approval on the admin Clash Flags
+// page, which writes to the real clashofclasses.org backend (a separate Google Sheet) --
+// not this Supabase project, which this file now only reads from to render the leaderboard
+// below.
 const COC_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
 const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
-
-async function awardClashPoints(initial, sessionId, insightLevel) {
-  if (insightLevel !== 'High' || !S.squad) return;
-  try {
-    const squad = S.squad.toUpperCase(); // BLACK, GOLD, GREY, PURPLE
-
-    // 1. Read current CoC data
-    const readRes = await fetch(
-      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
-      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
-    );
-    const rows = await readRes.json();
-    if (!rows || !rows[0]) throw new Error('CoC data not found');
-    const coc = rows[0].value;
-
-    // 2. Build a new event entry (matches CoC event structure)
-    const newId = (coc.nextId || 200);
-    const today = new Date().toISOString().split('T')[0];
-    const pts = { GOLD: 0, GREY: 0, BLACK: 0, PURPLE: 0 };
-    pts[squad] = 1;
-
-    const newEvent = {
-      id: newId,
-      name: `Trail Journal Growth — ${squad} (+1 pt)`,
-      note: `High insight reflection by ${initial} — Trail Journal`,
-      type: 'trail_journal',
-      date: today,
-      pts,
-    };
-
-    const newActivity = {
-      ts: Date.now(),
-      time: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
-      action: `Trail Journal Growth: +1 to ${squad} (Initial: ${initial})`,
-    };
-
-    // 3. Patch the JSONB — append event, increment nextId, add activity log entry
-    // Freudenfreude ticker entry — community visible, no student details
-    const freudenEntry = {
-      ts: Date.now(),
-      type: 'trail_journal',
-      squad: squad,
-      message: `A Mountaineer found their way back to the trail — growth point for ${S.squad}`,
-      pts: 1,
-    };
-
-    const newHistEntry = { type: 'event', name: newEvent.name, pts, time: new Date().toISOString() };
-    const updatedValue = {
-      ...coc,
-      nextId: newId + 1,
-      events: [...(coc.events || []), newEvent],
-      // prepend so CoC's history panel (.slice(0,60) from front) shows this entry
-      history: [newHistEntry, ...(coc.history || [])],
-      // prepend + cap at 50 to match CoC's logActivity() pattern
-      activityLog: [newActivity, ...(coc.activityLog || [])].slice(0, 50),
-      freudenLog: [...(coc.freudenLog || []), freudenEntry],
-    };
-
-    await fetch(
-      `${COC_URL}/rest/v1/app_data?key=eq.coc`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: COC_ANON,
-          Authorization: 'Bearer ' + COC_ANON,
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({ value: updatedValue }),
-      }
-    );
-
-    // 4. Mark awarded on the reflection record
-    await callBackend({ action: 'update', table: 'reflections', match: { session_id: sessionId }, patch: { clash_flagged: true, clash_points_awarded: true } });
-
-    console.log(`✓ Clash point awarded to ${squad} via Trail Journal`);
-  } catch(e) {
-    console.error('Clash bridge error:', e);
-  }
-}
 
 // ─── SQUAD SELECTION ──────────────────────────────────────────────────────
 function selectSquad(name, btn) {
@@ -5224,7 +5149,7 @@ function buildEmailBody(result, p1, p2, p3) {
   ].join('\n');
 
   const blockClash = (result.insightLevel === 'High' && S.squad)
-    ? '🏆 Clash of Classes: +1 point automatically awarded to ' + S.squad + ' Squad.'
+    ? '🏆 Clash of Classes: flagged for a possible +1 point to ' + S.squad + ' Squad — pending staff review on the admin Clash Flags page.'
     : '';
 
   // Every raw answer, verbatim, labeled -- separate from the AI-written narrative/summary
@@ -5323,7 +5248,7 @@ async function doSubmit() {
 
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
-    student_name: S.name, grade: S.grade,
+    student_name: S.name, grade: S.grade, squad: S.squad || null,
     location: S.location, peak: S.peak,
     cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
     cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
@@ -5374,14 +5299,17 @@ async function doSubmit() {
       // email (buildEmailBody's blockFullReflection) -- written back to the Sheet as one
       // plain-text column so the raw part1_json/part2_json/part3_json blobs have a
       // human-readable sibling, no JSON parsing needed to review a submission.
+      // clash_flagged: surfaces this row on the admin Clash Flags page for review --
+      // the actual Clash of Classes point is no longer awarded automatically here (see
+      // awardClashPoint_ in apps-script/07_ClashOfClasses.gs); a staff member reviews and
+      // approves it from that page, which is what actually writes to the real
+      // clashofclasses.org backend (a separate Google Sheet).
       callBackend({ action: 'update', table: 'reflections', match: { session_id: S.sessionId }, patch: {
         goal: result.studentGoal||null, insight_level: result.insightLevel||null,
         reflection_text: buildEmailBody(result || {}, p1, p2, p3),
+        clash_flagged: result.insightLevel === 'High',
       }}).catch(e => console.error(e));
     }
-
-    // Feature 9: Clash bridge
-    if (result.insightLevel === 'High') awardClashPoints(S.initial, S.sessionId, 'High');
 
     // Populate staff-side reading list and practice plan (hidden until password entered)
     if (result.practicePlan) {

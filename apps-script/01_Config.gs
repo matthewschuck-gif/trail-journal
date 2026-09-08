@@ -100,16 +100,23 @@ const SCHEMA = {
     // at the end, same safe pattern as every other migrate*_ helper below.
     'reflection_text',
     // Clash of Classes bookkeeping on the Trail Journal's own row -- separate from the
-    // actual point award, which awardClashPoints() in index.html writes straight to the
-    // CoC leaderboard's own Supabase-backed app_data table (COC_URL/COC_ANON) the moment a
-    // High-insight submission comes in. These two columns exist so THIS record can say
-    // "yes, a point was already given for this row" -- without them, the admin Clash Flags
-    // page's clash_flagged=eq.true filter silently matched nothing was ever filtered out
-    // (genericQuery_ ignores a filter on a column that doesn't exist), and its "Award
-    // Point" button's patch silently no-opped (genericUpdate_ skips unknown columns) --
+    // actual point award, which awardClashPoint_ (07_ClashOfClasses.gs) writes straight to
+    // the real clashofclasses.org backend (a separate Google Sheet's "events" tab) once a
+    // staff member approves it on the admin Clash Flags page. These two columns exist so
+    // THIS record can say "yes, a point was already given for this row" -- without them,
+    // the admin Clash Flags page's clash_flagged=eq.true filter silently matched nothing
+    // was ever filtered out (genericQuery_ ignores a filter on a column that doesn't
+    // exist), and its "Award Point" button's patch silently no-opped (genericUpdate_ skips
+    // unknown columns) --
     // meaning the page listed every submission, not just flagged ones, and could never
     // actually record a manual award. See migrateAddClashFlagColumns_() below.
     'clash_flagged', 'clash_points_awarded',
+    // The student's Clash of Classes squad (BLACK/GOLD/GREY/PURPLE), picked on the welcome
+    // screen -- previously only ever held in the browser's in-memory S.squad, never saved
+    // anywhere server-side. Needed now so an admin reviewing this row on the Clash Flags
+    // page later (see awardClashPoint_ in 07_ClashOfClasses.gs) knows which squad to award
+    // the point to -- without this column there was no way to recover that after the fact.
+    'squad',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
@@ -237,6 +244,15 @@ function migrateAddReflectionTextColumn_() {
  */
 function migrateAddClashFlagColumns_() {
   const result = addMissingColumns_(TABS.REFLECTIONS, ['clash_flagged', 'clash_points_awarded']);
+  SpreadsheetApp.getUi().alert(result);
+}
+
+/**
+ * Run this ONCE, only if you already ran setupSpreadsheet() before squad was added to the
+ * reflections schema above. Same safe append-only behavior as the other migrate*_ helpers.
+ */
+function migrateAddSquadColumn_() {
+  const result = addMissingColumns_(TABS.REFLECTIONS, ['squad']);
   SpreadsheetApp.getUi().alert(result);
 }
 

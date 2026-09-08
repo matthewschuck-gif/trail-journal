@@ -101,6 +101,7 @@ function enforceAdminGate_(body) {
     // insert/update actions on that table directly instead of going through those functions.
     (body.action === 'uploadPeaksPoster' || body.action === 'resetPeaksPoster') ||
     (body.action === 'setOfficeRecordRecipients') ||
+    (body.action === 'awardClashPoint') ||
     (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;

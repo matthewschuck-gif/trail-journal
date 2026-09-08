@@ -86,6 +86,9 @@ function handleRequest_(e, method) {
       case 'setOfficeRecordRecipients':
         result = setOfficeRecordRecipients_(body.payload);
         break;
+      case 'awardClashPoint':
+        result = awardClashPoint_(body.payload);
+        break;
       default:
         throw new Error('Unknown action: ' + body.action);
     }
