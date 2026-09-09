@@ -3518,13 +3518,34 @@ function setChecked(selector, count) {
   const els = document.querySelectorAll(selector);
   for (let i = 0; i < Math.min(count, els.length); i++) els[i].checked = true;
 }
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 async function fillDummyEntryAndSubmit() {
-  S.grade = S.grade || '8';
-  S.location = S.location || 'Lunch Detention';
+  // Randomize the welcome-screen (grade/location/squad/team) selections for variety across
+  // repeated test runs -- but only whatever's still unset, so "click a specific location,
+  // then click Fill Dummy Data" still reliably tests that exact one. Clicking the real
+  // button (not just setting S.*) exercises the actual selectGrade_()/etc. code path, so the
+  // visual 'selected' state and side effects like applyLocationContent_() still happen.
+  if (!S.grade) {
+    const btn = document.querySelector('[data-grade="' + pickRandom(['7', '8']) + '"]');
+    if (btn) btn.click(); else S.grade = '8';
+  }
+  if (!S.location) {
+    const btn = document.querySelector('[data-loc="' + pickRandom(Object.keys(LOCATION_TIER_)) + '"]');
+    if (btn) btn.click(); else S.location = 'Lunch Detention';
+  }
   S.tier = LOCATION_TIER_[S.location] || 'full';
-  S.squad = S.squad || 'Gold';
-  S.team = S.team || 'M';
+  if (!S.squad) {
+    const squad = pickRandom(['Black', 'Gold', 'Grey', 'Purple']);
+    const btn = document.querySelector('.sq-' + squad.toLowerCase());
+    if (btn) btn.click(); else S.squad = squad;
+  }
+  if (!S.team) {
+    const btn = document.querySelector('.team-btn[data-team="' + pickRandom(['M', 'O', 'U', 'N', 'T', 'S']) + '"]');
+    if (btn) btn.click(); else S.team = 'M';
+  }
   S.peak = S.peak || 'Be Present';
   S.name = S.name || 'Test Student';
   S.initial = S.initial || 'T';
