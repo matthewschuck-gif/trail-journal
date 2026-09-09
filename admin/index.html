@@ -1750,7 +1750,9 @@ function openModal(r) {
       ${(ai.followUpFlags||[]).map(f=>`<div class="di dflag">⚠️ ${f}</div>`).join('')}
     </div>` : ''}
     ${(ai.cpsScript||[]).length ? `<div class="ds"><h4>CPS Conference Script</h4>${ai.cpsScript.map(l=>`<div class="scr-line"><span class="scr-spk">${l.speaker}</span><span class="scr-txt">"${l.text}"</span></div>`).join('')}</div>` : ''}
-    ${(ai.studentReadingList||[]).length ? `<div class="ds"><h4>Student Reading List</h4>${ai.studentReadingList.map(i=>`<div class="rl-item"><strong>${i.title}</strong>${i.topic?' — '+i.topic:''}<br>${i.whyRelevant||''}</div>`).join('')}</div>` : ''}
+    ${(ai.studentReadingList||[]).length ? `<div class="ds"><h4>Student Reading List</h4>
+      <p style="font-size:.76rem;color:var(--muted);font-style:italic;margin-bottom:8px">⚠️ AI-suggested titles only — not for the student to read unsupervised. Review each one and use your professional judgement before sharing.</p>
+      ${ai.studentReadingList.map(i=>`<div class="rl-item"><strong>${i.title}</strong>${i.topic?' — '+i.topic:''}<br>${i.whyRelevant||''}</div>`).join('')}</div>` : ''}
   `;
   document.getElementById('modal').classList.add('open');
 }

@@ -2784,6 +2784,7 @@ body.squad-purple {
           <div class="reading-panel">
             <div class="ai-badge-row"><div class="ai-badge">📚 Reading List</div></div>
             <ul class="read-list" id="read-list"></ul>
+            <p style="font-family:'Barlow',sans-serif;font-size:.74rem;color:var(--ink-light);line-height:1.5;margin-top:10px;font-style:italic">⚠️ AI-suggested titles only — not for the student to read on their own. Review each one and use your professional judgement before deciding whether and how to share it.</p>
           </div>
         </div>
 
@@ -5427,7 +5428,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Recommended Strategies:',
     ...(resources.strategies || []).map(s => '  • ' + s),
     ...(result.studentReadingList && result.studentReadingList.length
-      ? ['', 'AI-Selected Reading List:', ...result.studentReadingList.map(r => '  • ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n    ' + r.whyRelevant)]
+      ? ['', 'AI-Selected Reading List (possible titles only -- review each one and use your professional judgement before sharing; not for the student to read unsupervised):', ...result.studentReadingList.map(r => '  • ' + r.title + (r.topic ? ' — ' + r.topic : '') + '\n    ' + r.whyRelevant)]
       : []),
     ...(result.practicePlan
       ? ['', 'Weekly Practice Plan:', ...(result.practicePlan.days || []).map(d => '  ' + d.day + ': ' + d.task)]
