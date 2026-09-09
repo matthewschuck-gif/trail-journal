@@ -167,6 +167,10 @@ body::before {
 }
 .rot-btn.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .rot-btn:hover { color: var(--red); border-color: var(--red); }
+/* The preview-mode banner (bottom:0, ~53px tall, z-index:9999) otherwise completely covers
+   both of these -- see the .is-preview class added alongside that banner. */
+body.is-preview .rot-btn,
+body.is-preview .quality-float { bottom: 66px; }
 .rot-modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500;
   display: none; align-items: center; justify-content: center; padding: 20px;
@@ -3025,6 +3029,12 @@ if (IS_PREVIEW) {
   banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#4a2d7f;color:white;text-align:center;padding:10px;font-family:Barlow,sans-serif;font-size:.82rem;z-index:9999;';
   banner.innerHTML = '🔐 <strong>Admin Preview Mode</strong> — Validation is disabled. <a href="?" style="color:#c9a84c;margin-left:12px">Exit Preview</a>';
   document.body.appendChild(banner);
+  // This banner sits full-width at the very bottom of the viewport at a very high z-index --
+  // it was completely covering the fixed-bottom rot-btn/quality-float widgets (both normally
+  // sit at bottom:20px, well within this banner's ~53px height), making "Ran Out of Time"
+  // invisible and unclickable in preview mode even though it existed correctly in the DOM.
+  // This class pushes both up above the banner -- see the .is-preview rules in <style>.
+  document.body.classList.add('is-preview');
   // Show bypass buttons for gated screens
   document.addEventListener('DOMContentLoaded', () => {
     const bypass = document.getElementById('lc-preview-bypass');
