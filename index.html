@@ -3530,6 +3530,21 @@ async function fillDummyEntryAndSubmit() {
   S.name = S.name || 'Test Student';
   S.initial = S.initial || 'T';
 
+  // Camp Mountaineer / ISS route through their own pre-page, which sets S.tier itself
+  // (CM_REASON_TIER_) instead of LOCATION_TIER_ above -- fill it here since this button
+  // skips that screen entirely. 'ISS' reason exercises the one pathway that also requires
+  // the Effort Agreement + Student Checklist confirmations (CM_REASON_REQUIRES_EFFORT_).
+  if (S.location === 'Camp Mountaineer' || S.location === 'ISS') {
+    S.cmReason = S.cmReason || 'ISS';
+    S.cmInitiatedBy = S.cmInitiatedBy || 'Staff-Initiated';
+    S.cmWhy = S.cmWhy || 'Reflection check-in following a classroom incident.';
+    S.tier = CM_REASON_TIER_[S.cmReason] || 'full';
+    if (S.cmReason === CM_REASON_REQUIRES_EFFORT_) {
+      S.cmChecklistAgreed = true;
+      S.cmEffortAgreed = true;
+    }
+  }
+
   // Part 1
   setVal('q-what', 'I pushed a classmate in the hallway during a passing period.');
   setVal('q-who', 'Jordan');
