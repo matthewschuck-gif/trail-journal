@@ -1886,6 +1886,12 @@ body.squad-purple {
       <input type="text" id="q-think" placeholder="Be honest — what was actually going through your mind?">
       <div class="val-msg" id="e-think">Even if you weren't sure what you were thinking, write that. Honest is what matters here.</div>
     </div>
+    <!-- Removal from Lunch only -- matches its paper form's repeat-frequency question. -->
+    <div class="ig hidden" id="ig-repeat-count">
+      <label for="q-repeat-count">How many times have you been asked to finish lunch in this area?</label>
+      <input type="text" id="q-repeat-count" placeholder="e.g. This is the first time, or a number…">
+      <div class="val-msg" id="e-repeat-count">Give us a sense — even "first time" or "not sure" is fine.</div>
+    </div>
   </div>
 
   <div class="jcard" id="jc-why">
@@ -1952,6 +1958,13 @@ body.squad-purple {
   </div>
 
   <!-- EMOTIONS: ZONE-BASED PICKER -->
+  <!-- EMOTIONS SECTION -- hidden entirely for Removal from Lunch (see applyLocationContent_()
+       and REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_): that location's own paper form has no emotions
+       question at all, and its 10-minute time limit doesn't allow for it. Every other
+       detention-tier location keeps this. S.eduring/S.enow simply stay empty arrays when
+       skipped -- getPart1() already falls back gracefully (intensity defaults to 3, empty
+       name lists), no validation anywhere requires an emotion to be picked. -->
+  <div id="emotions-section-wrap">
   <div class="jcard" id="jc-emo-during">
     <div class="jcard-label" id="lbl-emo-during">How Were You Feeling?</div>
     <div class="jcard-sub" id="sub-emo-during">Emotions are messengers — they're telling you something. Browse the zones below and pick up to 3 emotions you felt <strong>before or during</strong> what happened. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.</div>
@@ -2033,6 +2046,7 @@ body.squad-purple {
       <textarea id="q-yn" aria-labelledby="lbl-yn" rows="3" placeholder="Explain the change — or why you feel the same way now as you did then…"></textarea>
     </div>
   </div>
+  </div><!-- /emotions-section-wrap -->
 
   <!-- DEFINITION POPUP -->
   <div class="emo-def-popup" id="emo-def-popup">
@@ -3273,23 +3287,30 @@ function selectGrade(grade, btn) {
 
 // Maps the "where are you completing this" answer to which tier of journal the student
 // gets. See goTo helpers afterReading()/afterPart2() and doSubmit() for how each tier
-// skips (or doesn't skip) Part 2/Part 3.
-//   office:    Part 1 + one short repair note only (shortest -- Office is
-//              explicitly "periods of time" per the Discipline Referral System guide).
-//   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan.
-//   full:      Part 1 + Part 2 + Part 3 -- Part 3's growth plan folds in community/
-//              service language for ISS and Camp Mountaineer.
+// skips (or doesn't skip) Part 2/Part 3. Matt's intended length ordering (shortest to
+// longest): Removal from Lunch < Lunch Detention = Office < Morning Detention =
+// Afterschool Detention.
+//   office:    Part 1 + one short repair note only (shortest structurally -- no welcome-
+//              screen location maps here directly anymore; still used by several Camp
+//              Mountaineer check-in reasons, see CM_REASON_TIER_ below).
+//   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan. Lunch Detention
+//              and Office share this length. Removal from Lunch is also this tier but reads
+//              shorter in practice, since it skips Part 1's whole emotions section (see
+//              applyLocationContent_() / REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_ below) -- its
+//              paper form has no emotions question and a 10-minute time limit.
+//   full:      Part 1 + Part 2 + Part 3 -- Part 3's growth plan folds in community/service
+//              language for ISS and Camp Mountaineer. Morning and Afterschool Detention also
+//              use this tier, per Matt: both should run longer than Lunch Detention/Office.
 const LOCATION_TIER_ = {
   'Lunch Detention': 'detention',
-  'Morning Detention': 'detention',
-  'Afterschool Detention': 'detention',
-  // Removal from Lunch is a short consequence like Lunch Detention -- Part 1 + Part 2 only,
-  // no growth plan. The student still picks their actual incident location (e.g. Cafeteria)
-  // on Part 1's "Where did it happen?" dropdown, which already drives the Peaks reference
-  // card independently of this welcome-screen consequence picker -- no LOCATION_PEAKS_DISPLAY_
-  // change needed.
+  'Morning Detention': 'full',
+  'Afterschool Detention': 'full',
+  // The student still picks their actual incident location (e.g. Cafeteria, or one of the
+  // Removal-from-Lunch-specific cafeteria sub-locations) on Part 1's "Where did it happen?"
+  // dropdown, which already drives the Peaks reference card independently of this
+  // welcome-screen consequence picker -- see WHERE_OPTIONS_REMOVAL_FROM_LUNCH_ below.
   'Removal from Lunch': 'detention',
-  'Office': 'office',
+  'Office': 'detention',
   // ISS and Camp Mountaineer both route into the Camp Mountaineer pre-page (screen-cm)
   // before Part 1 -- the tier value set here is only a placeholder until the student
   // picks their actual pathway there, which re-sets S.tier via CM_REASON_TIER_.
@@ -3331,19 +3352,52 @@ const DEFAULT_CONTENT_ = {
 // Removal from Lunch is a short (detention-tier) journal like the others, but its content
 // is drawn from the actual "Lunchtime Redirection Reflection" paper form Matt uses for this
 // consequence, so the wording here is matched to that form rather than the generic copy
-// every other detention-tier location shares. Every other location is untouched.
+// every other detention-tier location shares. Every other location is untouched. No
+// emotion-label overrides here anymore -- that whole section is hidden for this location
+// (see emotions-section-wrap / REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_ below), so those labels
+// are never shown regardless of wording.
 const LOCATION_CONTENT_ = {
   'Removal from Lunch': {
     'lbl-why': 'Why Did You Do It? Describe Your Reasoning.',
     'sub-why': 'What was your goal or rationale for completing this action?',
-    'lbl-emo-during': 'What Emotions Were You Experiencing?',
-    'sub-emo-during': 'Browse the zones below and pick up to 3 emotions you were experiencing <strong>at the time</strong>. Tap the <strong>ⓘ</strong> on any emotion to learn what it means.',
-    'lbl-emo-now': 'What Do You Feel Now?',
-    'sub-emo-now': 'What do you feel now about what happened? Pick up to 3 emotions you feel <strong>right now</strong>.',
-    'lbl-yn': 'Was There a Change in Emotions Picked?',
-    'sub-yn': 'Think about why there was (or wasn\'t) a change between then and now.',
   },
 };
+
+// Locations whose whole Part 1 emotions section is hidden -- currently just Removal from
+// Lunch (its paper form has no emotions question, and its 10-minute limit doesn't allow for
+// one). S.eduring/S.enow simply stay empty arrays when skipped; getPart1() already handles
+// that gracefully (intensity defaults to 3, empty name lists) with no validation depending
+// on an emotion being picked.
+const REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_ = ['Removal from Lunch'];
+
+// "Where did it happen?" (q-where) options -- Removal from Lunch shows cafeteria-specific
+// sub-locations matching its paper form instead of the general list every other location
+// uses. All of these normalize to 'Cafeteria' for Peaks reference/poster purposes (see
+// normalizePeaksLocation_() below) rather than needing 4 duplicate poster-override entries.
+const WHERE_OPTIONS_GENERAL_ = [
+  ['', 'Select a location…'],
+  ['Classroom', 'Classroom'],
+  ['Hallways', 'Hallways'],
+  ['Cafeteria', 'Cafeteria'],
+  ['Auditorium', 'Auditorium'],
+  ['Bathroom', 'Bathroom'],
+  ['Media Center', 'Media Center'],
+  ['Traveling To & From School', 'Traveling To &amp; From School (bus, car line, walking)'],
+  ['Digital Environment', 'Digital Environment (device, online, phone)'],
+  ['Other', 'Other / not listed'],
+];
+const WHERE_OPTIONS_REMOVAL_FROM_LUNCH_ = [
+  ['', 'Select a location…'],
+  ['Hallway on the way to lunch', 'Hallway on the way to lunch'],
+  ['At my lunch table', 'At my lunch table'],
+  ['In the lunch line', 'In the lunch line'],
+  ['Cafeteria bathroom', 'Cafeteria bathroom'],
+  ['Other', 'Other / not listed'],
+];
+const CAFETERIA_SUBLOCATION_VALUES_ = ['Hallway on the way to lunch', 'At my lunch table', 'In the lunch line', 'Cafeteria bathroom'];
+function normalizePeaksLocation_(where) {
+  return CAFETERIA_SUBLOCATION_VALUES_.indexOf(where) !== -1 ? 'Cafeteria' : where;
+}
 
 function applyLocationContent_() {
   const overrides = LOCATION_CONTENT_[S.location] || {};
@@ -3351,6 +3405,22 @@ function applyLocationContent_() {
     const el = document.getElementById(id);
     if (el) el.innerHTML = overrides[id] || DEFAULT_CONTENT_[id];
   });
+
+  const emoWrap = document.getElementById('emotions-section-wrap');
+  if (emoWrap) emoWrap.classList.toggle('hidden', REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_.indexOf(S.location) !== -1);
+
+  const repeatCountWrap = document.getElementById('ig-repeat-count');
+  if (repeatCountWrap) repeatCountWrap.classList.toggle('hidden', S.location !== 'Removal from Lunch');
+
+  const whereSelect = document.getElementById('q-where');
+  if (whereSelect) {
+    const opts = S.location === 'Removal from Lunch' ? WHERE_OPTIONS_REMOVAL_FROM_LUNCH_ : WHERE_OPTIONS_GENERAL_;
+    const currentVal = whereSelect.value;
+    whereSelect.innerHTML = opts.map(([v, label]) => `<option value="${v}">${label}</option>`).join('');
+    // Keep the current selection only if it's still a valid option in the new list --
+    // otherwise reset to blank rather than silently keeping an option that's no longer shown.
+    whereSelect.value = opts.some(([v]) => v === currentVal) ? currentVal : '';
+  }
 }
 
 function selectPeak(peak, btn) {
@@ -3580,9 +3650,12 @@ async function fillDummyEntryAndSubmit() {
   setVal('q-what', 'I pushed a classmate in the hallway during a passing period.');
   setVal('q-who', 'Jordan');
   setVal('q-witness', 'Alex and Ms. Rivera');
-  setVal('q-where', 'Hallways');
+  // 'Hallways' isn't a valid option for Removal from Lunch's swapped-in cafeteria
+  // sub-location list -- pick whichever list actually applies to the selected location.
+  setVal('q-where', S.location === 'Removal from Lunch' ? 'At my lunch table' : 'Hallways');
   setVal('q-when', 'Passing time after 3rd period');
   setVal('q-think', "I thought it would be funny and didn't think about how it would land.");
+  setVal('q-repeat-count', 'Second time this month');
   setVal('q-why', 'I was annoyed and wanted to get a reaction.');
   setVal('cps1', "We'd been joking around all week.");
   setVal('cps2', 'Looking tough in front of friends.');
@@ -3695,6 +3768,12 @@ function validatePart1() {
     ['q-think','e-think','Even if you weren\'t sure what you were thinking, write that. Honest is what matters here.'],
     ['q-why','e-why','This is the most important one. Write whatever is true for you, even if it\'s hard to explain.'],
   ];
+  // Matches its paper form's required repeat-frequency question -- only asked (and only
+  // required) for Removal from Lunch, same pattern as the old jc-team/Team field before it
+  // became a general demographic question.
+  if (S.location === 'Removal from Lunch') {
+    checks.push(['q-repeat-count','e-repeat-count','Give us a sense — even "first time" or "not sure" is fine.']);
+  }
   checks.forEach(([fid, eid, msg]) => {
     const el = document.getElementById(fid);
     if (thin(el.value)) {
@@ -4749,6 +4828,9 @@ function getPart1() {
     emotionChange: S.yn, emotionChangeReason: gv('q-yn'),
     cpsUnsolvedProblem: gv('cps1'), cpsMyConcern: gv('cps2'), cpsTheirConcern: gv('cps3'),
     takeaway: gv('q-part1-takeaway'),
+    // Removal from Lunch only -- matches its paper form's repeat-frequency question. Empty
+    // string for every other location, same as every other not-applicable field here.
+    repeatCount: gv('q-repeat-count'),
   };
 }
 function getPart2() {
@@ -4992,7 +5074,10 @@ function renderLocationReference() {
   const label = document.getElementById('peak-loc-label');
   const box = document.getElementById('peak-loc-reference');
   if (!box) return;
-  const where = gv('q-where');
+  // Removal from Lunch's cafeteria-specific sub-locations (Hallway on the way to lunch, At
+  // my lunch table, etc.) all normalize to 'Cafeteria' here -- same Peaks content and poster
+  // as a direct Cafeteria pick, no duplicate entries needed. See normalizePeaksLocation_().
+  const where = normalizePeaksLocation_(gv('q-where'));
   const ref = LOCATION_PEAKS_DISPLAY_[where];
 
   const posterImg = document.getElementById('peak-loc-poster');
@@ -5463,6 +5548,7 @@ function buildEmailBody(result, p1, p2, p3) {
     'Where: ' + (p1.where || '—'),
     'When / what were you doing: ' + (p1.when || '—'),
     'What were you thinking: ' + (p1.thinking || '—'),
+    (p1.repeatCount ? 'How many times asked to finish lunch in this area: ' + p1.repeatCount : ''),
     'Why did you do it: ' + (p1.why || '—'),
     'Emotions during (' + (p1.intensityDuring || '—') + '/5): ' + (p1.emotionsDuring || []).join(', '),
     'Emotions now (' + (p1.intensityNow || '—') + '/5): ' + (p1.emotionsNow || []).join(', '),
