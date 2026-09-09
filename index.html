@@ -1579,11 +1579,12 @@ body.squad-purple {
     <button onclick="goTo(2)">Reading</button>
     <button onclick="goTo('2p')">Peaks</button>
     <button onclick="goTo('office')">Office</button>
-    <button onclick="goTo('2b')">Part 2</button>
+    <button onclick="goTo('2b')">Consequences</button>
     <button onclick="goTo('2c')">Fair</button>
-    <button onclick="goTo(3)">Part 3</button>
+    <button onclick="goTo(3)">Part 2</button>
+    <button onclick="goTo('2t')">Trait Mini</button>
     <button onclick="goTo('3b')">Check-In 2</button>
-    <button onclick="goTo(4)">Plan</button>
+    <button onclick="goTo(4)">Part 3</button>
     <button onclick="goTo('done')">Done</button>
   </div>
   <button class="atp-fill-btn" onclick="fillDummyEntryAndSubmit()">🎲 Fill Dummy Data &amp; Submit</button>
@@ -2553,6 +2554,54 @@ body.squad-purple {
   </div>
 </div>
 
+<!-- ═══ SCREEN 2t: TRAIT MINI (Morning/Afterschool Detention only) ═══
+     A deliberately light slice of Part 3 -- just the trait pick + why, no specifics
+     checklist, no creative product, no follow-through plan, no hope staircase. Matt wants
+     Morning/Afterschool Detention to stay two-part in structure but run longer (45 min) than
+     Lunch Detention/Office, without gaining the whole Part 3 growth plan that ISS/Camp
+     Mountaineer/Other get. See MORNING_AFTERSCHOOL_EXTRA_DEPTH_ and afterPart2(). Uses its
+     own pickTraitMini()/field ids (not the real Part 3 screen's) so the two never collide --
+     getPart3() reads whichever one actually got filled in. -->
+<div class="screen" id="screen-2t">
+  <div class="section-head">
+    <div class="trail-marker marker-bark">🌱 Before You Finish</div>
+    <h2>One More <em>Thing to Grow</em></h2>
+    <p>Pick the Life Ready Graduate trait that most connects to what happened today, and tell us why.</p>
+  </div>
+
+  <div class="jcard">
+    <div class="jcard-label">Which LRG Trait Do You Most Need to Grow In?</div>
+    <div class="jcard-sub">Choose the one that directly connects to what happened — not the easiest one, the most honest one.</div>
+    <div class="trait-grid">
+      <button class="trait-btn" data-t="Healthy Living, Wellness, &amp; Self-Awareness" onclick="pickTraitMini(this)">Healthy Living, Wellness, &amp; Self-Awareness</button>
+      <button class="trait-btn" data-t="Communication &amp; Empathy" onclick="pickTraitMini(this)">Communication &amp; Empathy</button>
+      <button class="trait-btn" data-t="Honesty, Integrity, &amp; Responsibility" onclick="pickTraitMini(this)">Honesty, Integrity, &amp; Responsibility</button>
+      <button class="trait-btn" data-t="Critical Thinking &amp; Problem Solving" onclick="pickTraitMini(this)">Critical Thinking &amp; Problem Solving</button>
+      <button class="trait-btn" data-t="Collaborative &amp; Teamwork" onclick="pickTraitMini(this)">Collaborative &amp; Teamwork</button>
+      <button class="trait-btn" data-t="Adaptability &amp; Flexibility" onclick="pickTraitMini(this)">Adaptability &amp; Flexibility</button>
+      <button class="trait-btn" data-t="Resilience &amp; Grit" onclick="pickTraitMini(this)">Resilience &amp; Grit</button>
+      <button class="trait-btn" data-t="Continual Learning &amp; Growth Mindset" onclick="pickTraitMini(this)">Continual Learning &amp; Growth Mindset</button>
+      <button class="trait-btn" data-t="Creativity &amp; Innovation" onclick="pickTraitMini(this)">Creativity &amp; Innovation</button>
+      <button class="trait-btn" data-t="Civics, Leadership, &amp; Service" onclick="pickTraitMini(this)">Civics, Leadership, &amp; Service</button>
+      <button class="trait-btn" data-t="Digital Literacy &amp; Tech Proficiency" onclick="pickTraitMini(this)">Digital Literacy &amp; Tech Proficiency</button>
+      <button class="trait-btn" data-t="Content Mastery &amp; Financial Literacy" onclick="pickTraitMini(this)">Content Mastery &amp; Financial Literacy</button>
+    </div>
+    <div class="val-msg" id="e-trait-mini">Pick the trait that connects most to what happened.</div>
+  </div>
+
+  <div class="jcard hidden" id="trait-why-mini-card">
+    <div class="jcard-label" id="lbl-traitwhy-mini">Why This Trait?</div>
+    <div class="jcard-sub">Connect it back to what happened today — how does this trait relate?</div>
+    <textarea id="q-traitwhy-mini" aria-labelledby="lbl-traitwhy-mini" rows="3" placeholder="This connects to what happened because…"></textarea>
+    <div class="val-msg" id="e-traitwhy-mini">Tell us why you picked this one — how does it connect to what happened?</div>
+  </div>
+
+  <div class="nav-row" style="margin-top:28px">
+    <div></div>
+    <button class="btn-next" onclick="if(validateTraitMini())doSubmit()">Submit My Trail Journal →</button>
+  </div>
+</div>
+
 <!-- ═══ SCREEN 3b: PAUSE BETWEEN PARTS 2 AND 3 ═══ -->
 <div class="screen" id="screen-3b">
   <div class="pause-screen-hero" id="pause-block-2">
@@ -3289,22 +3338,26 @@ function selectGrade(grade, btn) {
 // gets. See goTo helpers afterReading()/afterPart2() and doSubmit() for how each tier
 // skips (or doesn't skip) Part 2/Part 3. Matt's intended length ordering (shortest to
 // longest): Removal from Lunch < Lunch Detention = Office < Morning Detention =
-// Afterschool Detention.
+// Afterschool Detention (45 min) < ISS/Camp Mountaineer/Other (all 3 parts). Only ISS/Camp
+// Mountaineer/Other get the full Part 3 growth plan -- Morning/Afterschool Detention stay at
+// two parts, just a more thorough Part 1+2 than Lunch Detention/Office (see
+// MORNING_AFTERSCHOOL_EXTRA_DEPTH_ below) to fill their longer 45-minute window.
 //   office:    Part 1 + one short repair note only (shortest structurally -- no welcome-
 //              screen location maps here directly anymore; still used by several Camp
 //              Mountaineer check-in reasons, see CM_REASON_TIER_ below).
-//   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan. Lunch Detention
-//              and Office share this length. Removal from Lunch is also this tier but reads
-//              shorter in practice, since it skips Part 1's whole emotions section (see
-//              applyLocationContent_() / REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_ below) -- its
-//              paper form has no emotions question and a 10-minute time limit.
+//   detention: Part 1 + Part 2, ends once harm is repaired. No growth plan. Lunch Detention,
+//              Office, and Morning/Afterschool Detention all share this two-part structure.
+//              Removal from Lunch is also this tier but reads shorter in practice, since it
+//              skips Part 1's whole emotions section (see applyLocationContent_() /
+//              REMOVAL_FROM_LUNCH_SKIP_EMOTIONS_ below) -- its paper form has no emotions
+//              question and a 10-minute time limit.
 //   full:      Part 1 + Part 2 + Part 3 -- Part 3's growth plan folds in community/service
-//              language for ISS and Camp Mountaineer. Morning and Afterschool Detention also
-//              use this tier, per Matt: both should run longer than Lunch Detention/Office.
+//              language for ISS and Camp Mountaineer. NOT used for Morning/Afterschool
+//              Detention (Matt: those should stay two parts, not gain the whole growth plan).
 const LOCATION_TIER_ = {
   'Lunch Detention': 'detention',
-  'Morning Detention': 'full',
-  'Afterschool Detention': 'full',
+  'Morning Detention': 'detention',
+  'Afterschool Detention': 'detention',
   // The student still picks their actual incident location (e.g. Cafeteria, or one of the
   // Removal-from-Lunch-specific cafeteria sub-locations) on Part 1's "Where did it happen?"
   // dropdown, which already drives the Peaks reference card independently of this
@@ -3678,8 +3731,9 @@ async function fillDummyEntryAndSubmit() {
   setVal('q-makeright', "Apologize and check in with Jordan to make sure they're okay.");
   setVal('cc-answer', 'I would ask a teacher to help set up a time to talk it through.');
 
-  // Part 3
-  const traitBtn = document.querySelector('.trait-btn');
+  // Part 3 (full tier only) -- scoped to #screen-4 specifically since screen-2t's
+  // trait-mini buttons also carry the shared .trait-btn class and sit earlier in the DOM.
+  const traitBtn = document.querySelector('#screen-4 .trait-btn');
   if (traitBtn) pickTrait(traitBtn);
   setChecked('.tspec', 1);
   setVal('q-traitwhy', 'I need to think about how my actions affect other people before I act.');
@@ -3694,6 +3748,11 @@ async function fillDummyEntryAndSubmit() {
   setVal('q-ft-stuck', 'I will ask a friend for a drawing idea.');
   S.hopeLevel = S.hopeLevel || 3;
   setVal('q-fair-reflect', 'As long as I actually get to make it right, that feels fair.');
+
+  // Trait mini (Morning/Afterschool Detention only) -- screen-2t's lighter Part 3 slice.
+  const traitMiniBtn = document.querySelector('#screen-2t .trait-btn');
+  if (traitMiniBtn) pickTraitMini(traitMiniBtn);
+  setVal('q-traitwhy-mini', 'I need to think about how my actions affect other people before I act.');
 
   goTo('done');
   await doSubmit();
@@ -3816,9 +3875,23 @@ function validatePart3() {
   return ok;
 }
 
+// Validates screen-2t (Morning/Afterschool Detention's trait-mini screen) -- same shape as
+// validatePart3()'s trait checks, minus the specifics checklist/community-action pieces that
+// don't exist on this lighter screen.
+function validateTraitMini() {
+  if (IS_PREVIEW) return true;
+  let ok = true;
+  if (!S.trait) { showErr('e-trait-mini'); doShake(document.querySelector('#screen-2t .trait-grid')); ok = false; } else { hideErr('e-trait-mini'); }
+  const tw = document.getElementById('q-traitwhy-mini');
+  if (tw && thin(tw.value)) {
+    tw.classList.add('field-error'); showErr('e-traitwhy-mini','Tell us why you picked this one — how does it connect to what happened?'); doShake(tw); ok = false;
+  } else if (tw) { tw.classList.remove('field-error'); hideErr('e-traitwhy-mini'); }
+  return ok;
+}
+
 // ─── FEATURE 1: LIVE INSIGHT SIGNAL ─────────────────────────────────────
 // Scores the reflection quality for the staff indicator (not shown to student)
-const INSIGHT_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
+const INSIGHT_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy','q-traitwhy-mini'];
 const INSIGHT_SIGNALS = {
   accountability: /i (did|said|took|started|made|chose|decided|caused|hurt|broke|lied|stole|hit|pushed|threw)/i,
   empathy: /(they|she|he|them).*(feel|felt|hurt|sad|scared|upset|angry|embarrassed|worried|affected)/i,
@@ -3941,7 +4014,7 @@ function selectSquad(name, btn) {
 }
 
 // (Clash bridge handled above — Supabase version)
-const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy'];
+const Q_FIELDS = ['q-what','q-why','q-think','q-makeright','q-bestidea','q-plan','q-diff','q-traitwhy','q-traitwhy-mini'];
 const INT_LABELS = ['','Very mild','Mild','Moderate','Strong','Overwhelming'];
 
 function updateQuality() {
@@ -4564,6 +4637,17 @@ function pickTrait(btn) {
     .forEach(id => document.getElementById(id).classList.remove('hidden'));
 }
 
+// screen-2t's own trait pick (Morning/Afterschool Detention's lighter Part 3 slice) --
+// scoped to that screen's own buttons/card so it never touches the real Part 3 screen's
+// trait-spec-card/creative-card/etc., which don't exist here on purpose.
+function pickTraitMini(btn) {
+  document.querySelectorAll('#screen-2t .trait-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  S.trait = btn.dataset.t;
+  hideErr('e-trait-mini');
+  document.getElementById('trait-why-mini-card').classList.remove('hidden');
+}
+
 function pickCreative(btn) {
   document.querySelectorAll('.creative-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
@@ -4638,7 +4722,7 @@ async function buildMyPlan() {
 const PROGRESS = {0:0,1:20,2:45,3:65,4:85,done:100};
 const PIPS = ['pip-0','pip-1','pip-2','pip-2b','pip-2c','pip-3','pip-3b','pip-4','pip-done'];
 const PIP_SCREENS = [0,1,2,'2b','2c',3,'3b',4,'done'];
-const SCREEN_PROGRESS = {0:0,cm:7,1:14,2:28,'2p':34,'2b':40,'2c':52,3:62,'3b':72,4:84,office:90,done:100};
+const SCREEN_PROGRESS = {0:0,cm:7,1:14,2:28,'2p':34,'2b':40,'2c':52,3:62,'2t':78,'3b':72,4:84,office:90,done:100};
 
 function goTo(n) {
   raStop_();
@@ -4795,10 +4879,21 @@ function afterPeaks() {
   goTo('2b');
 }
 
+// Morning/Afterschool Detention stay two-part in structure (no full Part 3, no second staff
+// gate) but run longer than Lunch Detention/Office to fill their 45-minute window -- see
+// screen-2t / pickTraitMini() / validateTraitMini().
+const MORNING_AFTERSCHOOL_EXTRA_DEPTH_ = ['Morning Detention', 'Afterschool Detention'];
+
 function afterPart2() {
   // Detention tier ends here -- Part 2's repair plan is the whole point for a detention-
-  // length consequence. No conference-pause screen, no Part 3 growth plan.
-  if (S.tier === 'detention') { doSubmit(); return; }
+  // length consequence. No conference-pause screen, no Part 3 growth plan -- except Morning/
+  // Afterschool Detention, which get one extra lightweight screen first (screen-2t) before
+  // submitting.
+  if (S.tier === 'detention') {
+    if (MORNING_AFTERSCHOOL_EXTRA_DEPTH_.indexOf(S.location) !== -1) { goTo('2t'); return; }
+    doSubmit();
+    return;
+  }
   goTo('3b');
 }
 
@@ -4848,7 +4943,9 @@ function getPart3() {
   return {
     trait: S.trait,
     traitSpecifics: Array.from(document.querySelectorAll('.tspec:checked')).map(c=>c.value),
-    traitWhy: gv('q-traitwhy'),
+    // Morning/Afterschool Detention fill q-traitwhy-mini on screen-2t instead of the real
+    // Part 3 screen's q-traitwhy -- only one of the two will ever actually have a value.
+    traitWhy: gv('q-traitwhy') || gv('q-traitwhy-mini'),
     communityAction: gv('q-community'),
     selectedSkill: S.selectedSkill || null,
     creativeFormat: S.creative, creativePlan: gv('q-creative'),
