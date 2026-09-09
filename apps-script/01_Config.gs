@@ -117,7 +117,7 @@ const SCHEMA = {
     // page later (see awardClashPoint_ in 07_ClashOfClasses.gs) knows which squad to award
     // the point to -- without this column there was no way to recover that after the fact.
     'squad',
-    // Which team referred this consequence (M/O/U/N/T/S/Building MTSS Team) -- collected
+    // Which team referred this consequence (M/O/U/N/T/S) -- collected
     // on the welcome screen for every location now (not just Removal from Lunch, where it
     // started -- see the paper form that came from). Top-level like squad/location/peak,
     // not nested in part1_json, since it's demographic info, not Part 1 content.
