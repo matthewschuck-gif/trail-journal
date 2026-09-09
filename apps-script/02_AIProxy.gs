@@ -30,7 +30,15 @@ function callAiProxy_(type, payload) {
     },
     payload: JSON.stringify({
       model: CLAUDE_MODEL_,
-      max_tokens: 1600,
+      // 1600 was too low for the 'summary' type's schema (narrative report, practice plan,
+      // recommended consequences, restorative questions, and a full cpsScript conversation
+      // all in one response) -- Claude's reply was getting cut off mid-generation, producing
+      // invalid JSON that fell into the {_raw, _parseError:true} fallback below. That silently
+      // dropped insightLevel (and everything else) from every submission: insight_level never
+      // saved, clash_flagged never set, Clash Flags admin page never had anything to show.
+      // 4096 gives the richest prompt type ('summary') enough headroom; shorter prompt types
+      // aren't affected since max_tokens is a ceiling, not a target.
+      max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     }),
     muteHttpExceptions: true,
