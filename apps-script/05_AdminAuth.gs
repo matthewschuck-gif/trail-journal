@@ -102,6 +102,7 @@ function enforceAdminGate_(body) {
     (body.action === 'uploadPeaksPoster' || body.action === 'resetPeaksPoster') ||
     (body.action === 'setOfficeRecordRecipients') ||
     (body.action === 'awardClashPoint') ||
+    (body.action === 'overrideInsightLevelHigh') ||
     (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;

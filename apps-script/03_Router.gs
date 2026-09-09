@@ -89,6 +89,9 @@ function handleRequest_(e, method) {
       case 'awardClashPoint':
         result = awardClashPoint_(body.payload);
         break;
+      case 'overrideInsightLevelHigh':
+        result = overrideInsightLevelHigh_(body.payload);
+        break;
       default:
         throw new Error('Unknown action: ' + body.action);
     }
@@ -201,6 +204,21 @@ function genericQuery_(table, filters, limit) {
     if (limit && rows.length >= limit) break;
   }
   return rows;
+}
+
+/**
+ * payload: { sessionId }. Lets an admin manually mark a submission as High insight even when
+ * the AI scored it lower -- the AI's read is a starting point, not the final word, and Matt
+ * may want to flag something the AI missed or under-scored. Also sets clash_flagged so the
+ * row surfaces on the admin Clash Flags page exactly like an AI-scored High submission would,
+ * making it eligible for a Clash of Classes point award. Gated admin-only -- see
+ * enforceAdminGate_ in 05_AdminAuth.gs.
+ */
+function overrideInsightLevelHigh_(payload) {
+  const sessionId = payload && payload.sessionId;
+  if (!sessionId) throw new Error('sessionId is required.');
+  genericUpdate_(TABS.REFLECTIONS, { session_id: sessionId }, { insight_level: 'High', clash_flagged: true });
+  return { ok: true };
 }
 
 function deserializeRow_(table, obj) {

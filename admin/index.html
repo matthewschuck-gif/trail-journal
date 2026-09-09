@@ -1736,6 +1736,12 @@ function openModal(r) {
     ${ai.narrativeReport ? `<div class="ds"><h4>Narrative Report</h4>
       <div class="di"><div class="di-val" style="white-space:pre-wrap;line-height:1.6">${ai.narrativeReport}</div></div>
     </div>` : ''}
+    <div class="ds"><h4>Admin Actions</h4>
+      <div class="di"><div class="di-lbl">Insight Level</div><div class="di-val">
+        <span class="badge ${ibadge}">${ins}</span>
+        ${ins !== 'High' ? `<button class="save-btn" style="margin-left:10px;padding:5px 12px;font-size:.74rem" onclick="overrideInsightHigh('${r.session_id}', this)">Override to High Insight</button>` : '<span style="margin-left:10px;font-size:.76rem;color:var(--muted)">Already High — eligible for Clash of Classes award on the Clash Flags page.</span>'}
+      </div></div>
+    </div>
     ${Object.keys(ai).length ? `<div class="ds"><h4>AI Staff Summary</h4>
       <div class="di ${ibcls}"><div class="di-lbl">Insight Level</div><div class="di-val"><span class="badge ${ibadge}">${ins}</span>  ${ai.insightReason||''}</div></div>
       ${(ai.recommendedConsequences||[]).map(c=>`<div class="di dgold"><div class="di-lbl">${c.type}</div><div class="di-val"><strong>${c.description}</strong><br><span style="font-size:.78rem;color:var(--muted)">${c.rationale||''}</span></div></div>`).join('')}
@@ -1750,6 +1756,23 @@ function openModal(r) {
   document.getElementById('modal').classList.add('open');
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// Lets an admin flag a submission High insight regardless of what the AI scored -- e.g. the
+// AI under-scored a genuinely thoughtful response (or, before the max_tokens fix, its
+// response got truncated and insight_level never saved at all). Also sets clash_flagged so
+// the row shows up on the Clash Flags page just like an AI-scored High submission would.
+async function overrideInsightHigh(sessionId, btn) {
+  if (!confirm('Mark this submission as High insight? It will become eligible for a Clash of Classes point award on the Clash Flags page.')) return;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await callBackend({ action: 'overrideInsightLevelHigh', payload: { sessionId } }, true);
+    closeModal();
+    loadSubs();
+  } catch (e) {
+    alert('Could not override: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Override to High Insight';
+  }
+}
 
 // ── EDITOR ────────────────────────────────────────────────────────────────
 function showEdSec(name, el) {
