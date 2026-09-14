@@ -147,6 +147,8 @@ body::before {
 .read-aloud-fab[aria-pressed="true"] { background: var(--trail); color: white; border-color: var(--trail); }
 @media (max-width: 600px) {
   .read-aloud-fab { padding: 10px 14px; font-size: 0.76rem; bottom: 12px; left: 12px; }
+  .rot-btn { bottom: 58px; }
+  body.is-preview .rot-btn { bottom: 104px; }
 }
 
 /* ── QUALITY METER ── */
@@ -159,7 +161,10 @@ body::before {
 }
 .quality-float.show { opacity: 1; transform: translateY(0); }
 .rot-btn {
-  position: fixed; bottom: 20px; left: 20px; z-index: 300;
+  /* Stacked above .read-aloud-fab (same bottom-left corner, z-index 400) -- when Web Speech
+     is supported that button is always present and was completely covering this one at the
+     same bottom:20px/left:20px spot. bottom:74px clears its ~44px pill height plus a gap. */
+  position: fixed; bottom: 74px; left: 20px; z-index: 300;
   background: white; border: 1px solid var(--border); border-radius: 10px;
   padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 0.76rem; font-weight: 700;
   color: var(--ink-mid); box-shadow: var(--shadow-warm); cursor: pointer;
@@ -169,7 +174,7 @@ body::before {
 .rot-btn:hover { color: var(--red); border-color: var(--red); }
 /* The preview-mode banner (bottom:0, ~53px tall, z-index:9999) otherwise completely covers
    both of these -- see the .is-preview class added alongside that banner. */
-body.is-preview .rot-btn,
+body.is-preview .rot-btn { bottom: 120px; }
 body.is-preview .quality-float { bottom: 66px; }
 .rot-modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500;
