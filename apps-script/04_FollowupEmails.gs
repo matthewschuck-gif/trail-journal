@@ -59,17 +59,28 @@ function squadTheme_(squad) {
   return SQUAD_THEMES_[String(squad || '').trim().toUpperCase()] || DEFAULT_THEME_;
 }
 
+// Wrapped in a real <head> with color-scheme meta tags -- without these, Outlook.com,
+// Outlook desktop, and iOS/Android Mail all apply their own automatic "dark mode" color
+// inversion to HTML email, and that inversion is heuristic per-element, not a clean full
+// invert -- it very often swaps a light background to dark while leaving an inline text
+// color untouched (or the reverse), which is exactly what read as "light text on a light
+// background" (Matt, Sep 2026). These two meta tags tell every client that supports them
+// this email is light-mode-only and should be left alone.
 function emailShell_(icon, title, subtitle, bodyHtml, theme) {
   theme = theme || DEFAULT_THEME_;
-  return '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5">' +
-    '<div style="background:linear-gradient(135deg,' + theme.primary + ' 0%,' + theme.primaryDeep + ' 100%);padding:26px 24px;border-bottom:4px solid ' + theme.accent + '">' +
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<meta name="color-scheme" content="light only">' +
+    '<meta name="supported-color-schemes" content="light only">' +
+    '</head><body style="margin:0;padding:0;background:#fffbf5">' +
+    '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5" bgcolor="#fffbf5">' +
+    '<div style="background:linear-gradient(135deg,' + theme.primary + ' 0%,' + theme.primaryDeep + ' 100%);padding:26px 24px;border-bottom:4px solid ' + theme.accent + '" bgcolor="' + theme.primary + '">' +
       '<div style="font-size:26px;margin-bottom:6px">' + icon + '</div>' +
       '<h2 style="margin:0;color:#fff;font-weight:normal;font-size:20px">' + title + '</h2>' +
       (subtitle ? '<p style="margin:6px 0 0;color:' + theme.accent + ';font-size:13px;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '') +
     '</div>' +
-    '<div style="padding:22px 24px;background:#fffbf5">' + bodyHtml + '</div>' +
-    '<div style="background:' + theme.primaryDeep + ';padding:14px;text-align:center;font-size:11px;color:' + theme.accent + ';font-family:Verdana,sans-serif">Camp Mountaineer &middot; Trail Journal</div>' +
-  '</div>';
+    '<div style="padding:22px 24px;background:#fffbf5" bgcolor="#fffbf5">' + bodyHtml + '</div>' +
+    '<div style="background:' + theme.primaryDeep + ';padding:14px;text-align:center;font-size:11px;color:' + theme.accent + ';font-family:Verdana,sans-serif" bgcolor="' + theme.primaryDeep + '">Camp Mountaineer &middot; Trail Journal</div>' +
+  '</div></body></html>';
 }
 
 function emailInfoRow_(label, value, theme) {
@@ -84,13 +95,13 @@ function emailCallout_(title, body, opts, theme) {
   const border = opts.border || theme.primary;
   // Full border, not a left-side stripe -- a colored-accent-stripe box is a dated,
   // AI-slop-adjacent look; a full rounded border reads as an intentional callout card.
-  return '<div style="background:' + bg + ';border:1.5px solid ' + border + ';padding:12px 14px;margin:14px 0;border-radius:8px;font-family:Verdana,sans-serif">' +
+  return '<div style="background:' + bg + ';border:1.5px solid ' + border + ';padding:12px 14px;margin:14px 0;border-radius:8px;font-family:Verdana,sans-serif" bgcolor="' + bg + '">' +
     (title ? '<strong style="color:' + theme.primary + ';font-size:13px">' + title + '</strong><br/>' : '') +
     '<span style="font-size:13px;color:#3a3a3a;line-height:1.6">' + body + '</span></div>';
 }
 
 function icsFooterNote_(filename) {
-  return '<p style="background:#FFF9DC;border:1px solid ' + BRAND_GOLD_ + ';padding:10px 12px;font-size:12px;font-family:Verdana,sans-serif;border-radius:6px;color:#3a3a3a">' +
+  return '<p style="background:#FFF9DC;border:1px solid ' + BRAND_GOLD_ + ';padding:10px 12px;font-size:12px;font-family:Verdana,sans-serif;border-radius:6px;color:#3a3a3a" bgcolor="#FFF9DC">' +
     '&#128197; A calendar file (' + filename + ') is attached below -- open it to add this reminder to Outlook.</p>';
 }
 
