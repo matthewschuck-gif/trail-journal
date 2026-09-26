@@ -1633,7 +1633,7 @@ body.squad-purple {
     <p>Every trail has rough patches. This journal is your space to think through what happened, understand why, and find the path forward. Take your time — honest answers matter.</p>
     <div class="name-entry">
       <div class="name-bubble" id="name-bubble"></div>
-      <input type="text" class="name-field-input" id="name-inp" aria-label="Your first and last name" placeholder="Your first and last name" maxlength="60" autocomplete="off" spellcheck="false">
+      <input type="text" class="name-field-input" id="name-inp" aria-label="Your first name and last initial" placeholder="First name + last initial (e.g. Jordan S.)" maxlength="60" autocomplete="off" spellcheck="false">
     </div>
     <div style="margin-top:18px">
       <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Grade</div>
@@ -1678,7 +1678,7 @@ body.squad-purple {
       <div class="squad-hint">This determines which parts of the journal you'll complete</div>
     </div>
     <div style="margin-top:18px">
-      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Clash of Classes Squad</div>
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Your Clash of Classes Squad (Optional)</div>
       <div class="squad-picker">
         <button class="squad-btn sq-black" onclick="selectSquad('Black',this)">
           <span class="sq-icon">⚫</span>Black
@@ -1693,7 +1693,7 @@ body.squad-purple {
           <span class="sq-icon">🟣</span>Purple
         </button>
       </div>
-      <div class="squad-hint">Select your squad — earns a point on High insight reflections</div>
+      <div class="squad-hint">Optional — select your squad if you have one; earns a point on High insight reflections</div>
     </div>
     <div style="margin-top:18px">
       <div style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:10px;font-family:'Barlow',sans-serif">Team</div>
@@ -5046,10 +5046,79 @@ async function submitRanOutOfTime() {
   });
   S._partialSaved = true;
 
+  // Office record email for this partial save too -- same fire-and-forget pattern as the
+  // completed-submission email in doSubmit() below. No AI result exists yet (Ran Out of
+  // Time never calls the AI summary), so buildEmailBody gets an empty result -- the AI-only
+  // sections (summary, insight level, narrative) show as '—' but the verbatim raw-answer
+  // block still has everything the student actually wrote. incomplete:true swaps in a
+  // distinct subject line + banner server-side (see sendOfficeRecordEmail_) so staff don't
+  // mistake this for a finished reflection.
+  callBackend({ action: 'sendOfficeRecordEmail', payload: {
+    studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier, squad: S.squad,
+    incomplete: true,
+    summaryText: buildEmailBody({}, p1, p2, p3),
+  }}).catch(e => console.error('Office record email error (ran out of time):', e));
+
   status.style.color = '#3fb950';
   status.textContent = '✓ Saved — you can keep working, or close this device. Nothing is lost.';
   setTimeout(closeRanOutOfTimeModal, 2500);
 }
+
+// ─── AUTO-SAVE + EMAIL ON EXIT ──────────────────────────────────────────────
+// Covers the case a staff member isn't present to click "Ran Out of Time" -- a student just
+// closes the tab, navigates away, or shuts the device mid-journal. beforeunload shows the
+// browser's own "leave site?" confirmation (its text can't be customized -- browsers ignore
+// any custom returnValue string for security reasons -- but the native prompt itself is what
+// matters here); pagehide fires only if that confirmation is accepted and the page actually
+// unloads, which is exactly when the beacon should go out. A regular fetch() started during
+// pagehide has no guarantee of completing before the browser tears the page down --
+// navigator.sendBeacon() is built for exactly this, so the save + email use that instead of
+// callBackend()/saveRow(). Both requests are skipped entirely on the welcome screen (nothing
+// written yet) and the done screen (already a real, complete submission).
+function midJournalScreen_() {
+  const activeScreen = document.querySelector('.screen.active');
+  const screenId = activeScreen ? activeScreen.id.replace('screen-', '') : null;
+  return screenId && screenId !== '0' && screenId !== 'done';
+}
+
+window.addEventListener('beforeunload', function(e) {
+  if (IS_PREVIEW || S._exitBeaconSent || !S.name || !midJournalScreen_()) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+window.addEventListener('pagehide', function() {
+  if (IS_PREVIEW || S._exitBeaconSent || !S.name || !midJournalScreen_()) return;
+  S._exitBeaconSent = true;
+  const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  const row = {
+    session_id: S.sessionId, initial: S.initial,
+    student_name: S.name, grade: S.grade, squad: S.squad || null, team: S.team || null,
+    location: S.location, peak: S.peak,
+    cm_reason: S.cmReason, cm_initiated_by: S.cmInitiatedBy, cm_why: S.cmWhy,
+    cm_effort_agreed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmEffortAgreed : null,
+    cm_checklist_confirmed: S.cmReason === CM_REASON_REQUIRES_EFFORT_ ? !!S.cmChecklistAgreed : null,
+    part1_json: p1, part2_json: p2, part3_json: p3,
+    prior_count: S.priorCount || 0, status: 'incomplete',
+    gate0_unlocked_by: S.gate0StaffName || null,
+    gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
+    ran_out_of_time_by: 'Auto (closed without finishing)',
+  };
+  const beaconBody = {
+    token: APP_TOKEN, action: 'exitAutoSave',
+    payload: {
+      isUpdate: !!S._partialSaved,
+      row: row,
+      emailPayload: {
+        studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier, squad: S.squad,
+        incomplete: true,
+        summaryText: buildEmailBody({}, p1, p2, p3),
+      },
+    },
+  };
+  navigator.sendBeacon(APP_URL, new Blob([JSON.stringify(beaconBody)], { type: 'text/plain;charset=UTF-8' }));
+  S._partialSaved = true;
+});
 
 // ─── PART 1 SUBMIT ────────────────────────────────────────────────────────
 async function doPart1() {

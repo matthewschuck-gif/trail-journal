@@ -77,6 +77,9 @@ function handleRequest_(e, method) {
       case 'sendOfficeRecordEmail':
         result = sendOfficeRecordEmail_(body.payload);
         break;
+      case 'exitAutoSave':
+        result = exitAutoSave_(body.payload);
+        break;
       case 'uploadPeaksPoster':
         result = uploadPeaksPoster_(body.payload);
         break;

@@ -465,32 +465,74 @@ function setOfficeRecordRecipients_(payload) {
 // purple/gold shell, so this reads as "this specific kid's report" at a glance in an inbox.
 // Falls back to the default brand theme when squad is missing/unrecognized (e.g. very old
 // rows, or a student who skipped the squad picker).
+//
+// payload.incomplete: true marks this as a partial record -- fired from the "Ran Out of
+// Time" save and from exitAutoSave_ below (a student closing/navigating away mid-journal),
+// neither of which has an AI-generated result, only whatever raw answers were written so
+// far. Distinct subject line + a callout banner up top so office staff don't mistake it for
+// a finished reflection.
 function sendOfficeRecordEmail_(payload) {
   const studentLabel = payload.studentLabel || 'Student';
   const grade = payload.grade;
   const location = payload.location;
   const tier = payload.tier;
   const squad = payload.squad || '';
+  const incomplete = !!payload.incomplete;
   const summaryText = payload.summaryText || '';
   const toEmail = getOfficeNotifyEmail_();
   const theme = squadTheme_(squad);
 
   const squadTag = theme.label ? theme.emoji + ' ' + theme.label + ' Squad' : '';
-  const subject = '[Trail Journal] ' + theme.emoji + ' New submission -- ' + studentLabel + (location ? ' (' + location + ')' : '');
+  const subject = '[Trail Journal] ' + (incomplete ? '⏰ INCOMPLETE -- ' : theme.emoji + ' New submission -- ') +
+    studentLabel + (location ? ' (' + location + ')' : '');
   const summaryHtml = formatSummaryHtml_(summaryText, theme);
 
   const body =
+    (incomplete
+      ? emailCallout_('⏰ Incomplete Record', 'The student did not finish this journal -- either an adult saved their progress with "Ran Out of Time," or the student closed/left the page before submitting. Everything below is only what was written so far; there is no AI summary or insight level yet.', { bg: '#FFF3E0', border: '#c97a00' }, theme)
+      : '') +
     emailInfoRow_('🎓 Student', studentLabel + (grade ? ' (Grade ' + grade + ')' : ''), theme) +
     (squadTag ? emailInfoRow_('🏅 Squad', squadTag, theme) : '') +
     (location ? emailInfoRow_('📍 Location', location, theme) : '') +
     (tier ? emailInfoRow_('🧭 Journal Length', tier.charAt(0).toUpperCase() + tier.slice(1) + ' tier', theme) : '') +
     '<div style="margin-top:16px;padding-top:14px;border-top:2px solid ' + theme.accent + '">' + summaryHtml + '</div>';
 
-  const html = emailShell_('📬', 'Trail Journal Submission', studentLabel + (squadTag ? ' · ' + squadTag : ''), body, theme);
+  const html = emailShell_(incomplete ? '⏰' : '📬', incomplete ? 'Trail Journal -- Incomplete' : 'Trail Journal Submission', studentLabel + (squadTag ? ' · ' + squadTag : ''), body, theme);
 
   sendViaMail_({ to: toEmail, subject: subject, html: html });
 
   return { ok: true, sent: true };
+}
+
+// ── AUTO-SAVE ON EXIT ───────────────────────────────────────────────────────
+// Fired via navigator.sendBeacon from the frontend's `pagehide` handler when a student
+// closes the tab/navigates away mid-journal without finishing (see the beforeunload/pagehide
+// listeners in index.html). A beacon is fire-and-forget with no response handling, so this
+// bundles the row save AND the office-record email into one request/one execution instead of
+// two -- a second beacon has no guarantee of also going out before the page finishes
+// unloading, so keeping it to one call matters here more than it did for the ordinary
+// callBackend() traffic elsewhere in the app.
+//
+// The DB write is wrapped separately from the email send so a failure in one (e.g. no
+// matching row yet for an update) doesn't stop the other -- an office-record email with
+// partial data is still far more useful than neither happening.
+function exitAutoSave_(payload) {
+  const row = payload.row || {};
+  try {
+    if (payload.isUpdate) {
+      genericUpdate_('reflections', { session_id: row.session_id }, row);
+    } else {
+      genericInsert_('reflections', row);
+    }
+  } catch (e) {
+    Logger.log('exitAutoSave_ row save failed: ' + e);
+  }
+  try {
+    sendOfficeRecordEmail_(payload.emailPayload || {});
+  } catch (e) {
+    Logger.log('exitAutoSave_ email failed: ' + e);
+  }
+  return { ok: true };
 }
 
 function sendSummaryEmail_(payload) {
