@@ -1669,8 +1669,11 @@ function renderTbl(data) {
     const ins = r.insight_level || '—';
     const bc = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins] || '';
     const trait = ((r.part3_json||{}).trait||'—').split('&')[0].trim();
-    const rd = JSON.stringify(r).replace(/"/g,'&quot;');
-    return `<tr><td><strong>${r.student_name||r.initial||'?'}</strong></td><td>${r.grade||'—'}</td><td>${ds}</td><td>${trait}</td><td><span class="badge ${bc}">${ins}</span></td><td><button class="view-btn" onclick='openModal(${rd})'>View</button></td></tr>`;
+    // Looked up by id from ALL at click time instead of serializing the whole row into the
+    // onclick attribute -- a raw student answer containing an apostrophe (didn't, wasn't,
+    // I'm...) broke out of the single-quoted onclick and silently killed the View button.
+    // Real handwriting has apostrophes constantly, so that was never a rare edge case.
+    return `<tr><td><strong>${r.student_name||r.initial||'?'}</strong></td><td>${r.grade||'—'}</td><td>${ds}</td><td>${trait}</td><td><span class="badge ${bc}">${ins}</span></td><td><button class="view-btn" onclick="openModalById('${r.id}')">View</button></td></tr>`;
   }).join('');
   document.getElementById('tbl-body').innerHTML =
     `<table><thead><tr><th>Name</th><th>Grade</th><th>Date</th><th>LRG Trait</th><th>Insight</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -1692,6 +1695,38 @@ function setFilter(lv) {
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────
+function escHtml_(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Looks a row up from the currently-loaded ALL array by id -- see the View button comment
+// in renderTbl() for why this replaced passing the whole row through the onclick attribute.
+function openModalById(id) {
+  const r = ALL.find(x => x.id === id || x.session_id === id);
+  if (r) openModal(r);
+}
+
+function copyReportText(id) {
+  const r = ALL.find(x => x.id === id || x.session_id === id);
+  if (r && r.reflection_text) navigator.clipboard.writeText(r.reflection_text);
+}
+
+function downloadReportText(id) {
+  const r = ALL.find(x => x.id === id || x.session_id === id);
+  if (!r || !r.reflection_text) return;
+  const blob = new Blob([r.reflection_text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const namePart = (r.student_name || r.initial || 'student').replace(/[^a-z0-9]+/gi, '_');
+  const datePart = new Date(r.created_at).toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trail-journal-${namePart}-${datePart}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function openModal(r) {
   const p1=r.part1_json||{}, p2=r.part2_json||{}, p3=r.part3_json||{};
   const ai=r.ai_staff_summary||{};
@@ -1701,6 +1736,14 @@ function openModal(r) {
   const ibadge = {Low:'b-low',Medium:'b-med',High:'b-high'}[ins]||'';
   document.getElementById('modal-title').textContent = `${r.student_name||('Initial: '+(r.initial||'?'))}${r.grade?' · Grade '+r.grade:''}${r.location?' · '+r.location:''}  ·  ${d}`;
   document.getElementById('modal-body').innerHTML = `
+    ${r.reflection_text ? `<div class="ds"><h4>Full Report</h4>
+      <p style="font-size:.76rem;color:var(--muted);margin-bottom:8px">The exact same verbatim report sent in the office-record email -- open it here or download it as a text file.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="save-btn" style="padding:6px 12px;font-size:.76rem" onclick="copyReportText('${r.session_id}')">📋 Copy Text</button>
+        <button class="save-btn" style="padding:6px 12px;font-size:.76rem" onclick="downloadReportText('${r.session_id}')">⬇ Download .txt</button>
+      </div>
+      <div class="di-val" style="white-space:pre-wrap;line-height:1.6;max-height:420px;overflow-y:auto;background:var(--navy1,#0d0c1a);padding:14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.76rem">${escHtml_(r.reflection_text)}</div>
+    </div>` : `<div class="ds"><h4>Full Report</h4><p style="font-size:.8rem;color:var(--muted)">No full-report text saved for this submission yet -- see the raw answers below instead. (Older rows, or an incomplete/"Ran Out of Time" save, may not have this.)</p></div>`}
     <div class="ds"><h4>Part 1 — What Happened</h4>
       ${r.peak ? `<div class="di"><div class="di-lbl">Mountaineer Peaks Area</div><div class="di-val">${r.peak}</div></div>` : ''}
       ${r.cm_reason ? `<div class="di"><div class="di-lbl">Camp Mountaineer Pathway</div><div class="di-val">${r.cm_reason}</div></div>` : ''}
@@ -1937,21 +1980,25 @@ async function runPatternAnalysis() {
 }
 
 // ── FEATURE 8: RESPONDER TABLE ────────────────────────────────────────────
+let ALL_RESP = [];
 async function loadResponders() {
   document.getElementById('conf-brief-wrap').style.display = 'block';
   const data = await sb('responder_reflections?select=*&order=created_at.desc&limit=100');
   if (!data) return;
+  ALL_RESP = data;
   if (!data.length) { document.getElementById('resp-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏔️</div><p>No responses yet.</p></div>'; return; }
   const rows = data.map(r => {
     const d = new Date(r.created_at).toLocaleDateString();
     const ready = r.ready_to_talk || '—';
     const readyColor = ready==='yes'?'var(--green)':ready==='maybe'?'var(--gold)':'var(--red)';
+    // Looked up by session_id from ALL_RESP at click time -- see the Submissions View button
+    // comment above for why (an apostrophe in the raw text broke the old inline-JSON onclick).
     return `<tr>
       <td><strong>${r.initial||'?'}</strong></td>
       <td>${d}</td>
       <td style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.what_happened||'—'}</td>
       <td style="color:${readyColor};font-weight:700">${ready}</td>
-      <td><button class="view-btn" onclick='openRespModal(${JSON.stringify(r).replace(/"/g,"&quot;")})'>View</button></td>
+      <td><button class="view-btn" onclick="openRespModalById('${r.session_id}')">View</button></td>
       <td><button class="view-btn" onclick="document.getElementById('brief-responder-id').value='${r.session_id}';document.getElementById('brief-journal-id').focus()">Use in Brief</button></td>
     </tr>`;
   }).join('');
@@ -1960,6 +2007,11 @@ async function loadResponders() {
 }
 
 function filterResp() { /* basic search */ }
+
+function openRespModalById(sessionId) {
+  const r = ALL_RESP.find(x => x.session_id === sessionId);
+  if (r) openRespModal(r);
+}
 
 function openRespModal(r) {
   document.getElementById('modal-title').textContent = `Your Side — Initial: ${r.initial||'?'}`;
