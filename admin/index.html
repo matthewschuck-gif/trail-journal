@@ -1743,7 +1743,7 @@ function openModal(r) {
         <button class="save-btn" style="padding:6px 12px;font-size:.76rem" onclick="downloadReportText('${r.session_id}')">⬇ Download .txt</button>
       </div>
       <div class="di-val" style="white-space:pre-wrap;line-height:1.6;max-height:420px;overflow-y:auto;background:var(--navy1,#0d0c1a);padding:14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.76rem">${escHtml_(r.reflection_text)}</div>
-    </div>` : `<div class="ds"><h4>Full Report</h4><p style="font-size:.8rem;color:var(--muted)">No full-report text saved for this submission yet -- see the raw answers below instead. (Older rows, or an incomplete/"Ran Out of Time" save, may not have this.)</p></div>`}
+    </div>` : `<div class="ds"><h4>Full Report</h4><p style="font-size:.8rem;color:var(--muted)">No full-report text saved for this submission yet -- see the raw answers below instead. (Only rows saved before this existed won't have it -- everything since, complete or partial/"Ran Out of Time," does.)</p></div>`}
     <div class="ds"><h4>Part 1 — What Happened</h4>
       ${r.peak ? `<div class="di"><div class="di-lbl">Mountaineer Peaks Area</div><div class="di-val">${r.peak}</div></div>` : ''}
       ${r.cm_reason ? `<div class="di"><div class="di-lbl">Camp Mountaineer Pathway</div><div class="di-val">${r.cm_reason}</div></div>` : ''}

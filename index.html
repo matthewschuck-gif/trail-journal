@@ -5031,6 +5031,11 @@ async function submitRanOutOfTime() {
   status.textContent = '⏳ Saving…';
 
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  // Computed once and reused for both the Sheet row and the email below -- same verbatim
+  // report either way, so the admin dashboard's "Full Report" view/download (see
+  // admin/index.html openModal()) has something to show for a partial save too, not just
+  // completed submissions.
+  const partialReportText = buildEmailBody({}, p1, p2, p3);
   await saveRow({
     session_id: S.sessionId, initial: S.initial,
     student_name: S.name, grade: S.grade, squad: S.squad || null, team: S.team || null,
@@ -5043,6 +5048,7 @@ async function submitRanOutOfTime() {
     gate0_unlocked_by: S.gate0StaffName || null,
     gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
     ran_out_of_time_by: staffName,
+    reflection_text: partialReportText,
   });
   S._partialSaved = true;
 
@@ -5056,7 +5062,7 @@ async function submitRanOutOfTime() {
   callBackend({ action: 'sendOfficeRecordEmail', payload: {
     studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier, squad: S.squad,
     incomplete: true,
-    summaryText: buildEmailBody({}, p1, p2, p3),
+    summaryText: partialReportText,
   }}).catch(e => console.error('Office record email error (ran out of time):', e));
 
   status.style.color = '#3fb950';
@@ -5091,6 +5097,10 @@ window.addEventListener('pagehide', function() {
   if (IS_PREVIEW || S._exitBeaconSent || !S.name || !midJournalScreen_()) return;
   S._exitBeaconSent = true;
   const p1 = getPart1(), p2 = getPart2(), p3 = getPart3();
+  // Same reasoning as submitRanOutOfTime() above -- compute once, reuse for both the Sheet
+  // row (reflection_text) and the email, so this partial save also gets a "Full Report"
+  // view/download on the admin dashboard, not just a raw-fields breakdown.
+  const partialReportText = buildEmailBody({}, p1, p2, p3);
   const row = {
     session_id: S.sessionId, initial: S.initial,
     student_name: S.name, grade: S.grade, squad: S.squad || null, team: S.team || null,
@@ -5103,6 +5113,7 @@ window.addEventListener('pagehide', function() {
     gate0_unlocked_by: S.gate0StaffName || null,
     gate1_unlocked_by: S.gate1StaffName || null, gate2_unlocked_by: S.gate2StaffName || null,
     ran_out_of_time_by: 'Auto (closed without finishing)',
+    reflection_text: partialReportText,
   };
   const beaconBody = {
     token: APP_TOKEN, action: 'exitAutoSave',
@@ -5112,7 +5123,7 @@ window.addEventListener('pagehide', function() {
       emailPayload: {
         studentLabel: S.name || S.initial, grade: S.grade, location: S.location, tier: S.tier, squad: S.squad,
         incomplete: true,
-        summaryText: buildEmailBody({}, p1, p2, p3),
+        summaryText: partialReportText,
       },
     },
   };
