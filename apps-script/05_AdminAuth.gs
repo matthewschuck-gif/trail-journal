@@ -47,16 +47,55 @@ function requireStaffPassword_(providedPassword) {
  */
 function checkStaffPassword_(password) {
   if (!password) return { ok: false };
+  // Slow down guessing: after 20 wrong tries in 10 minutes, every gate waits.
+  const cache = CacheService.getScriptCache();
+  const fails = Number(cache.get('gate-fails')) || 0;
+  if (fails >= 20) return { ok: false, error: 'Too many wrong passwords. Wait a few minutes.' };
   const sheet = getSheet_(TABS.STAFF_USERS);
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     const name = data[i][0];
     const pw = data[i][1];
-    if (pw !== '' && pw !== null && String(pw) === String(password)) {
+    if (pw !== '' && pw !== null && gatePasswordMatches_(String(pw), String(password))) {
       return { ok: true, name: name || 'Staff' };
     }
   }
+  cache.put('gate-fails', String(fails + 1), 600);
   return { ok: false };
+}
+
+// ── Scrambled gate passwords ──
+// A cell holds either a plain password (just typed) or "sha256$salt$hash" (scrambled by
+// scrambleGatePasswords). Both work, so typing a new plain password in a cell works at once;
+// the next scramble run hides it.
+function gatePasswordMatches_(stored, typed) {
+  const m = stored.match(/^sha256\$([^$]+)\$([0-9a-f]{64})$/);
+  return m ? gateHash_(typed, m[1]) === m[2] : stored === typed;
+}
+
+function gateHash_(pw, salt) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + pw, Utilities.Charset.UTF_8)
+    .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
+}
+
+/**
+ * Run from the editor (or the Trail Journal menu) after adding or changing any password in
+ * the staff_users tab: replaces each plain password with its scrambled form. The same
+ * passwords keep working at the gates; nobody can read them back from the Sheet.
+ */
+function scrambleGatePasswords() {
+  const sheet = getSheet_(TABS.STAFF_USERS);
+  const data = sheet.getDataRange().getValues();
+  let n = 0;
+  for (let i = 1; i < data.length; i++) {
+    const pw = data[i][1];
+    if (pw === '' || pw === null || /^sha256\$/.test(String(pw))) continue;
+    const salt = Utilities.getUuid().slice(0, 8);
+    sheet.getRange(i + 1, 2).setValue('sha256$' + salt + '$' + gateHash_(String(pw), salt));
+    n++;
+  }
+  safeAlert_(n ? 'Scrambled ' + n + ' gate password(s). They still work the same at the gates.' : 'No plain passwords to scramble.');
+  return n;
 }
 
 /**
@@ -92,8 +131,33 @@ function hasStaffPassword_(body) {
   try { requireStaffPassword_(body.adminPassword); return true; } catch (e) { return false; }
 }
 
+/**
+ * The generic insert/update/query actions a page may use WITHOUT staff access -- exactly what
+ * the student journal and the responder form do, nothing more. Anything else on those actions
+ * (staff_users, incident_reports, panel_sessions, unknown tabs, an update matched on anything
+ * but the row's own id) needs staff. Added 2026-10-31: before this, any tab not on
+ * ADMIN_ONLY_TABLES_ -- including staff_users with every adult's gate password -- could be read
+ * by anyone holding the public APP_TOKEN, and an update matched on e.g. { initial } could
+ * overwrite many students' rows at once.
+ */
+function isOpenGenericAction_(body) {
+  const a = body.action, t = body.table;
+  const keys = function (o) { return Object.keys(o || {}); };
+  if (a === 'insert') return ['reflections', 'responder_reflections', 'followup_records'].indexOf(t) > -1;
+  if (a === 'update') {
+    const m = keys(body.match);
+    if (t === 'reflections' || t === 'responder_reflections') return m.length === 1 && m[0] === 'session_id' && !!body.match.session_id;
+    if (t === 'followup_records') return m.length === 1 && m[0] === 'id' && !!body.match.id;
+    return false;
+  }
+  if (a === 'query') return t === 'site_config' || isStudentHistoryQuery_(body);
+  return false;
+}
+
 function enforceAdminGate_(body) {
+  const generic = body.action === 'insert' || body.action === 'update' || body.action === 'query';
   const needsAdmin =
+    (generic && !isOpenGenericAction_(body)) ||
     (ADMIN_ONLY_TABLES_.indexOf(body.table) !== -1) ||
     (body.action === 'ai' && ADMIN_ONLY_AI_TYPES_.indexOf(body.type) !== -1) ||
     (body.action === 'sendFollowupEmails' && !(body.payload && body.payload.singleEvent)) ||

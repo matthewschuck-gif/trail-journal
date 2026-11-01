@@ -58,4 +58,55 @@ test('responder reflections: every read needs the staff password', () => {
   assert.ok(r.error && /staff password/i.test(r.error));
 });
 
+test('the gate-password list and other staff tabs cannot be read or changed without staff access', () => {
+  const w = world();
+  for (const body of [
+    { action: 'query', table: 'staff_users', filters: {} },
+    { action: 'insert', table: 'staff_users', row: { name: 'x', password: 'y' } },
+    { action: 'query', table: 'incident_reports', filters: {} },
+    { action: 'update', table: 'reflections', match: { initial: 'A' }, patch: { status: 'x' } },
+    { action: 'update', table: 'followup_records', match: {}, patch: {} },
+    { action: 'insert', table: 'site_config', row: {} },
+  ]) {
+    const r = w.call(body);
+    assert.ok(r.error && /staff password/i.test(r.error), JSON.stringify(body) + ' → ' + JSON.stringify(r));
+  }
+});
+
+test('the student journal and responder form still work without staff access', () => {
+  const w = world();
+  w.genericInsert_ = () => ({ inserted: true });
+  w.genericUpdate_ = () => ({ updated: 1 });
+  for (const body of [
+    { action: 'query', table: 'site_config', filters: {} },
+    { action: 'insert', table: 'reflections', row: { session_id: 's9' } },
+    { action: 'update', table: 'reflections', match: { session_id: 's9' }, patch: { status: 'complete' } },
+    { action: 'insert', table: 'followup_records', row: {} },
+    { action: 'update', table: 'followup_records', match: { id: 'f1' }, patch: { calendar_status: {} } },
+    { action: 'insert', table: 'responder_reflections', row: {} },
+  ]) {
+    w.getSheet_ = () => ({ getDataRange: () => ({ getValues: () => [w.SCHEMA[body.table] || []] }) });
+    const r = w.call(body);
+    assert.ok(r.ok, JSON.stringify(body) + ' → ' + JSON.stringify(r));
+  }
+});
+
+test('gate passwords: scrambled in the Sheet, the same passwords still unlock, per adult', () => {
+  const w = world();
+  const cache = {};
+  w.CacheService = { getScriptCache: () => ({ get: k => cache[k] || null, put: (k, v) => { cache[k] = v; } }) };
+  w.Utilities = { getUuid: () => 'abcdef1234', DigestAlgorithm: {}, Charset: {},
+    computeDigest: (a, s) => Array.from(require('crypto').createHash('sha256').update(s).digest()).map(b => b > 127 ? b - 256 : b) };
+  w.safeAlert_ = () => {};
+  const staff = [['name', 'password'], ['Mr. Schuck', 'trail1'], ['Mrs. Rigg', 'peak2'], ['Guest', '']];
+  w.getSheet_ = () => ({ getDataRange: () => ({ getValues: () => staff.map(r => r.slice()) }), getRange: (r, c) => ({ setValue: v => { staff[r - 1][c - 1] = v; } }) });
+  assert.strictEqual(w.scrambleGatePasswords(), 2);
+  assert.ok(staff.slice(1, 3).every(r => /^sha256\$/.test(r[1]) && !/trail1|peak2/.test(r[1])));
+  assert.deepStrictEqual(J(w.checkStaffPassword_('peak2')), { ok: true, name: 'Mrs. Rigg' }, 'still says who unlocked it');
+  assert.strictEqual(w.checkStaffPassword_('nope').ok, false);
+  staff[3][1] = 'newpw'; // a new plain password works right away
+  assert.strictEqual(w.checkStaffPassword_('newpw').name, 'Guest');
+  assert.strictEqual(w.scrambleGatePasswords(), 1, 'only the new one is scrambled');
+});
+
 console.log('\n' + passed + ' tests passed');
