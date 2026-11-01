@@ -2963,10 +2963,9 @@ body.squad-purple {
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────
-// --- Apps Script backend (replaces Supabase) ---
-// Single public deployment for everything (the domain-restricted deployment approach
-// didn't work cross-origin -- see 05_AdminAuth.gs for why). The Clash of Classes bridge
-// further down (COC_URL/COC_ANON) is untouched -- that project stays on Supabase.
+// --- Apps Script backend ---
+// This page is served by Apps Script (08_Web.gs); callBackend goes through window.tjCall_
+// (google.script.run). APP_URL/APP_TOKEN are only used by the exit auto-save beacon.
 // Staff-only sections (checkPW, follow-up scheduler) require a password checked
 // server-side instead -- see ADMIN_PW_VALUE below.
 const APP_URL   = TJ_BOOT.beaconUrl;
@@ -3988,14 +3987,10 @@ async function checkPriorReflections(initial) {
   } catch(e) { return []; }
 }
 
-// ─── CLASH OF CLASSES BRIDGE — SUPABASE (leaderboard READ only) ──────────
-// Point AWARDING no longer happens here -- see awardClashPoint_ in
-// apps-script/07_ClashOfClasses.gs, triggered by staff approval on the admin Clash Flags
-// page, which writes to the real clashofclasses.org backend (a separate Google Sheet) --
-// not this Supabase project, which this file now only reads from to render the leaderboard
-// below.
-const COC_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
-const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
+// ─── CLASH OF CLASSES ─────────────────────────────────────────────────────
+// Points are awarded by staff on the admin Clash Flags page (awardClashPoint_ in
+// 07_ClashOfClasses.gs). The leaderboard below reads squad totals with the clashStandings
+// action, from the same Clash of Classes Points Sheet.
 
 // ─── SQUAD SELECTION ──────────────────────────────────────────────────────
 function selectSquad(name, btn) {
@@ -5440,13 +5435,11 @@ function unlockStaffSection() {
 // ─── COC LEADERBOARD ──────────────────────────────────────────────────────
 async function loadCoCLeaderboard() {
   try {
-    const res = await fetch(
-      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
-      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
-    );
-    const rows = await res.json();
-    if (!rows || !rows[0]) return;
-    const coc = rows[0].value;
+    // Squad totals from the real Clash of Classes Points Sheet (07_ClashOfClasses.gs), not the
+    // old Supabase project (gone).
+    const totalsNow = await callBackend({ action: 'clashStandings' });
+    if (!totalsNow) return;
+    const coc = { events: [{ pts: totalsNow }] };
 
     // Calculate squad totals from events array
     const squads = ['GOLD', 'GREY', 'BLACK', 'PURPLE'];

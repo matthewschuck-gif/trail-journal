@@ -107,6 +107,9 @@ function dispatch_(body) {
       case 'setOfficeRecordRecipients':
         result = setOfficeRecordRecipients_(body.payload);
         break;
+      case 'clashStandings':
+        result = clashStandings_();
+        break;
       case 'awardClashPoint':
         result = awardClashPoint_(body.payload);
         break;
