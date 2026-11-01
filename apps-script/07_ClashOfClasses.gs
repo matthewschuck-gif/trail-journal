@@ -67,14 +67,15 @@ function awardClashPoint_(payload) {
   const sheet = SpreadsheetApp.openById(COC_SHEET_ID_).getSheetByName(COC_EVENTS_TAB_);
   if (!sheet) throw new Error('Could not find the "' + COC_EVENTS_TAB_ + '" tab on the Clash of Classes Points sheet.');
 
-  const studentLabel = row.student_name || row.initial || 'Student';
+  const studentLabel = row.student_name || row.initial || 'Student'; // for the staff reply only
   const today = Utilities.formatDate(new Date(), 'America/New_York', 'yyyy-MM-dd');
 
   // Column order matches that sheet's own header row exactly:
   // id, name, type, date, note, multiplier, BLACK, GOLD, GREY, PURPLE
   // id is left blank -- that sheet's own automation fills it in, same as manual entry.
+  // No student name: the Clash sheet feeds a public site, and a Trail Journal follows an incident.
   const rowValues = [
-    '', 'Trail Journal Growth — ' + studentLabel, 'trail_journal', today,
+    '', 'Trail Journal Growth', 'trail_journal', today,
     'High insight reflection, staff-approved — Trail Journal', '',
     squad === 'BLACK' ? 1 : '', squad === 'GOLD' ? 1 : '', squad === 'GREY' ? 1 : '', squad === 'PURPLE' ? 1 : '',
   ];

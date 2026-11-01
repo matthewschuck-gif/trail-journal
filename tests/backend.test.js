@@ -148,4 +148,19 @@ test('journal leaderboard: squad totals from the Clash events tab, open to stude
   assert.deepStrictEqual(r.data, { BLACK: 6, GOLD: 4, GREY: 2, PURPLE: 0 });
 });
 
+test('Clash point for a high-insight journal: the row sent to the public Clash sheet has no student name', () => {
+  const w = world();
+  const sent = [];
+  w.Utilities = { formatDate: () => '2026-11-01' };
+  w.SpreadsheetApp = Object.assign({}, w.SpreadsheetApp, { openById: () => ({ getSheetByName: () => ({ appendRow: row => sent.push(row) }) }) });
+  w.genericQuery_ = () => [{ squad: 'GOLD', student_name: 'Jamie Doe', clash_points_awarded: false }];
+  w.genericUpdate_ = () => {};
+  const r = J(w.awardClashPoint_({ sessionId: 's1' }));
+  assert.deepStrictEqual([r.ok, r.squad, r.studentLabel], [true, 'GOLD', 'Jamie Doe'], 'staff still see who it was');
+  assert.strictEqual(sent.length, 1);
+  assert.deepStrictEqual([sent[0][1], sent[0][2]], ['Trail Journal Growth', 'trail_journal']);
+  assert.ok(!JSON.stringify(sent[0]).includes('Jamie'), 'no name in the Clash row');
+  assert.strictEqual(sent[0][7], 1, 'GOLD column');
+});
+
 console.log('\n' + passed + ' tests passed');
