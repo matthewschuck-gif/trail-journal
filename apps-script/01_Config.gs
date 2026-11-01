@@ -141,6 +141,9 @@ const SCHEMA = {
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
     'what_happened', 'how_affected', 'what_hardest',
     'emotions_json', 'intensity', 'what_needs_to_happen', 'ready_to_talk', 'status',
+    // Added 2026-11-01: adults see who wrote it (name + 800#); share_name_with_other is the
+    // student's choice ('yes' / 'no') about whether the other student may learn it was them.
+    'student_name', 'student_id', 'share_name_with_other',
   ],
   [TABS.PANEL_SESSIONS]: [
     'id', 'session_id', 'created_at', 'panel_date', 'student_initial', 'referring_staff',

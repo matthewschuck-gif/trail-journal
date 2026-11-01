@@ -1992,7 +1992,7 @@ async function loadResponders() {
     // Looked up by session_id from ALL_RESP at click time -- see the Submissions View button
     // comment above for why (an apostrophe in the raw text broke the old inline-JSON onclick).
     return `<tr>
-      <td><strong>${r.initial||'?'}</strong></td>
+      <td><strong>${respWho_(r)}</strong>${r.student_id ? '<br><span style="font-size:.75rem;color:var(--muted)">' + escHtml_(r.student_id) + '</span>' : ''}${respShare_(r)}</td>
       <td>${d}</td>
       <td style="font-size:.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.what_happened||'—'}</td>
       <td style="color:${readyColor};font-weight:700">${ready}</td>
@@ -2001,7 +2001,16 @@ async function loadResponders() {
     </tr>`;
   }).join('');
   document.getElementById('resp-tbl-body').innerHTML =
-    `<table><thead><tr><th>Initial</th><th>Date</th><th>What Happened</th><th>Ready to Talk</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table><thead><tr><th>Student</th><th>Date</th><th>What Happened</th><th>Ready to Talk</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// Name for adults (older responses only kept an initial).
+function respWho_(r) { return r.student_name ? escHtml_(r.student_name) : 'Initial: ' + escHtml_(r.initial || '?'); }
+// The student's choice about the other student knowing it was them.
+function respShare_(r) {
+  if (r.share_name_with_other === 'no') return '<br><span style="font-size:.72rem;font-weight:700;color:var(--red)">🔒 Keep name from the other student</span>';
+  if (r.share_name_with_other === 'yes') return '<br><span style="font-size:.72rem;color:var(--green)">OK for the other student to know</span>';
+  return '';
 }
 
 function filterResp() { /* basic search */ }
@@ -2012,8 +2021,9 @@ function openRespModalById(sessionId) {
 }
 
 function openRespModal(r) {
-  document.getElementById('modal-title').textContent = `Your Side — Initial: ${r.initial||'?'}`;
+  document.getElementById('modal-title').textContent = 'Your Side — ' + (r.student_name || ('Initial: ' + (r.initial || '?'))) + (r.student_id ? ' (' + r.student_id + ')' : '');
   document.getElementById('modal-body').innerHTML = `
+    ${respShare_(r).replace('<br>', '<div class="di">') + (respShare_(r) ? '</div>' : '')}
     <div class="ds"><h4>Their Experience</h4>
       <div class="di"><div class="di-lbl">What happened</div><div class="di-val">${r.what_happened||'—'}</div></div>
       <div class="di"><div class="di-lbl">How affected</div><div class="di-val">${r.how_affected||'—'}</div></div>
@@ -2045,7 +2055,8 @@ async function generateBrief() {
     `Insight level: ${j.insight_level||'—'}\n` +
     `Repair plan: ${j.ai_staff_summary?.repairPlan||'—'}\n` +
     `Goal: ${j.goal||'not set'}\n\n` +
-    `=== STUDENT B (Your Side of the Trail) — Initial: ${r.initial||'?'} ===\n` +
+    `=== STUDENT B (Your Side of the Trail) — ${r.student_name || ('Initial: ' + (r.initial||'?'))}${r.student_id ? ' (' + r.student_id + ')' : ''} ===\n` +
+    (r.share_name_with_other === 'no' ? `!! Student B asked that the other student NOT be told it was them. Do not share this brief with Student A.\n` : '') +
     `How they were affected: ${r.how_affected||'—'}\n` +
     `Hardest part: ${r.what_hardest||'—'}\n` +
     `What they think should happen: ${r.what_needs_to_happen||'—'}\n` +

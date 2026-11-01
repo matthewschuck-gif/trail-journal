@@ -141,7 +141,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 </style>
 </head>
 <body>
-<div class="privacy-bar">🔒 <strong>Privacy protected</strong> — Only your first initial is stored. No full names. All responses are anonymized.</div>
+<div class="privacy-bar">🔒 <strong>Privacy protected</strong> — Only school adults helping you see your name. You choose whether the other student can know it was you.</div>
 <header class="site-header">
   <div class="header-inner">
     <div class="header-emblem">🏔️</div>
@@ -163,9 +163,19 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
     <p>Something happened that affected you. This space is for your voice — what you experienced, how you felt, and what you think needs to happen to make things right.</p>
     <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
       <div class="name-bubble" id="name-bubble-r"></div>
-      <input type="text" class="name-inp" id="name-inp-r" placeholder="Your first name" maxlength="30" autocomplete="off">
-      <div class="name-hint">Only your first initial is kept — your full name is never stored.</div>
+      <input type="text" class="name-inp" id="name-inp-r" placeholder="Your first and last name" maxlength="60" autocomplete="off">
+      <input type="text" class="name-inp" id="id-inp-r" placeholder="Your 800 number" maxlength="10" inputmode="numeric" autocomplete="off">
+      <div class="name-hint">Only school adults who are helping you will see your name.</div>
     </div>
+  </div>
+  <div class="jcard">
+    <div class="jcard-label">Can the Other Student Know It Was You?</div>
+    <div class="jcard-sub">This is your choice. Either way, the adults helping you will know, so they can keep you safe and set things right.</div>
+    <div class="yn-group">
+      <button class="yn-btn" id="rshare-y" onclick="setRShare('yes')">YES, THEY CAN KNOW</button>
+      <button class="yn-btn" id="rshare-n" onclick="setRShare('no')">NO, KEEP MY NAME PRIVATE</button>
+    </div>
+    <div class="val-msg" id="re-share">Pick one, so the adult knows what you want.</div>
   </div>
   <div class="jcard">
     <div class="jcard-label">How this works</div>
@@ -272,7 +282,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
     <h2>Thank You</h2>
     <p>Your perspective has been recorded. An adult will read what you shared before any follow-up conversation happens. Your voice matters in how this gets resolved.</p>
     <div class="done-detail">
-      ✅ Your responses have been recorded anonymously.<br>
+      ✅ Your responses have been recorded. Only school adults helping you see your name.<br>
       🤝 An adult will review your side before any meeting.<br>
       💬 You will be asked before any conversation is set up.
     </div>
@@ -300,7 +310,7 @@ async function callBackend(body) {
 const BAD_NAMES = /^(undefined|null|none|na|n\/a|anonymous|student|kid|me|myself|i|unknown|idk)$/i;
 const DISMISSIVE = /^(n\/?a|idk|nothing|none|whatever|idrc|idc|dunno|shrug|\.+|\?+|lol|nope|nah|skip)$/i;
 
-const RS = { initial:'', sessionId: crypto.randomUUID(), emotions:[], intensity:3, ynReady:null };
+const RS = { initial:'', name:'', id:'', share:null, sessionId: crypto.randomUUID(), emotions:[], intensity:3, ynReady:null };
 
 // SIMPLE EMOTION DATA (subset)
 const R_EMOTIONS = {
@@ -361,11 +371,25 @@ document.getElementById('name-inp-r').addEventListener('input', function() {
   else { bubble.classList.remove('show'); RS.initial = ''; }
 });
 
+function setRShare(v) {
+  RS.share = v;
+  ['rshare-y','rshare-n'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('rshare-' + v[0]).classList.add('on');
+  document.getElementById('re-share').classList.remove('show');
+}
 function beginR() {
   const raw = document.getElementById('name-inp-r').value.trim();
-  if (!raw || raw.length < 2 || BAD_NAMES.test(raw)) { document.getElementById('name-inp-r').style.borderColor='var(--red)'; return; }
+  const id = document.getElementById('id-inp-r').value.replace(/\D/g, '');
+  let ok = true;
+  if (!raw || raw.length < 3 || !/\s/.test(raw) || BAD_NAMES.test(raw)) { document.getElementById('name-inp-r').style.borderColor='var(--red)'; ok = false; }
+  else document.getElementById('name-inp-r').style.borderColor='';
+  if (!/^80\d{5}$/.test(id)) { document.getElementById('id-inp-r').style.borderColor='var(--red)'; ok = false; }
+  else document.getElementById('id-inp-r').style.borderColor='';
+  if (!RS.share) { document.getElementById('re-share').classList.add('show'); ok = false; }
+  if (!ok) return;
   RS.initial = raw[0].toUpperCase();
-  document.getElementById('name-inp-r').value = '';
+  RS.name = raw.replace(/\s+/g, ' ');
+  RS.id = id;
   goToR(1);
 }
 
@@ -451,6 +475,9 @@ async function submitR() {
     session_id: RS.sessionId,
     linked_session_id: linkedSession,
     initial: RS.initial,
+    student_name: RS.name,
+    student_id: RS.id,
+    share_name_with_other: RS.share,
     what_happened: gvR('r-what'),
     how_affected: gvR('r-affected'),
     what_hardest: gvR('r-hardest'),
