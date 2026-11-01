@@ -108,5 +108,6 @@ function setupTrailWeb() {
   ensureWebSettings_();
   addMissingColumns_(TABS.REFLECTIONS, ['student_id']);
   addMissingColumns_(TABS.RESPONDER_REFLECTIONS, ['student_name', 'student_id', 'share_name_with_other']);
-  safeAlert_('Trail Journal is set up for the Apps Script pages: Settings tab added, reflections has a student_id (800#) column, and responder_reflections has student_name, student_id and share_name_with_other.');
+  addMissingColumns_(TABS.PANEL_SESSIONS, ['student_id']);
+  safeAlert_('Trail Journal is set up for the Apps Script pages: Settings tab added, reflections and panel_sessions have a student_id (800#) column, and responder_reflections has student_name, student_id and share_name_with_other.');
 }

@@ -575,6 +575,10 @@ textarea { min-height: 90px; }
       </div>
     </div>
     <div class="field">
+      <label>Student 800#</label>
+      <input type="text" id="s-id" placeholder="800 number (so it shows on the student's Climb-er page)" maxlength="10" inputmode="numeric">
+    </div>
+    <div class="field">
       <label>Grade</label>
       <select id="s-grade">
         <option value="">Not set</option>
@@ -1225,7 +1229,10 @@ function toast(msg) {
 function startSession() {
   const initial = document.getElementById('s-initial').value.trim();
   if (!initial) { toast('Enter the student\'s name before starting.'); return; }
+  const sid = (document.getElementById('s-id')?.value || '').replace(/\D/g, '');
+  if (sid && !/^80\d{5}$/.test(sid)) { toast('That 800# should be 7 digits starting with 80, or leave it blank.'); return; }
   P.initial = initial;
+  P.studentId = sid || null;
   P.grade = document.getElementById('s-grade')?.value || null;
   P.date = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
   P.staff = document.getElementById('s-staff').value.trim();
@@ -1368,6 +1375,8 @@ async function importTrailJournal() {
       document.getElementById('s-initial').value = r.student_name || r.initial;
     if (r.grade && !document.getElementById('s-grade').value)
       document.getElementById('s-grade').value = r.grade;
+    if (r.student_id && !document.getElementById('s-id').value)
+      document.getElementById('s-id').value = r.student_id;
 
     // Build preview
     document.getElementById('tj-preview-body').innerHTML = `
@@ -1601,6 +1610,7 @@ async function submitAndRecord() {
     session_id: P.sessionId,
     panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
     student_initial: P.initial,
+    student_id: P.studentId || null,
     grade: P.grade || null,
     referring_staff: document.getElementById('s-staff').value,
     incident_summary: document.getElementById('s-incident').value,

@@ -158,6 +158,8 @@ const SCHEMA = {
     // holds the full name from the Panel's "Student Name" field (the column wasn't renamed
     // to avoid a disruptive Sheet header change). Appended at the end for the same reason.
     'grade',
+    // Added 2026-11-01: the student's 800#, so the session shows on their Climb-er page.
+    'student_id',
   ],
   [TABS.FOLLOWUP_RECORDS]: [
     'id', 'created_at', 'student_initials', 'trigger_type', 'trigger_date', 'outcome_summary',
