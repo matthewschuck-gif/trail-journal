@@ -119,15 +119,18 @@ function scrambleGatePasswords() {
  * the patch, rather than widening the table-level exemption above (which must stay narrow
  * so it keeps covering only the student's own zero-login calendar_status update).
  */
-// The student page's prior-reflections check: reflections, filtered by { initial } and nothing else.
+// The student page's prior-reflections check: reflections, filtered by { student_id } (the 800#,
+// once students type it) or { initial }, and nothing else.
 function isStudentHistoryQuery_(body) {
   const keys = Object.keys(body.filters || {});
-  return body.table === 'reflections' && body.action === 'query' && keys.length === 1 && keys[0] === 'initial' &&
-    String(body.filters.initial || '').length > 0;
+  return body.table === 'reflections' && body.action === 'query' && keys.length === 1 &&
+    (keys[0] === 'initial' || keys[0] === 'student_id') && String(body.filters[keys[0]] || '').length > 0;
 }
 
-// True when the request carries the correct staff password (never throws).
+// True when the request comes from signed-in staff (tjCall) or carries the correct staff
+// password (never throws).
 function hasStaffPassword_(body) {
+  if (body._staffEmail) return true;
   try { requireStaffPassword_(body.adminPassword); return true; } catch (e) { return false; }
 }
 
@@ -185,5 +188,6 @@ function enforceAdminGate_(body) {
     (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;
+  if (body._staffEmail) return { ok: true }; // signed in on the staff link (tjCall, 08_Web.gs)
   return requireStaffPassword_(body.adminPassword);
 }

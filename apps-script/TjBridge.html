@@ -1,0 +1,38 @@
+<script>
+/**
+ * Connects each Trail Journal page to Apps Script (08_Web.gs).
+ *  - window.tjCall_(body): the page's backend call, through google.script.run → tjCall.
+ *    Replies keep the old shape ({ ok, data, error }), so the pages' own code is unchanged.
+ *  - Staff signed in with their school Google account (TJ_BOOT.staff, on the staff link) skip
+ *    the shared staff password on the admin dashboard and the Trailback Panel. The per-adult
+ *    check-in gate passwords inside the student journal are unchanged.
+ *  - Links to other sites open in a new tab (these pages run inside Google's frame).
+ */
+window.tjCall_ = function (body) {
+  return new Promise(function (resolve, reject) {
+    google.script.run
+      .withSuccessHandler(function (text) { try { resolve(JSON.parse(text)); } catch (e) { reject(e); } })
+      .withFailureHandler(reject)
+      .tjCall(JSON.stringify(body));
+  });
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (TJ_BOOT.staff) {
+    var login = document.getElementById('login-screen');   // admin dashboard
+    var shell = document.getElementById('app-shell');
+    if (login && shell) {
+      login.style.display = 'none';
+      shell.style.display = 'block';
+      try { if (typeof loadDash === 'function') loadDash(); } catch (e) { console.error(e); }
+    }
+    var gate = document.getElementById('pw-gate-full');    // Trailback Panel
+    if (gate) gate.classList.add('hidden');
+  }
+});
+
+document.addEventListener('click', function (ev) {
+  var a = ev.target.closest && ev.target.closest('a[href^="http"]');
+  if (a && !a.target) a.target = '_top';
+}, true);
+</script>

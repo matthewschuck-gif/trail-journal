@@ -11,7 +11,11 @@ function test(name, fn) { fn(); passed++; console.log('ok - ' + name); }
 const J = x => JSON.parse(JSON.stringify(x));
 
 function world() {
-  const ctx = { console, JSON, Math, Date, Object, Array, String, Number };
+  const user = { email: '' };
+  const ctx = { console, JSON, Math, Date, Object, Array, String, Number,
+    SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: () => null }) }, // no Settings tab: defaults
+    Session: { getActiveUser: () => ({ getEmail: () => user.email }) } };
+  ctx.user = user;
   vm.createContext(ctx);
   vm.runInContext(fs.readdirSync(dir).filter(f => f.endsWith('.gs')).sort().map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n') + ';this.SCHEMA = SCHEMA;', ctx);
   const headers = ctx.SCHEMA.reflections;
@@ -107,6 +111,31 @@ test('gate passwords: scrambled in the Sheet, the same passwords still unlock, p
   staff[3][1] = 'newpw'; // a new plain password works right away
   assert.strictEqual(w.checkStaffPassword_('newpw').name, 'Guest');
   assert.strictEqual(w.scrambleGatePasswords(), 1, 'only the new one is scrambled');
+});
+
+test('pages route (tjCall): school staff sign-in counts as staff; students and fake flags do not', () => {
+  const w = world();
+  const call = b => JSON.parse(w.tjCall(JSON.stringify(b)));
+  // A student (or anyone not at the staff domain) can't read reflections, even claiming to be staff.
+  w.user.email = '8001111@gomounts.org';
+  let r = call({ action: 'query', table: 'reflections', filters: {}, _staffEmail: 'boss@easdpa.org' });
+  assert.ok(!r.ok && /staff password/i.test(r.error), JSON.stringify(r));
+  // Signed-in staff on the staff link: no password needed, full rows.
+  w.user.email = 'teacher@easdpa.org';
+  r = call({ action: 'query', table: 'reflections', filters: {} });
+  assert.ok(r.ok && r.data.length === 2);
+  // The old token route never trusts a _staffEmail in the request.
+  const old = w.call({ action: 'query', table: 'reflections', filters: {}, _staffEmail: 'teacher@easdpa.org' });
+  assert.ok(!old.ok && /staff password/i.test(old.error));
+});
+
+test('prior-reflections check by 800# when the student typed it', () => {
+  const w = world();
+  w.SCHEMA.reflections.indexOf('student_id') > -1 || assert.fail('student_id column');
+  const r = w.call({ action: 'query', table: 'reflections', filters: { student_id: '800-1111' } });
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.deepStrictEqual(r.data, [], 'no reflection has that 800# yet');
+  assert.ok(!w.call({ action: 'query', table: 'reflections', filters: { student_id: '8001111', initial: 'A' } }).ok, 'only one filter allowed');
 });
 
 console.log('\n' + passed + ' tests passed');

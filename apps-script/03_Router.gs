@@ -29,6 +29,8 @@ function doPost(e) {
 }
 
 function doGet(e) {
+  // No ?action= → one of the pages (08_Web.gs). ?action= is the old token API.
+  if (!e || !e.parameter || !e.parameter.action) return serveTrailPage_(e);
   return handleRequest_(e, 'GET');
 }
 
@@ -48,8 +50,22 @@ function handleRequest_(e, method) {
       };
     }
 
+    delete body._staffEmail; // only tjCall (08_Web.gs) sets this, from the Google sign-in
     checkAppToken_(body.token);
-    enforceAdminGate_(body); // throws if this action needs staff Google Sign-In and none was provided (see 05_AdminAuth.gs)
+    // After the switch to the Apps Script pages (Settings LEGACY_API = OFF), the old token route
+    // only takes the exit auto-save beacon a closing journal page sends.
+    if (String(webSetting_('LEGACY_API')).toUpperCase() === 'OFF' && body.action !== 'exitAutoSave') {
+      throw new Error('This address is retired. Open Trail Journal at trailjournal.org.');
+    }
+    return jsonOut_({ ok: true, data: dispatch_(body) });
+  } catch (err) {
+    return jsonOut_({ ok: false, error: String(err && err.message ? err.message : err) });
+  }
+}
+
+// Runs one request (after the token or sign-in check). Shared by doPost and tjCall.
+function dispatch_(body) {
+    enforceAdminGate_(body); // throws if this action needs staff access and none was provided (see 05_AdminAuth.gs)
 
     let result;
     switch (body.action) {
@@ -61,7 +77,7 @@ function handleRequest_(e, method) {
         break;
       case 'query':
         result = isStudentHistoryQuery_(body) && !hasStaffPassword_(body)
-          ? studentHistory_(body.filters.initial)
+          ? studentHistory_(body.filters)
           : genericQuery_(body.table, body.filters || {}, body.limit);
         break;
       case 'ai':
@@ -100,11 +116,7 @@ function handleRequest_(e, method) {
       default:
         throw new Error('Unknown action: ' + body.action);
     }
-
-    return jsonOut_({ ok: true, data: result });
-  } catch (err) {
-    return jsonOut_({ ok: false, error: String(err && err.message ? err.message : err) });
-  }
+    return result;
 }
 
 function jsonOut_(obj) {
@@ -189,12 +201,13 @@ function genericUpdate_(table, match, patch) {
 }
 
 /**
- * The student page's prior-reflections check (filters: { initial }): only what the page uses
- * -- insight level, trait and date -- never names, answers or staff notes. No staff password
- * needed (the student is on their own device).
+ * The student page's prior-reflections check (filters: { student_id } when the student typed
+ * their 800#, else { initial }): only what the page uses -- insight level, trait and date --
+ * never names, answers or staff notes. No staff password needed (the student's own device).
  */
-function studentHistory_(initial) {
-  return genericQuery_('reflections', { initial: initial }).map(function (r) {
+function studentHistory_(filters) {
+  const f = filters.student_id ? { student_id: String(filters.student_id).replace(/\D/g, '') } : { initial: filters.initial };
+  return genericQuery_('reflections', f).map(function (r) {
     const p3 = r.part3_json && typeof r.part3_json === 'object' ? r.part3_json : {};
     return { insight_level: r.insight_level || '', created_at: r.created_at, part3_json: { trait: p3.trait || '' } };
   });

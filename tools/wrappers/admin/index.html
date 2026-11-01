@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<!-- trailjournal.org staff page: goes to the staff deployment (Anyone within EASD), where staff are signed in with Google. -->
+<html lang="en"><head><meta charset="UTF-8"><title>Trail Journal Admin</title></head><body>
+<script>
+  // The STAFF deployment link (Deploy > New deployment > Web app, Anyone within EASD). Paste it at the switch.
+  var STAFF = 'PASTE_THE_STAFF_EXEC_LINK_HERE';
+  var q = location.search ? location.search.slice(1) + '&' : '';
+  location.replace(STAFF + '?' + q + 'page=admin');
+</script>
+<p>Opening the Trail Journal Admin… <a href="#" onclick="location.reload()">Click here</a> if nothing happens.</p></body></html>

@@ -132,6 +132,10 @@ const SCHEMA = {
     // submission. Lets admin tell a genuinely-finished reflection apart from one a student
     // didn't get to finish in the period, and who approved cutting it short.
     'ran_out_of_time_by',
+    // The student's 800# (typed on the welcome screen of the Apps Script journal), so Define a
+    // Climb-er and the prior-reflections check match the right student. Appended at the end --
+    // added to existing Sheets by Trail Journal › Run setup (setupTrailWeb in 08_Web.gs).
+    'student_id',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
