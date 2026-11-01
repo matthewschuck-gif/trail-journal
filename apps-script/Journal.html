@@ -238,7 +238,7 @@ body.is-preview .quality-float { bottom: 66px; }
 
 /* ── SCREENS ── */
 .screen { display: none; }
-.screen.active { display: block; animation: trailIn 0.4s ease; }
+.screen.active { display: block; animation: trailIn 0.55s var(--craft-spring, ease) both; } /* a step settles in with a soft overshoot (Craft) */
 @keyframes trailIn {
   from { opacity: 0; transform: translateX(14px); }
   to   { opacity: 1; transform: translateX(0); }
@@ -4753,6 +4753,14 @@ function goTo(n) {
       if (i < ai) el.classList.add('done');
       if (i === ai) el.classList.add('active');
     });
+    // The step just finished lands on the trail (Craft's squash and settle).
+    if (ai > 0 && window.craftLand) window.craftLand(document.getElementById(PIPS[ai - 1]));
+  }
+  // Journal complete: the summit card is lit like a film still and the moment is marked.
+  if (n === 'done') {
+    const hero = document.querySelector('#screen-done .done-hero');
+    if (hero) { hero.classList.add('craft-lit', 'craft-motes'); if (window.craftPop) window.craftPop(hero.querySelector('.d-icon')); }
+    if (window.craftCelebrate) setTimeout(() => window.craftCelebrate(hero && hero.querySelector('h2')), 350);
   }
   // Show quality meter on all reflective screens except welcome (0) and done
   const noMeter = [0, 'done'];
@@ -4868,6 +4876,9 @@ async function checkGatePassword(gateNum) {
 
 function onGatePassed(gateNum, staffName) {
   showDraftCheckNotice('🔓 Unlocked by ' + (staffName || 'Staff'));
+  // A check-in passed is a real step forward: a small celebration from the gate (Craft).
+  const gateEl = document.getElementById('pw-gate-' + gateNum);
+  if (gateEl && window.craftCelebrate) { const from = gateEl.getBoundingClientRect(); window.craftCelebrate({ getBoundingClientRect: () => from }); }
   if (gateNum === '0') { S.gate0StaffName = staffName || null; goTo(S._afterGate0Dest); return; }
   if (gateNum === '1') { S.gate1StaffName = staffName || null; afterReading(); return; }
   if (gateNum === '2') { S.gate2StaffName = staffName || null; goTo(4); return; }

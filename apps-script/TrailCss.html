@@ -529,6 +529,8 @@ button[style*="background: var(--trail)"]:hover,
   font-weight: 900 !important;
   letter-spacing: -0.02em !important;
 }
+/* The line under "Journal Complete" was dark ink on the dark green card (about 1.6:1). */
+.done-hero > p, [class*="done-hero"] > p { color: rgba(255, 255, 255, .84) !important; }
 
 /* ══════════════════════════════════
    QUALITY METER FLOAT
@@ -741,3 +743,124 @@ button[style*="background: var(--trail)"]:hover,
 }
 
 </style>
+
+<!-- Craft wiring for Trail Journal (the kit itself is between the craft markers below) -->
+<style>
+/* Forest and gold, and the calm setting everywhere: students often open the journal after a
+   hard moment, so the motion stays small and the light stays warm and soft. */
+html:root { --craft-accent: var(--trail); --craft-accent-2: var(--gold); --craft-key: rgba(255, 226, 170, .32); --craft-rim: rgba(110, 160, 130, .3); }
+.btn-next, .btn-submit, .btn-back, .btn-primary, .btn-secondary, .btn-gold, .btn-forest, .btn-main {
+  transition: background .2s, color .2s, border-color .2s, box-shadow .2s, transform var(--craft-press-ms, .35s) var(--craft-spring, ease-out); }
+.btn-next:active:not(:disabled), .btn-submit:active:not(:disabled), .btn-back:active, .btn-primary:active:not(:disabled), .btn-secondary:active:not(:disabled),
+.btn-gold:active:not(:disabled), .btn-forest:active:not(:disabled), .btn-main:active:not(:disabled) { transform: var(--craft-squash, scale(.98)); transition-duration: .07s; }
+@media (prefers-reduced-motion: reduce) { .btn-next, .btn-submit, .btn-back, .btn-primary, .btn-secondary, .btn-gold, .btn-forest, .btn-main { transition: none; } }
+</style>
+<script>document.documentElement.setAttribute('data-craft', 'calm');</script>
+<!-- craft:start (copied from emsd/craft-kit/craft.html by craft-kit/sync.js; edit there, not here) -->
+<style>
+/* ── Craft: an ode to Pixar's craft, not its characters ───────────────────────────────────
+   No characters, logos or famous shots. What's borrowed is how their films move and are lit:
+   - squash and stretch, anticipation, follow-through and overshoot (the animation principles)
+   - a warm key light, a cool rim light and dust floating in the light (cinematic lighting)
+   - arcs: things that fly travel on curves, not straight lines
+   Each tool keeps its own colors through --craft-accent / --craft-accent-2. Staff tools set
+   <html data-craft="calm">, which keeps the same moves smaller and quicker (they're used all day).
+   Everything here is off for people who ask for less motion. */
+:root {
+  --craft-accent: #9b5de5; --craft-accent-2: #ffe100;
+  --craft-out: cubic-bezier(.22, 1, .36, 1);
+  --craft-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --craft-squash: scale(1.06, .9); --craft-press-ms: .5s;
+  --craft-key: rgba(255, 218, 160, .22); --craft-rim: rgba(140, 186, 255, .32);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  /* A real spring: overshoots, comes back past rest, settles. */
+  :root { --craft-spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1); }
+}
+html[data-craft="calm"] { --craft-squash: scale(1.02, .96); --craft-press-ms: .35s; }
+
+/* Squash on press, spring back on release (buttons that do something). */
+.craft-press { transition: transform var(--craft-press-ms) var(--craft-spring); }
+.craft-press:active:not(:disabled) { transform: var(--craft-squash); transition: transform .07s ease-out; }
+
+/* A success moment: anticipation (a tiny crouch), stretch up, squash, settle. */
+.craft-pop { animation: craftPop .7s var(--craft-out) both; }
+@keyframes craftPop {
+  0% { transform: scale(.7, .7); opacity: 0; }
+  30% { transform: scale(1.12, .88); opacity: 1; }
+  50% { transform: scale(.94, 1.08); }
+  70% { transform: scale(1.03, .98); }
+  100% { transform: none; }
+}
+html[data-craft="calm"] .craft-pop { animation-name: craftPopCalm; animation-duration: .45s; }
+@keyframes craftPopCalm { 0% { transform: scale(.94); opacity: 0; } 60% { transform: scale(1.02); opacity: 1; } 100% { transform: none; } }
+
+/* A number that just finished counting lands with a little bump. */
+.craft-land { display: inline-block; animation: craftLand .5s var(--craft-out); }
+@keyframes craftLand { 0% { transform: none; } 35% { transform: scale(1.14, .9); } 65% { transform: scale(.97, 1.04); } 100% { transform: none; } }
+
+/* Cinematic light on a hero card: warm key light from the top left, cool rim along the bottom edge. */
+.craft-lit { position: relative; isolation: isolate; }
+.craft-lit::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(80% 90% at 8% 0%, var(--craft-key), transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 215, .28), inset 0 -26px 46px -34px var(--craft-rim); }
+
+/* Dust floating in the light. Slow, few, faint; on hero cards only. */
+.craft-motes { position: relative; isolation: isolate; overflow: hidden; }
+.craft-motes::after { content: ''; position: absolute; inset: -40% -15%; pointer-events: none; z-index: -1; opacity: .55;
+  background-image:
+    radial-gradient(2px 2px at 12% 28%, rgba(255, 236, 190, .9), transparent 70%), radial-gradient(1.5px 1.5px at 31% 66%, rgba(255, 236, 190, .7), transparent 70%),
+    radial-gradient(2.5px 2.5px at 47% 18%, rgba(255, 236, 190, .6), transparent 70%), radial-gradient(1.5px 1.5px at 63% 52%, rgba(255, 236, 190, .8), transparent 70%),
+    radial-gradient(2px 2px at 78% 34%, rgba(255, 236, 190, .7), transparent 70%), radial-gradient(1px 1px at 88% 74%, rgba(255, 236, 190, .9), transparent 70%),
+    linear-gradient(112deg, transparent 32%, rgba(255, 222, 160, .07) 44%, transparent 58%);
+  background-size: 420px 300px, 420px 300px, 420px 300px, 420px 300px, 420px 300px, 420px 300px, 100% 100%;
+  animation: craftMotes 18s linear infinite alternate; }
+@keyframes craftMotes { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-36px, -70px, 0); } }
+
+/* Celebration bits (craftCelebrate): flown on arcs by the script, then cleaned up. */
+.craft-bit { position: fixed; left: 0; top: 0; width: 10px; height: 14px; border-radius: 3px; pointer-events: none; z-index: 2147483000; will-change: transform, opacity; }
+.craft-bit.round { border-radius: 50%; width: 10px; height: 10px; }
+
+/* Keyboard focus that's always visible. */
+.craft-focus:focus-visible { outline: 2px solid var(--craft-accent-2); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .craft-press, .craft-press:active { transition: none !important; transform: none !important; }
+  .craft-pop, .craft-land, .craft-motes::after { animation: none !important; }
+}
+</style>
+<script>
+/* Craft helpers. craftPop(el): play the success pop again. craftLand(el): bump a number.
+   craftCelebrate(el, colors): a short burst of bits flying on arcs from el (a vote counted,
+   a reward earned). All three do nothing for people who ask for less motion. */
+(function () {
+  var reduce = function () { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; };
+  var replay = function (el, cls) { if (!el || reduce()) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+  window.craftPop = function (el) { replay(el, 'craft-pop'); };
+  window.craftLand = function (el) { replay(el, 'craft-land'); };
+  window.craftCelebrate = function (el, colors) {
+    if (!el || reduce() || !el.getBoundingClientRect || !document.body.animate) return;
+    var calm = document.documentElement.getAttribute('data-craft') === 'calm';
+    var r = el.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top + r.height / 2;
+    var css = getComputedStyle(document.documentElement);
+    var pal = colors && colors.length ? colors : [css.getPropertyValue('--craft-accent').trim() || '#9b5de5', css.getPropertyValue('--craft-accent-2').trim() || '#ffe100', '#ffffff'];
+    var n = calm ? 10 : 22;
+    for (var i = 0; i < n; i++) {
+      var b = document.createElement('span');
+      b.className = 'craft-bit' + (i % 3 === 0 ? ' round' : '');
+      b.style.background = pal[i % pal.length];
+      document.body.appendChild(b);
+      // An arc: up and out, then gravity pulls it down (slow in, slow out at the top).
+      var ang = (-90 + (Math.random() - .5) * 150) * Math.PI / 180, v = (calm ? 90 : 150) + Math.random() * (calm ? 60 : 120);
+      var dx = Math.cos(ang) * v, dy = Math.sin(ang) * v, fall = 160 + Math.random() * 140, spin = (Math.random() - .5) * 720;
+      var frames = [], steps = 12;
+      for (var s = 0; s <= steps; s++) {
+        var t = s / steps, x = x0 + dx * t * 1.4, y = y0 + dy * t * 1.4 + fall * t * t;
+        frames.push({ transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + spin * t + 'deg) scale(' + (t < .15 ? .6 + t * 2.6 : 1) + ')', opacity: t > .75 ? (1 - t) * 4 : 1 });
+      }
+      b.animate(frames, { duration: (calm ? 700 : 1000) + Math.random() * 400, easing: 'linear', fill: 'forwards' }).onfinish = (function (node) { return function () { node.remove(); }; })(b);
+    }
+  };
+})();
+</script>
+<!-- craft:end -->
