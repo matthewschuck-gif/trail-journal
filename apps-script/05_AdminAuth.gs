@@ -80,15 +80,30 @@ function checkStaffPassword_(password) {
  * the patch, rather than widening the table-level exemption above (which must stay narrow
  * so it keeps covering only the student's own zero-login calendar_status update).
  */
+// The student page's prior-reflections check: reflections, filtered by { initial } and nothing else.
+function isStudentHistoryQuery_(body) {
+  const keys = Object.keys(body.filters || {});
+  return body.table === 'reflections' && body.action === 'query' && keys.length === 1 && keys[0] === 'initial' &&
+    String(body.filters.initial || '').length > 0;
+}
+
+// True when the request carries the correct staff password (never throws).
+function hasStaffPassword_(body) {
+  try { requireStaffPassword_(body.adminPassword); return true; } catch (e) { return false; }
+}
+
 function enforceAdminGate_(body) {
   const needsAdmin =
     (ADMIN_ONLY_TABLES_.indexOf(body.table) !== -1) ||
     (body.action === 'ai' && ADMIN_ONLY_AI_TYPES_.indexOf(body.type) !== -1) ||
     (body.action === 'sendFollowupEmails' && !(body.payload && body.payload.singleEvent)) ||
     (body.action === 'sendSummaryEmail') ||
-    // reflections/responder_reflections are open for insert (students submitting), but
-    // reading them back in bulk (the admin dashboard listing/export) is staff-only.
-    ((body.table === 'reflections' || body.table === 'responder_reflections') && body.action === 'query' && !body.filters) ||
+    // reflections/responder_reflections are open for insert (students submitting), but every
+    // read is staff-only. The one exception is the student page's "prior reflections" check,
+    // filtered by { initial } only, which gets back just insight level, trait and date
+    // (studentHistory_ in 03_Router.gs). Before 2026-10-31 any filter at all (even {} or a
+    // made-up column) skipped this gate and returned every reflection in full.
+    ((body.table === 'reflections' || body.table === 'responder_reflections') && body.action === 'query' && !isStudentHistoryQuery_(body)) ||
     // followup_records: bulk read-back only, not the student's own insert/update (see note above).
     (body.table === 'followup_records' && body.action === 'query') ||
     // followup_records: the staff "mark complete" action, identified by its patch touching

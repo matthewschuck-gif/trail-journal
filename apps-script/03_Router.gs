@@ -60,7 +60,9 @@ function handleRequest_(e, method) {
         result = genericUpdate_(body.table, body.match, body.patch);
         break;
       case 'query':
-        result = genericQuery_(body.table, body.filters || {}, body.limit);
+        result = isStudentHistoryQuery_(body) && !hasStaffPassword_(body)
+          ? studentHistory_(body.filters.initial)
+          : genericQuery_(body.table, body.filters || {}, body.limit);
         break;
       case 'ai':
         result = callAiProxy_(body.type, body.payload);
@@ -186,6 +188,18 @@ function genericUpdate_(table, match, patch) {
   return { updated: updatedCount };
 }
 
+/**
+ * The student page's prior-reflections check (filters: { initial }): only what the page uses
+ * -- insight level, trait and date -- never names, answers or staff notes. No staff password
+ * needed (the student is on their own device).
+ */
+function studentHistory_(initial) {
+  return genericQuery_('reflections', { initial: initial }).map(function (r) {
+    const p3 = r.part3_json && typeof r.part3_json === 'object' ? r.part3_json : {};
+    return { insight_level: r.insight_level || '', created_at: r.created_at, part3_json: { trait: p3.trait || '' } };
+  });
+}
+
 function genericQuery_(table, filters, limit) {
   const sheet = getSheet_(table);
   const headers = SCHEMA[table];
@@ -196,7 +210,7 @@ function genericQuery_(table, filters, limit) {
   for (let i = 1; i < data.length; i++) {
     const matches = filterCols.every(function (col) {
       const colIdx = headers.indexOf(col);
-      if (colIdx === -1) return true;
+      if (colIdx === -1) return false; // an unknown column matches nothing (it used to match everything)
       return String(data[i][colIdx]) === String(filters[col]);
     });
     if (!matches) continue;
