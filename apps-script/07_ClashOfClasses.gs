@@ -27,6 +27,22 @@ const COC_EVENTS_TAB_ = 'events';
 const COC_SQUADS_ = ['BLACK', 'GOLD', 'GREY', 'PURPLE'];
 
 /**
+ * Squad totals for the journal's leaderboard: the sum of each squad's column on the Clash
+ * "events" tab. Totals only, no names. Open to students (the leaderboard needs no sign-in).
+ */
+function clashStandings_() {
+  const totals = { BLACK: 0, GOLD: 0, GREY: 0, PURPLE: 0 };
+  const sh = SpreadsheetApp.openById(COC_SHEET_ID_).getSheetByName(COC_EVENTS_TAB_);
+  if (!sh) return totals;
+  const values = sh.getDataRange().getValues();
+  const h = values[0].map(function (x) { return String(x).trim().toUpperCase(); });
+  values.slice(1).forEach(function (r) {
+    COC_SQUADS_.forEach(function (s) { totals[s] += Number(r[h.indexOf(s)]) || 0; });
+  });
+  return totals;
+}
+
+/**
  * payload: { sessionId }. Looks up the reflection by session_id (must already have a squad
  * on file -- see the 'squad' column added to SCHEMA.reflections in 01_Config.gs), appends
  * one row to the Clash of Classes Points sheet's "events" tab awarding that squad 1 point,

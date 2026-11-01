@@ -138,4 +138,14 @@ test('prior-reflections check by 800# when the student typed it', () => {
   assert.ok(!w.call({ action: 'query', table: 'reflections', filters: { student_id: '8001111', initial: 'A' } }).ok, 'only one filter allowed');
 });
 
+test('journal leaderboard: squad totals from the Clash events tab, open to students', () => {
+  const w = world();
+  w.SpreadsheetApp = Object.assign({}, w.SpreadsheetApp, { openById: () => ({ getSheetByName: () => ({ getDataRange: () => ({ getValues: () => [
+    ['id', 'name', 'type', 'date', 'note', 'multiplier', 'BLACK', 'GOLD', 'GREY', 'PURPLE'], [1, 'a', 'x', '', '', '', 5, '', 2, 0], [2, 'b', 'x', '', '', '', 1, 4, '', ''],
+  ] }) }) }) });
+  const r = w.call({ action: 'clashStandings' });
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.deepStrictEqual(r.data, { BLACK: 6, GOLD: 4, GREY: 2, PURPLE: 0 });
+});
+
 console.log('\n' + passed + ' tests passed');
