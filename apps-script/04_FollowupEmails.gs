@@ -66,21 +66,30 @@ function squadTheme_(squad) {
 // color untouched (or the reverse), which is exactly what read as "light text on a light
 // background" (Matt, Sep 2026). These two meta tags tell every client that supports them
 // this email is light-mode-only and should be left alone.
+//
+// The colored header and footer are TABLE CELLS with a solid bgcolor and background-color.
+// Gmail and Outlook drop a CSS gradient and ignore bgcolor on a <div>, so the header used
+// to fall back to the cream page color -- leaving the white title and the light squad-colored
+// student name/squad line on cream (Matt, Nov 2026). The gradient is now only an extra on top
+// of a solid color every client keeps, and the name/squad line is white, not the light accent.
 function emailShell_(icon, title, subtitle, bodyHtml, theme) {
   theme = theme || DEFAULT_THEME_;
+  const cell = function (bg, style, inner) {
+    return '<tr><td bgcolor="' + bg + '" style="background-color:' + bg + ';' + style + '">' + inner + '</td></tr>';
+  };
   return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
     '<meta name="color-scheme" content="light only">' +
     '<meta name="supported-color-schemes" content="light only">' +
-    '</head><body style="margin:0;padding:0;background:#fffbf5">' +
-    '<div style="font-family:Georgia,\'Times New Roman\',serif;max-width:560px;margin:0 auto;background:#fffbf5" bgcolor="#fffbf5">' +
-    '<div style="background:linear-gradient(135deg,' + theme.primary + ' 0%,' + theme.primaryDeep + ' 100%);padding:26px 24px;border-bottom:4px solid ' + theme.accent + '" bgcolor="' + theme.primary + '">' +
+    '</head><body style="margin:0;padding:0;background-color:#fffbf5" bgcolor="#fffbf5">' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#fffbf5" style="background-color:#fffbf5"><tr><td align="center">' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;font-family:Georgia,\'Times New Roman\',serif">' +
+    cell(theme.primary, 'background-image:linear-gradient(135deg,' + theme.primary + ' 0%,' + theme.primaryDeep + ' 100%);padding:26px 24px;border-bottom:4px solid ' + theme.accent,
       '<div style="font-size:26px;margin-bottom:6px">' + icon + '</div>' +
-      '<h2 style="margin:0;color:#fff;font-weight:normal;font-size:20px">' + title + '</h2>' +
-      (subtitle ? '<p style="margin:6px 0 0;color:' + theme.accent + ';font-size:13px;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '') +
-    '</div>' +
-    '<div style="padding:22px 24px;background:#fffbf5" bgcolor="#fffbf5">' + bodyHtml + '</div>' +
-    '<div style="background:' + theme.primaryDeep + ';padding:14px;text-align:center;font-size:11px;color:' + theme.accent + ';font-family:Verdana,sans-serif" bgcolor="' + theme.primaryDeep + '">Camp Mountaineer &middot; Trail Journal</div>' +
-  '</div></body></html>';
+      '<h2 style="margin:0;color:#ffffff;font-weight:normal;font-size:20px">' + title + '</h2>' +
+      (subtitle ? '<p style="margin:6px 0 0;color:#ffffff;font-size:14px;font-weight:bold;font-family:Verdana,sans-serif">' + subtitle + '</p>' : '')) +
+    cell('#fffbf5', 'padding:22px 24px', bodyHtml) +
+    cell(theme.primaryDeep, 'padding:14px;text-align:center;font-size:11px;color:#ffffff;font-family:Verdana,sans-serif', 'Camp Mountaineer &middot; Trail Journal') +
+    '</table></td></tr></table></body></html>';
 }
 
 function emailInfoRow_(label, value, theme) {
