@@ -1521,7 +1521,9 @@ async function doLogin() {
   const pw = document.getElementById('lpw').value;
   ADMIN_PW_VALUE = pw;
   try {
-    await callBackend({ action: 'query', table: 'site_config', filters: {} }, /* admin */ true);
+    // A reflections read the staff password must unlock (matches no row). site_config reads are open
+    // to students since 10/31, so they no longer prove the password.
+    await callBackend({ action: 'query', table: 'reflections', filters: { session_id: '__login_check__' } }, /* admin */ true);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-shell').style.display = 'block';
     loadDash();
