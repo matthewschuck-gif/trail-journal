@@ -273,6 +273,7 @@ function sendViaMail_(opts) {
       Utilities.newBlob(opts.icsString, 'text/calendar; charset=UTF-8; method=REQUEST', opts.icsFilename || 'invite.ics'),
     ];
   }
+  if (opts.attachments) mailOptions.attachments = (mailOptions.attachments || []).concat(opts.attachments);
   MailApp.sendEmail(mailOptions);
 }
 
@@ -492,6 +493,8 @@ function setOfficeRecordRecipients_(payload) {
 // far. Distinct subject line + a callout banner up top so office staff don't mistake it for
 // a finished reflection.
 function sendOfficeRecordEmail_(payload) {
+  // The server already sent this finished journal (10_Records.gs): the page's copy would repeat it.
+  if (recordAlreadySent_(payload)) return { ok: true, sent: false, duplicate: true };
   const studentLabel = payload.studentLabel || 'Student';
   const grade = payload.grade;
   const location = payload.location;
@@ -503,7 +506,8 @@ function sendOfficeRecordEmail_(payload) {
   const theme = squadTheme_(squad);
 
   const squadTag = theme.label ? theme.emoji + ' ' + theme.label + ' Squad' : '';
-  const subject = '[Trail Journal] ' + (incomplete ? '⏰ INCOMPLETE -- ' : theme.emoji + ' New submission -- ') +
+  const subject = '[Trail Journal] ' + (payload.subjectNote ? '(' + payload.subjectNote + ') ' : '') +
+    (incomplete ? '⏰ INCOMPLETE -- ' : theme.emoji + ' New submission -- ') +
     studentLabel + (location ? ' (' + location + ')' : '');
   const summaryHtml = formatSummaryHtml_(summaryText, theme);
 
@@ -512,6 +516,7 @@ function sendOfficeRecordEmail_(payload) {
       ? emailCallout_('⏰ Incomplete Record', 'The student did not finish this journal -- either an adult saved their progress with "Ran Out of Time," or the student closed/left the page before submitting. Everything below is only what was written so far; there is no AI summary or insight level yet.', { bg: '#FFF3E0', border: '#c97a00' }, theme)
       : '') +
     emailInfoRow_('🎓 Student', studentLabel + (grade ? ' (Grade ' + grade + ')' : ''), theme) +
+    (payload.submittedAt ? emailInfoRow_('🕒 Journal Started', payload.submittedAt, theme) : '') +
     (squadTag ? emailInfoRow_('🏅 Squad', squadTag, theme) : '') +
     (location ? emailInfoRow_('📍 Location', location, theme) : '') +
     (tier ? emailInfoRow_('🧭 Journal Length', tier.charAt(0).toUpperCase() + tier.slice(1) + ' tier', theme) : '') +
@@ -520,6 +525,7 @@ function sendOfficeRecordEmail_(payload) {
   const html = emailShell_(incomplete ? '⏰' : '📬', incomplete ? 'Trail Journal -- Incomplete' : 'Trail Journal Submission', studentLabel + (squadTag ? ' · ' + squadTag : ''), body, theme);
 
   sendViaMail_({ to: toEmail, subject: subject, html: html });
+  markRecordSentFromPage_(payload);
 
   return { ok: true, sent: true };
 }
@@ -539,11 +545,7 @@ function sendOfficeRecordEmail_(payload) {
 function exitAutoSave_(payload) {
   const row = payload.row || {};
   try {
-    if (payload.isUpdate) {
-      genericUpdate_('reflections', { session_id: row.session_id }, row);
-    } else {
-      genericInsert_('reflections', row);
-    }
+    upsertReflection_(row); // by session, whether or not progress was saved before (10_Records.gs)
   } catch (e) {
     Logger.log('exitAutoSave_ row save failed: ' + e);
   }

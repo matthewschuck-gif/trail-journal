@@ -98,6 +98,9 @@ function dispatch_(body) {
       case 'exitAutoSave':
         result = exitAutoSave_(body.payload);
         break;
+      case 'upsertReflection': // every save from the journal page, by session (10_Records.gs)
+        result = upsertReflection_(body.row);
+        break;
       case 'uploadPeaksPoster':
         result = uploadPeaksPoster_(body.payload);
         break;

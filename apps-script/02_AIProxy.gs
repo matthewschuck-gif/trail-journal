@@ -67,6 +67,11 @@ function callAiProxy_(type, payload) {
       // non-fatal, matches original try/catch-and-ignore behavior
     }
   }
+  // Finish the submission here, on the server: full report, goal, Clash flag and the office
+  // email, even if the page was closed or reloaded while this ran (10_Records.gs).
+  if (type === 'summary' && payload.sessionId) {
+    try { finishSubmission_(payload.sessionId, parsed); } catch (e) { console.error('finishSubmission_: ' + e); }
+  }
 
   return parsed;
 }

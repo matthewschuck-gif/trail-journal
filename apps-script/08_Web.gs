@@ -101,6 +101,10 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('Trail Journal')
     .addItem('Run setup (Settings tab + new columns)', 'setupTrailWeb')
     .addItem('Scramble gate passwords', 'scrambleGatePasswords')
+    .addSeparator()
+    .addItem('Turn on the record safety net', 'setupRecordSafetyNet') // 10_Records.gs
+    .addItem('Email all journal records once…', 'emailAllRecordsOnce')
+    .addItem('Send missed journal records one by one…', 'sendMissedRecords')
     .addToUi();
 }
 

@@ -136,6 +136,10 @@ const SCHEMA = {
     // Climb-er and the prior-reflections check match the right student. Appended at the end --
     // added to existing Sheets by Trail Journal › Run setup (setupTrailWeb in 08_Web.gs).
     'student_id',
+    // What reached the office ("<time> submitted" / "<time> incomplete", "resent") and when the
+    // page last saved progress -- 10_Records.gs adds both columns to existing Sheets.
+    'office_emailed',
+    'last_saved_at',
   ],
   [TABS.RESPONDER_REFLECTIONS]: [
     'id', 'created_at', 'session_id', 'linked_session_id', 'initial',
