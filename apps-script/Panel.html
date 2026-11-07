@@ -1124,7 +1124,7 @@ function refreshFuStrip() {
   // Pull recommendation narrative for outcome pre-fill
   const rec = document.getElementById('rec-narrative')?.value?.trim();
   if (rec) p.set('outcome', rec.slice(0, 300));
-  document.getElementById('fu-scheduler-link').href = 'https://trailjournal.org/panel/followup/?' + p.toString();
+  document.getElementById('fu-scheduler-link').href = 'https:\/\/trailjournal.org/panel/followup/?' + p.toString();
 }
 
 // Hook into goTo so strip refreshes automatically when Screen 7 opens
@@ -1676,7 +1676,7 @@ async function submitAndRecord() {
 }
 
 // ── COC PANEL POINT ───────────────────────────────────────────────────────
-const COC_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
+const COC_URL  = 'https:\/\/yvutgnpgnthvnonhgdux.supabase.co';
 const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
 
 async function awardPanelCoCPoint(squad, record) {
@@ -1796,7 +1796,7 @@ function buildBICLink(r) {
     panelSessionId: P.sessionId,
   });
   document.getElementById('bic-link').href =
-    'https://behaviorinterventioncenter.com?' + params.toString();
+    'https:\/\/behaviorinterventioncenter.com?' + params.toString();
 }
 
 // ── DELIBERATION OVERLAY ──────────────────────────────────────────────────

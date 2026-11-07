@@ -5323,7 +5323,7 @@ function renderLocationReference() {
     const hasDedicated = !!PEAKS_POSTER_IMAGE_[where];
     const posterFile = hasDedicated ? PEAKS_POSTER_IMAGE_[where] : PEAKS_POSTER_FALLBACK_;
     const overrideKey = hasDedicated ? where : 'Summary';
-    posterImg.src = PEAKS_POSTER_OVERRIDES_[overrideKey] || ('https://trailjournal.org/assets/peaks/' + posterFile + '.png');
+    posterImg.src = PEAKS_POSTER_OVERRIDES_[overrideKey] || ('https:\/\/trailjournal.org/assets/peaks/' + posterFile + '.png');
     posterImg.alt = '';
     posterImg.style.display = 'block';
   }
@@ -5856,7 +5856,7 @@ function buildBICLink() {
     consequence: (S_RESULT.recommendedConsequences || []).map(c => c.description).join(' | ').slice(0, 300),
   });
   document.getElementById('bic-link').href =
-    'https://behaviorinterventioncenter.com?' + params.toString();
+    'https:\/\/behaviorinterventioncenter.com?' + params.toString();
 }
 async function doSubmit() {
   if (S.tier === 'full' && !validatePart3()) return;

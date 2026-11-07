@@ -1410,7 +1410,7 @@ async function loadPeaksPostersPage() {
 
   grid.innerHTML = PEAKS_POSTER_LOCATIONS_ADMIN_.map(loc => {
     const override = peaksPosterOverridesAdmin_[loc.key];
-    const src = override || ('https://trailjournal.org/assets/peaks/' + loc.file + '.png');
+    const src = override || ('https:\/\/trailjournal.org/assets/peaks/' + loc.file + '.png');
     const safeKey = loc.key.replace(/[^a-zA-Z0-9]/g, '_');
     const escKey = loc.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return '<div class="ed-field" style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">' +
@@ -1419,7 +1419,7 @@ async function loadPeaksPostersPage() {
           '<div style="flex:1;min-width:220px">' +
             '<div class="ed-lbl" style="margin-bottom:4px">' + loc.label + '</div>' +
             '<div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">' + (override ? '✓ Custom poster uploaded' : 'Using bundled default') + '</div>' +
-            '<input type="file" accept="image/*" id="peaks-file-' + safeKey + '" style="font-size:.8rem;margin-bottom:8px;color:var(--text);display:block">' +
+            '<input type="file" accept="image/\*" id="peaks-file-' + safeKey + '" style="font-size:.8rem;margin-bottom:8px;color:var(--text);display:block">' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
               '<button class="save-btn" onclick="uploadPeaksPosterFile(\'' + escKey + '\', \'peaks-file-' + safeKey + '\', \'peaks-status-' + safeKey + '\')">Upload New Poster</button>' +
               (override ? '<button class="save-btn" style="background:var(--navy3)" onclick="resetPeaksPosterOverride(\'' + escKey + '\', \'peaks-status-' + safeKey + '\')">Reset to Default</button>' : '') +
@@ -2240,7 +2240,7 @@ function downloadCSV() {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const date = new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'}).replace(/\//g,'-');
+  const date = new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'}).replace(/[/]/g,'-');
   a.href = url; a.download = `trail-journal-export-${date}.csv`;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -2267,7 +2267,7 @@ function buildSchedulerUrl(s) {
   if (s.session_id)              p.set('session_id', s.session_id);
   p.set('trigger', 'trailback');
   if (s.recommendation_narrative) p.set('outcome', s.recommendation_narrative.slice(0, 300));
-  return 'https://trailjournal.org/panel/followup/?' + p.toString();
+  return 'https:\/\/trailjournal.org/panel/followup/?' + p.toString();
 }
 
 async function loadFollowUps() {
