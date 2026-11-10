@@ -300,6 +300,41 @@ test('turning the timers on makes the Tuesday brief and the daily check', () => 
 });
 
 // ── referral form ──
+function fakeForm(titles, collectsEmail) {
+  const items = titles.map(t => ({ getTitle: () => t }));
+  const add = type => () => { const it = { type, getTitle: () => it.title };
+    it.setTitle = t => { it.title = t; return it; }; it.setRequired = r => { it.required = r; return it; };
+    it.setHelpText = () => it; it.setChoiceValues = c => { it.choices = c; return it; }; items.push(it); return it; };
+  return { items, getItems: () => items.slice(), collectsEmail: () => !!collectsEmail,
+    addTextItem: add('text'), addParagraphTextItem: add('paragraph'), addListItem: add('list'), addMultipleChoiceItem: add('choice') };
+}
+
+test('referral form: adds only the missing questions, keeps ones already there (any wording), safe to run twice', () => {
+  const w = world();
+  const form = fakeForm(['Student Name', 'Student 800 Number', 'What have you already tried with this student?']);
+  w.FormApp.openById = () => form;
+  const r = J(w.addReferralQuestions());
+  assert.deepStrictEqual(r.added, ['Behavior type', 'How many times, and on what dates?', 'Who was affected, and how?',
+    'Will you share the impact at the panel?', 'Best time to reach you', 'Your name']);
+  assert.strictEqual(r.found.length, 3);
+  const share = form.items.find(i => i.title === 'Will you share the impact at the panel?');
+  assert.deepStrictEqual(J(share.choices), ['In person', 'In writing', 'No']);
+  assert.strictEqual(form.items.find(i => i.title === 'Behavior type').type, 'list');
+  assert.deepStrictEqual(J(w.addReferralQuestions()).added, []);
+  // every title it adds is read back by the parser
+  const answers = {}; form.items.forEach(i => { answers[i.getTitle()] = 'x-' + i.getTitle(); });
+  const c = J(w.referralToCase_(answers, ''));
+  assert.ok(c.student_name && c.student_id && c.behavior_type && c.referring_staff && c.incident_summary && /Times and dates/.test(c.behavior_pattern) && /Tried/.test(c.behavior_pattern));
+  assert.ok(c.referral_json.teacher_shares_impact && c.referral_json.best_time_to_reach);
+});
+
+test('referral form: no "Your name" question when the form collects email addresses', () => {
+  const w = world();
+  const form = fakeForm([], true);
+  w.FormApp.openById = () => form;
+  assert.ok(!J(w.addReferralQuestions()).added.includes('Your name'));
+});
+
 test('teacher referral form: one submission becomes a "suggested" teacher_referral case', () => {
   const w = world();
   const answers = {

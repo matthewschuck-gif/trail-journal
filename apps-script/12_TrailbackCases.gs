@@ -550,26 +550,85 @@ function connectReferralForm() {
   safeAlert_('The Trailback Panel Staff Referral form is connected. Each new referral becomes a "Suggested" case on Admin › Trailback Cases.');
 }
 
+// The questions the referral form needs. `test` finds the question by words in its title (lower
+// case); the same tests read the answers (referralToCase_) and check the form
+// (addReferralQuestions), so the form and the script always agree.
+const REFERRAL_QUESTIONS_ = [
+  { key: 'student_name', title: 'Student name', type: 'text', required: true,
+    test: function (t) { return t.indexOf('name') > -1 && t.indexOf('800') === -1 && t.indexOf('your') === -1; } },
+  { key: 'student_id', title: 'Student 800#', type: 'text', required: true, help: '7 digits, starts with 80.',
+    test: function (t) { return t.indexOf('800') > -1; } },
+  { key: 'behavior_type', title: 'Behavior type', type: 'list', required: true,
+    choices: ['Disrespect', 'Disruption', 'Hallway / lunch conduct', 'Technology', 'Physical contact', 'Other'],
+    test: function (t) { return t.indexOf('behavior') > -1; } },
+  { key: 'times', title: 'How many times, and on what dates?', type: 'paragraph', required: true,
+    test: function (t) { return t.indexOf('how many') > -1 || t.indexOf('number of times') > -1 || (t.indexOf('times') > -1 && t.indexOf('best time') === -1); } },
+  { key: 'tried', title: 'What have you tried?', type: 'paragraph', required: true,
+    test: function (t) { return t.indexOf('tried') > -1; } },
+  { key: 'affected', title: 'Who was affected, and how?', type: 'paragraph', required: true,
+    test: function (t) { return t.indexOf('affected') > -1; } },
+  { key: 'share', title: 'Will you share the impact at the panel?', type: 'choice', required: true, choices: ['In person', 'In writing', 'No'],
+    test: function (t) { return t.indexOf('share') > -1 && t.indexOf('impact') > -1; } },
+  { key: 'best_time', title: 'Best time to reach you', type: 'text', required: false,
+    test: function (t) { return t.indexOf('best time') > -1 || t.indexOf('reach') > -1; } },
+  { key: 'your_name', title: 'Your name', type: 'text', required: true, skipIfEmailCollected: true,
+    test: function (t) { return t.indexOf('your name') > -1; } },
+];
+
+function referralQuestion_(key) { return REFERRAL_QUESTIONS_.filter(function (q) { return q.key === key; })[0]; }
+
 /** answers: { question title: answer }. Questions are matched by words in their titles. */
 function referralToCase_(answers, respondentEmail) {
-  const pick = function (test) {
+  const pick = function (key) {
+    const test = referralQuestion_(key).test;
     const k = Object.keys(answers).filter(function (t) { return test(t.toLowerCase()); })[0];
     return k ? String(answers[k] == null ? '' : answers[k]).trim() : '';
   };
-  const times = pick(function (t) { return t.indexOf('how many') > -1 || t.indexOf('number of times') > -1 || (t.indexOf('times') > -1 && t.indexOf('best time') === -1); });
-  const tried = pick(function (t) { return t.indexOf('tried') > -1; });
-  const affected = pick(function (t) { return t.indexOf('affected') > -1; });
-  const share = pick(function (t) { return t.indexOf('share') > -1 && t.indexOf('impact') > -1; });
+  const times = pick('times');
+  const tried = pick('tried');
+  const affected = pick('affected');
   return {
-    student_name: pick(function (t) { return t.indexOf('name') > -1 && t.indexOf('800') === -1 && t.indexOf('your') === -1; }),
-    student_id: pick(function (t) { return t.indexOf('800') > -1; }),
-    behavior_type: pick(function (t) { return t.indexOf('behavior') > -1; }),
-    referring_staff: pick(function (t) { return t.indexOf('your name') > -1; }) || respondentEmail || '',
+    student_name: pick('student_name'),
+    student_id: pick('student_id'),
+    behavior_type: pick('behavior_type'),
+    referring_staff: pick('your_name') || respondentEmail || '',
     incident_summary: affected ? 'Who was affected and how: ' + affected : '',
     behavior_pattern: [times && 'Times and dates: ' + times, tried && 'Tried: ' + tried].filter(String).join(' | '),
     source: 'teacher_referral', status: 'suggested',
-    referral_json: Object.assign({ teacher_shares_impact: share, best_time_to_reach: pick(function (t) { return t.indexOf('best time') > -1 || t.indexOf('reach') > -1; }) }, answers),
+    referral_json: Object.assign({ teacher_shares_impact: pick('share'), best_time_to_reach: pick('best_time') }, answers),
   };
+}
+
+/**
+ * Menu: checks the "Trailback Panel Staff Referral" form and adds any of the questions above it
+ * doesn't have yet (at the end). Questions already there, even worded a little differently, are
+ * left alone. Safe to run again. Returns { added, found }.
+ */
+function addReferralQuestions() {
+  const id = webSetting_('TRAILBACK_REFERRAL_FORM_ID');
+  if (!id) { safeAlert_('Put the referral Form ID in Settings TRAILBACK_REFERRAL_FORM_ID first.'); return null; }
+  const form = FormApp.openById(id);
+  const titles = form.getItems().map(function (it) { return String(it.getTitle() || ''); });
+  let collectsEmail = false;
+  try { collectsEmail = form.collectsEmail(); } catch (e) { /* older forms */ }
+  const added = [], found = [];
+  REFERRAL_QUESTIONS_.forEach(function (q) {
+    const have = titles.filter(function (t) { return q.test(t.toLowerCase()); })[0];
+    if (have) { found.push(q.title + ' (as "' + have + '")'); return; }
+    if (q.skipIfEmailCollected && collectsEmail) { found.push(q.title + ' (the form collects email addresses instead)'); return; }
+    let item;
+    if (q.type === 'text') item = form.addTextItem();
+    else if (q.type === 'paragraph') item = form.addParagraphTextItem();
+    else if (q.type === 'list') item = form.addListItem().setChoiceValues(q.choices);
+    else item = form.addMultipleChoiceItem().setChoiceValues(q.choices);
+    item.setTitle(q.title).setRequired(!!q.required);
+    if (q.help) item.setHelpText(q.help);
+    added.push(q.title);
+  });
+  safeAlert_('Trailback referral form checked.\n\n' +
+    (added.length ? 'Added (at the end of the form; drag them where you like):\n  ' + added.join('\n  ') : 'Nothing was missing.') +
+    (found.length ? '\n\nAlready there:\n  ' + found.join('\n  ') : ''));
+  return { added: added, found: found };
 }
 
 function onTrailbackReferral(e) {

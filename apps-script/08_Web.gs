@@ -117,6 +117,7 @@ function onOpen() {
       .addItem('Turn on the Tuesday brief + overdue check (timers)', 'setupTrailbackTriggers')
       .addItem('Preview the Tuesday brief (nothing sent)', 'previewTuesdayBrief')
       .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
+      .addItem('Add missing questions to the staff referral form', 'addReferralQuestions')
       .addItem('Connect the staff referral form', 'connectReferralForm')
       .addItem('Show the key for other tools', 'showTrailbackKey')
       .addSeparator()
