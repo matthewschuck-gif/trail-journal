@@ -4,8 +4,8 @@
  * Outlook-compatible calendar invites (.ics).
  *
  * sendFollowupEmails_ is a faithful port of the live Supabase edge function
- * `send-followup-emails` (v1) -- same three-interval schedule (2-day / 2-week / 2-month),
- * same grade-based time windows, same hand-built .ics attachment so staff on Outlook get a
+ * `send-followup-emails` (v1) -- three check-ins, now at 3 / 10 / 30 school days (was
+ * 2-day / 2-week / 2-month; see 11_Trailback.gs), same grade-based time windows, same hand-built .ics attachment so staff on Outlook get a
  * normal calendar invite.
  *
  * sendSingleFollowupEvent_ sends exactly one custom-dated invite (from the main journal's
@@ -277,7 +277,7 @@ function sendViaMail_(opts) {
   MailApp.sendEmail(mailOptions);
 }
 
-// ── FOLLOW-UP CHECK-IN SEQUENCE (2-day / 2-week / 2-month) ─────────────────
+// ── FOLLOW-UP CHECK-IN SEQUENCE (3 / 10 / 30 school days) ──────────────────
 function sendFollowupEmails_(payload) {
   const ORGANIZER_EMAIL = Session.getEffectiveUser().getEmail();
 
@@ -293,7 +293,9 @@ function sendFollowupEmails_(payload) {
     return sendSingleFollowupEvent_(payload, ORGANIZER_EMAIL);
   }
 
-  const initials = payload.initials;
+  // Initials only in subjects and invites; a full name (old links put one here) is cut down.
+  const rawInitials = String(payload.initials || '').trim();
+  const initials = /\s/.test(rawInitials) ? initialsOf_(rawInitials) : rawInitials;
   const squad = payload.squad;
   const grade = payload.grade;
   const triggerType = payload.triggerType;
@@ -303,23 +305,26 @@ function sendFollowupEmails_(payload) {
   const trigLabel = triggerType === 'intervention' ? 'Intervention' : 'Trailback Panel';
   const win = GRADE_WINDOWS_[grade] || GRADE_WINDOWS_[8];
 
+  // One cadence for every panel case: 3, 10 and 30 school days (weekends and the No School
+  // Dates tab skipped -- followupSchedule_ in 11_Trailback.gs). Was 2 days / 2 weeks / 2 months.
   const GUIDES = {
-    2: { title: 'Early Pulse', detail: 'Keep it brief and relational. Ask: How are you doing? Look for re-engagement. Duration: 5-10 minutes.' },
-    14: { title: 'First Assessment', detail: 'Grades, attendance, relationships. Is the intervention holding? Duration: 10-20 minutes.' },
-    60: { title: 'Long-Term Accountability', detail: 'Pull the data. Has behavior changed? Celebrate growth. Determine if more support needed. Duration: 15-30 minutes.' },
+    3: { title: 'Early Pulse', detail: 'Keep it brief and relational. Ask: How are you doing? Look for re-engagement and early follow-through on the repair plan. Duration: 5-10 minutes.' },
+    10: { title: 'First Assessment', detail: 'Grades, attendance, relationships. Is the repair plan on track? Duration: 10-20 minutes.' },
+    30: { title: 'Long-Term Accountability', detail: 'Pull the data. Has behavior changed? Is the plan finished? Celebrate growth. Determine if more support needed. Duration: 15-30 minutes.' },
   };
 
   const intervals = [
-    { days: 2, label: '2-Day Check-In', key: 'day2' },
-    { days: 14, label: '2-Week Review', key: 'week2' },
-    { days: 60, label: '2-Month Follow-Up', key: 'month2' },
+    { days: 3, label: '3-School-Day Check-In', key: 'day3' },
+    { days: 10, label: '10-School-Day Review', key: 'day10' },
+    { days: 30, label: '30-School-Day Follow-Up', key: 'day30' },
   ];
+  const schedule = followupSchedule_({ from: trigDateStr });
 
   const results = {};
   const errors = [];
 
   intervals.forEach(function (interval) {
-    const dateStr = addAndSnap_(trigDateStr, interval.days);
+    const dateStr = schedule['checkin_' + interval.days];
     const guide = GUIDES[interval.days];
     const startISO = icsDate_(dateStr, win.startH, win.startM);
     const endISO = icsDate_(dateStr, win.endH, win.endM);

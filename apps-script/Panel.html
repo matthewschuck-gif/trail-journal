@@ -492,6 +492,27 @@ textarea { min-height: 90px; }
 .callout-green  { background: var(--trail-lt); border-left: 3px solid var(--trail-mid); }
 .callout-red    { background: var(--red-lt); border-left: 3px solid var(--red); }
 .hidden { display: none !important; }
+
+/* Admin preview (?preview=true) */
+.preview-banner { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #4a2d7f; color: #fff;
+  text-align: center; padding: 10px 16px; font-size: .82rem; }
+.preview-banner a { color: var(--gold); margin-left: 12px; }
+body.is-preview main { padding-bottom: 110px; }
+.ptp { position: fixed; right: 16px; bottom: 56px; z-index: 9998; width: 264px; max-width: calc(100vw - 32px);
+  background: #fff; border: 2px solid #4a2d7f; border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  padding: 12px; font-size: .78rem; color: var(--ink); }
+.ptp-title { display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: #4a2d7f; }
+.ptp-title button { background: none; border: none; color: #4a2d7f; font-size: 1rem; cursor: pointer; padding: 0 4px; }
+.ptp-body { margin-top: 8px; }
+.ptp-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.ptp-row button { border: 1px solid var(--border); background: var(--cream, #fbf8f1); border-radius: 6px;
+  padding: 4px 7px; font-size: .72rem; cursor: pointer; font-family: inherit; color: var(--ink); }
+.ptp-row button:hover { border-color: #4a2d7f; }
+.ptp-fill { display: block; width: 100%; margin-top: 6px; padding: 8px; border: none; border-radius: 8px;
+  background: #4a2d7f; color: #fff; font-weight: 700; font-size: .78rem; cursor: pointer; font-family: inherit; }
+.ptp-fill.alt { background: var(--gold); color: #2a1c00; }
+.ptp-note { margin-top: 8px; color: var(--ink-lt); line-height: 1.45; }
+.ptp.min .ptp-body { display: none; }
 </style>
 </head>
 <body>
@@ -532,8 +553,9 @@ textarea { min-height: 90px; }
   <div class="step-pip" id="pip-4">Impact</div>
   <div class="step-pip" id="pip-5">Deliberate</div>
   <div class="step-pip" id="pip-6">Recommend</div>
-  <div class="step-pip" id="pip-7">Follow-Up</div>
-  <div class="step-pip" id="pip-8">Record</div>
+  <div class="step-pip" id="pip-7">Approve</div>
+  <div class="step-pip" id="pip-8">Follow-Up</div>
+  <div class="step-pip" id="pip-9">Record</div>
 </div>
 
 <main>
@@ -566,8 +588,8 @@ textarea { min-height: 90px; }
     <div class="card-label">📋 Case Details</div>
     <div class="two-col">
       <div class="field">
-        <label>Student Name</label>
-        <input type="text" id="s-initial" placeholder="Full name" maxlength="60">
+        <label>Student Name <span style="color:var(--ink-lt);font-weight:400;text-transform:none;letter-spacing:0">(staff only; the AI helpers get initials)</span></label>
+        <input type="text" id="s-name" placeholder="First and last name" maxlength="60">
       </div>
       <div class="field">
         <label>Panel Date</label>
@@ -770,11 +792,19 @@ textarea { min-height: 90px; }
     <span class="sh-step">05</span>
     <span class="sh-badge">Impact Sharing</span>
     <h2>Perspectives & Impact</h2>
-    <p>Any affected parties — staff, other students, the school community — can share their perspective here. This can be read aloud or entered as a written statement. The student is not present for this portion.</p>
+    <p>Any affected parties — staff, other students, the school community — can share their perspective here, in person or as a written statement. The student stays in the room and hears the impact.</p>
   </div>
 
-  <div class="callout callout-red" style="margin-bottom:16px">
-    🚪 <strong>Student steps out.</strong> Ask the student to wait outside while perspectives are shared. They will be brought back in when this portion is complete.
+  <div class="callout callout-gold" style="margin-bottom:12px">
+    🪑 <strong>The student stays in the room.</strong> Hearing how others were affected is part of the repair. The student only steps out for deliberation (next screen).
+  </div>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;font-size:.86rem;cursor:pointer">
+    <input type="checkbox" id="impact-in-person" onchange="updateImpactMode()" style="margin-top:3px;width:auto">
+    <span>The affected person agreed to share with the student present.</span>
+  </label>
+  <div class="callout callout-red" id="impact-written-note" style="margin-bottom:16px">
+    📄 <strong>Read the written statement aloud with the student present.</strong>
   </div>
 
   <div id="impact-rows">
@@ -853,7 +883,7 @@ textarea { min-height: 90px; }
     <span class="sh-step">07</span>
     <span class="sh-badge">Recommendation</span>
     <h2>Restorative Recommendation</h2>
-    <p>Select actions from the menu below. These are what the panel recommends to the AP. The student comes back in to hear the final recommendation together.</p>
+    <p>Select actions from the menu below. These are what the panel recommends to the AP. The AP approves the plan on the next screen, and then the student comes back in to hear it.</p>
   </div>
 
   <div class="card">
@@ -935,17 +965,48 @@ textarea { min-height: 90px; }
 
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(5)">← Back</button>
-    <button class="btn-primary" onclick="goTo(7)">Set Follow-Up Plan →</button>
+    <button class="btn-primary" onclick="goTo(7)">AP Approval →</button>
   </div>
 </div>
 
-<!-- ═══ SCREEN 7: FOLLOW-UP ═══ -->
+<!-- ═══ SCREEN 7: AP APPROVAL ═══ -->
 <div class="screen" id="screen-7">
   <div class="screen-hero">
     <span class="sh-step">08</span>
+    <span class="sh-badge">Approve</span>
+    <h2>AP Approval</h2>
+    <p>The AP reviews the plan and approves it here, before the student comes back in. The approval records the signed-in school account and the time.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📝 Plan to Approve</div>
+    <div id="approve-summary" style="font-size:.84rem;color:var(--ink-mid);line-height:1.7"></div>
+  </div>
+
+  <div class="card" id="approve-card">
+    <div class="card-label">✅ Approval</div>
+    <div class="card-sub" id="approve-signed-in"></div>
+    <button class="btn-gold" id="approve-btn" onclick="approvePlan()">Approve Plan</button>
+    <div id="approve-status" style="font-size:.84rem;margin-top:10px"></div>
+  </div>
+
+  <div class="callout callout-gold hidden" id="approve-next" style="margin-bottom:16px">
+    🚪 <strong>Bring the student back in.</strong> Share the approved plan with them, then set the follow-up plan together.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(6)">← Back</button>
+    <button class="btn-primary" onclick="goTo(8)">Set Follow-Up Plan →</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 8: FOLLOW-UP ═══ -->
+<div class="screen" id="screen-8">
+  <div class="screen-hero">
+    <span class="sh-step">09</span>
     <span class="sh-badge">Follow-Up</span>
     <h2>Follow-Up Plan</h2>
-    <p>Assign a check-in person and set the four follow-up dates. Every panel case gets checked in at 2 days, 1 week, 2 weeks, and 1 month.</p>
+    <p>Assign a check-in person and set the three follow-up dates. Every panel case gets checked in at 3, 10 and 30 school days after the panel (weekends and days off don't count).</p>
   </div>
 
   <div class="card">
@@ -957,22 +1018,19 @@ textarea { min-height: 90px; }
   <div class="card">
     <div class="card-label">📅 Check-In Dates</div>
     <div class="followup-row">
-      <div class="fu-label">2 Days</div>
-      <input type="date" class="fu-date" id="fu-2days">
+      <div class="fu-label">3 School Days</div>
+      <input type="date" class="fu-date" id="fu-3">
     </div>
     <div class="followup-row">
-      <div class="fu-label">1 Week</div>
-      <input type="date" class="fu-date" id="fu-1week">
+      <div class="fu-label">10 School Days</div>
+      <input type="date" class="fu-date" id="fu-10">
     </div>
     <div class="followup-row">
-      <div class="fu-label">2 Weeks</div>
-      <input type="date" class="fu-date" id="fu-2weeks">
+      <div class="fu-label">30 School Days</div>
+      <input type="date" class="fu-date" id="fu-30">
     </div>
-    <div class="followup-row">
-      <div class="fu-label">1 Month</div>
-      <input type="date" class="fu-date" id="fu-1month">
-    </div>
-    <button class="btn-secondary" onclick="autoFillDates()" style="margin-top:10px;font-size:.78rem">Auto-fill from today</button>
+    <button class="btn-secondary" onclick="autoFillDates()" style="margin-top:10px;font-size:.78rem">Auto-fill from the panel date</button>
+    <div id="fu-dates-note" style="font-size:.74rem;color:var(--ink-lt);margin-top:6px">Counts school days only: skips weekends and the No School Dates tab.</div>
   </div>
 
   <div class="card">
@@ -984,7 +1042,7 @@ textarea { min-height: 90px; }
   <div class="card">
     <div class="card-label">⚠️ If Not Completed</div>
     <div class="card-sub">What happens if the student does not complete the restorative actions?</div>
-    <textarea id="fu-fallback" rows="2" placeholder="If restorative actions are not completed by [date], the case will revert to…" value="If restorative actions are not completed by the agreed date, the case will revert to traditional disciplinary consequences through the AP."></textarea>
+    <textarea id="fu-fallback" rows="2" placeholder="If restorative actions are not completed by [date], the case will revert to…">If the plan is not finished by the agreed date, the case reverts and the original detention is served.</textarea>
   </div>
 
   <!-- ── OUTLOOK FOLLOW-UP SCHEDULER ── -->
@@ -992,7 +1050,7 @@ textarea { min-height: 90px; }
     <div class="card-label" style="color:var(--gold-dk);display:flex;align-items:center;gap:8px">
       <span>📅</span> Schedule Outlook Check-Ins
     </div>
-    <div class="card-sub">Send calendar events to your follow-up team at the 2-day, 2-week, and 2-month marks — snapped to workdays and timed to the student's grade period.</div>
+    <div class="card-sub">Send calendar events to your follow-up team at 3, 10 and 30 school days, timed to the student's grade period.</div>
 
     <!-- Context strip: pulls live from Screen 1 fields -->
     <div style="display:flex;align-items:center;gap:12px;background:rgba(44,74,53,.06);border-radius:10px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap">
@@ -1007,22 +1065,22 @@ textarea { min-height: 90px; }
     <a id="fu-scheduler-link" href="https://trailjournal.org/panel/followup/" target="_blank" style="display:block;width:100%;padding:12px 16px;background:var(--forest);color:#fff;border-radius:9px;font-family:'Lora',Georgia,serif;font-weight:700;font-size:.92rem;text-align:center;text-decoration:none;box-shadow:0 3px 12px rgba(44,74,53,.25);transition:opacity .15s;box-sizing:border-box" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       📅 Open Follow-Up Scheduler →
     </a>
-    <div style="font-size:.72rem;color:var(--ink-lt);text-align:center;margin-top:7px;font-style:italic">Opens in a new tab · Google Sheets + Outlook · Grade-aware · Workday-snapped</div>
+    <div style="font-size:.72rem;color:var(--ink-lt);text-align:center;margin-top:7px;font-style:italic">Opens in a new tab · Google Sheets + Outlook · Grade-aware · School days only</div>
   </div>
 
   <div class="btn-row">
-    <button class="btn-secondary" onclick="goTo(6)">← Back</button>
-    <button class="btn-gold" onclick="submitAndRecord()">Submit Panel Record →</button>
+    <button class="btn-secondary" onclick="goTo(7)">← Back</button>
+    <button class="btn-gold" id="submit-record-btn" onclick="submitAndRecord()" disabled style="opacity:.4;cursor:default" title="The AP approves the plan first">Submit Panel Record →</button>
   </div>
 </div>
 
-<!-- ═══ SCREEN 8: PANEL RECORD ═══ -->
-<div class="screen" id="screen-8">
+<!-- ═══ SCREEN 9: PANEL RECORD ═══ -->
+<div class="screen" id="screen-9">
   <div class="screen-hero" style="background:linear-gradient(135deg,#1a3a22 0%,#0d2010 100%)">
     <span class="sh-step">✓</span>
     <span class="sh-badge">Complete</span>
     <h2>Panel Record Saved</h2>
-    <p>The session has been recorded. The recommendation is ready to share with the student and submit to the AP.</p>
+    <p>The approved plan is saved and the repair is in progress. The detention stays on hold while the student works the plan.</p>
   </div>
 
   <div id="record-summary">
@@ -1032,10 +1090,10 @@ textarea { min-height: 90px; }
   <div class="card" style="background:var(--gold-lt);border-color:var(--gold)">
     <div class="card-label" style="color:var(--gold-dk)">📤 Next Steps</div>
     <div style="font-size:.86rem;color:var(--ink-mid);line-height:1.8">
-      <div style="margin-bottom:8px">1. <strong>Bring the student back in</strong> — share the recommendation narrative with them directly.</div>
-      <div style="margin-bottom:8px">2. <strong>AP reviews and approves</strong> — the record has been submitted to the panel records.</div>
-      <div style="margin-bottom:8px">3. <strong>Check-in person notified</strong> — assign them today.</div>
-      <div>4. <strong>First check-in: <span id="first-checkin"></span></strong></div>
+      <div style="margin-bottom:8px">1. <strong>Plan approved</strong> by <span id="record-approved-by"></span>. The student has heard it.</div>
+      <div style="margin-bottom:8px">2. <strong>Tell the check-in person today</strong> and send the Outlook check-ins if you haven't yet.</div>
+      <div style="margin-bottom:8px">3. <strong>First check-in: <span id="first-checkin"></span></strong> (3 school days).</div>
+      <div>4. <strong>Plan finished:</strong> the detention is cleared. <strong>Not finished:</strong> the detention is served.</div>
     </div>
   </div>
 
@@ -1056,6 +1114,28 @@ textarea { min-height: 90px; }
 </div>
 
 </main>
+
+<!-- ADMIN PREVIEW TEST PANEL (?preview=true only; shown by the IS_PREVIEW block in the script) -->
+<div class="ptp hidden" id="ptp">
+  <div class="ptp-title"><span>🧪 Panel Preview</span><button onclick="document.getElementById('ptp').classList.toggle('min')" title="Shrink / expand">–</button></div>
+  <div class="ptp-body">
+    <div class="ptp-row">
+      <button onclick="previewGo(0)">Setup</button>
+      <button onclick="previewGo(1)">Norms</button>
+      <button onclick="previewGo(2)">Student</button>
+      <button onclick="previewGo(3)">Inquiry</button>
+      <button onclick="previewGo(4)">Impact</button>
+      <button onclick="previewGo(5)">Deliberate</button>
+      <button onclick="previewGo(6)">Recommend</button>
+      <button onclick="previewGo(7)">Approve</button>
+      <button onclick="previewGo(8)">Follow-Up</button>
+      <button onclick="previewGo(9)">Record</button>
+    </div>
+    <button class="ptp-fill" onclick="fillSampleCase(1)">🎲 Fill a made-up case</button>
+    <button class="ptp-fill alt" onclick="fillSampleCase(7)">🎲 Fill and jump to Approve</button>
+    <div class="ptp-note">Nothing is saved: Approve and Submit are pretend, and no emails go out. The AI buttons still run for real, on the made-up case.</div>
+  </div>
+</div>
 
 <!-- DELIBERATION OVERLAY (private) -->
 <div class="delib-overlay" id="delib-overlay">
@@ -1092,16 +1172,17 @@ textarea { min-height: 90px; }
 // Reads Screen 1 fields and updates the scheduler context strip on Screen 7.
 // Also builds a pre-filled URL so the scheduler opens with student data ready.
 function refreshFuStrip() {
-  const initial = (document.getElementById('s-initial')?.value || '').trim();
-  const squad   = document.getElementById('s-squad')?.value || '';
-  const date    = document.getElementById('s-date')?.value || '';
+  const name     = (document.getElementById('s-name')?.value || '').trim();
+  const initials = initialsOf(name);
+  const squad    = document.getElementById('s-squad')?.value || '';
+  const date     = document.getElementById('s-date')?.value || '';
 
   // Badge
-  document.getElementById('fu-badge').textContent = initial || '—';
+  document.getElementById('fu-badge').textContent = initials || '—';
 
   // Student line
-  document.getElementById('fu-strip-student').textContent = initial
-    ? `${initial}${squad ? ' · ' + squad + ' Squad' : ''}`
+  document.getElementById('fu-strip-student').textContent = name
+    ? `${name}${squad ? ' · ' + squad + ' Squad' : ''}`
     : 'Complete Case Setup (Screen 1) first';
 
   // Date line
@@ -1115,12 +1196,12 @@ function refreshFuStrip() {
 
   // Build pre-filled URL
   const p = new URLSearchParams();
-  if (initial) p.set('initials', initial);
+  if (initials) p.set('initials', initials); // initials only: this link ends up in email subjects
   if (squad)   p.set('squad', squad);
   if (date)    p.set('date', date);
   p.set('trigger', 'trailback');
   // Pull session ID if already generated
-  if (window.P?.sessionId) p.set('session_id', window.P.sessionId);
+  if (typeof P !== 'undefined' && P.sessionId) p.set('session_id', P.sessionId); // P is a const, not on window
   // Pull recommendation narrative for outcome pre-fill
   const rec = document.getElementById('rec-narrative')?.value?.trim();
   if (rec) p.set('outcome', rec.slice(0, 300));
@@ -1148,23 +1229,46 @@ async function checkGatePW() {
   }
 }
 
-// Auto-unlock if already authenticated this session
-const _savedPanelPw = sessionStorage.getItem('panel-auth-pw');
-if (_savedPanelPw) {
-  ADMIN_PW_VALUE = _savedPanelPw;
-  document.getElementById('pw-gate-full').classList.add('hidden');
-}
-
 // ── CONFIG ────────────────────────────────────────────────────────────────
 // --- Apps Script backend (replaces Supabase) ---
 // Single public deployment (the domain-restricted one didn't work cross-origin -- see
 // 05_AdminAuth.gs). Staff-only actions require a password checked server-side instead.
-// The Clash of Classes bridge below (COC_URL/COC_ANON) is untouched -- stays on Supabase.
+// Clash of Classes points no longer go from this page: a completed case asks for one through
+// the staff approval queue (07_ClashOfClasses.gs), with no name or initials.
 const APP_URL   = TJ_BOOT.beaconUrl;
 const APP_TOKEN = TJ_BOOT.beaconToken; // only the exit auto-save beacon sends it // must match the APP_TOKEN Script Property
 let ADMIN_PW_VALUE = null;
 
+// Auto-unlock: signed in with Google on the staff link (the server checks that account), or
+// the password was already entered this session. (This used to run above the `let` and threw
+// whenever a saved password existed, which stopped the whole page script.)
+let _savedPanelPw = null;
+try { _savedPanelPw = sessionStorage.getItem('panel-auth-pw'); } catch (e) { /* storage blocked */ }
+if (_savedPanelPw) ADMIN_PW_VALUE = _savedPanelPw;
+if (_savedPanelPw || TJ_BOOT.staff) document.getElementById('pw-gate-full').classList.add('hidden');
+
+// ── ADMIN PREVIEW (?preview=true) ─────────────────────────────────────────
+// For practice runs and the mock panel: jump to any screen, fill a made-up case, and click
+// through Approve and Submit. Nothing is written: approval, submit, the Trail Journal
+// back-write and follow-up emails are answered here instead of by the server. Reads (Trail
+// Journal import, school-day dates) and the AI helpers still go to the server.
+const IS_PREVIEW = new URLSearchParams(window.TJ_SEARCH).has('preview');
+const PREVIEW_WRITES = ['approvePanelPlan', 'submitPanelSession', 'insert', 'update', 'sendFollowupEmails', 'sendSummaryEmail'];
+
+function previewAnswer(body) {
+  const now = new Date().toISOString();
+  if (body.action === 'approvePanelPlan')
+    return { approved_by: (TJ_BOOT.staff || 'preview') + ' (preview, not saved)', approved_at: now, status: 'heard_approved' };
+  if (body.action === 'submitPanelSession')
+    return Object.assign({}, body.payload && body.payload.record, { status: 'repair_in_progress' });
+  return {};
+}
+
 async function callBackend(body, admin) {
+  if (IS_PREVIEW && PREVIEW_WRITES.indexOf(body.action) !== -1) {
+    console.info('[preview] not sent:', body.action, body.table || '');
+    return previewAnswer(body);
+  }
   const fullBody = admin ? Object.assign({ adminPassword: ADMIN_PW_VALUE }, body) : body;
   const json = await window.tjCall_(Object.assign({ token: APP_TOKEN }, fullBody)); // google.script.run (08_Web.gs tjCall)
   if (!json.ok) throw new Error(json.error || 'Request failed');
@@ -1172,9 +1276,20 @@ async function callBackend(body, admin) {
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────────
+// "Ann Lee" -> "A.L." (same rule as initialsOf_ in 11_Trailback.gs). The AI helpers and the
+// follow-up links get these, never the name.
+function initialsOf(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  const first = parts[0].charAt(0).toUpperCase();
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+  return first + '.' + (last ? last + '.' : '');
+}
+
 const P = {
   sessionId: genUUID(),
-  date: null, initial: null, grade: null, staff: null,
+  date: null, studentName: null, initials: null, grade: null, staff: null,
+  approval: null, // { approved_by, approved_at } once the AP approves (approvePanelPlan)
   incident: null, pattern: null, squad: null,
   tjId: null, tjData: null,
   panelists: [],
@@ -1191,8 +1306,8 @@ const P = {
   aiRec: null,
 };
 
-const SCREEN_PROGRESS = {0:0,1:12,2:24,3:36,4:48,5:60,6:72,7:84,8:100};
-const PIPS = ['pip-0','pip-1','pip-2','pip-3','pip-4','pip-5','pip-6','pip-7','pip-8'];
+const SCREEN_PROGRESS = {0:0,1:11,2:22,3:33,4:44,5:55,6:66,7:77,8:88,9:100};
+const PIPS = ['pip-0','pip-1','pip-2','pip-3','pip-4','pip-5','pip-6','pip-7','pip-8','pip-9'];
 
 function genUUID() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -1214,8 +1329,12 @@ function goTo(n) {
     if (i < n) el.classList.add('done');
     if (i === n) el.classList.add('active');
   });
-  // Refresh follow-up scheduler strip when landing on Screen 7
-  if (n === 7) setTimeout(refreshFuStrip, 60);
+  if (n === 7) renderApproval();
+  // Refresh follow-up scheduler strip (and fill the dates) when landing on the follow-up screen
+  if (n === 8) {
+    setTimeout(refreshFuStrip, 60);
+    if (!document.getElementById('fu-3').value) autoFillDates();
+  }
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────
@@ -1227,11 +1346,12 @@ function toast(msg) {
 
 // ── SESSION START ─────────────────────────────────────────────────────────
 function startSession() {
-  const initial = document.getElementById('s-initial').value.trim();
-  if (!initial) { toast('Enter the student\'s name before starting.'); return; }
+  const name = document.getElementById('s-name').value.trim();
+  if (!name) { toast('Enter the student\'s name before starting.'); return; }
   const sid = (document.getElementById('s-id')?.value || '').replace(/\D/g, '');
   if (sid && !/^80\d{5}$/.test(sid)) { toast('That 800# should be 7 digits starting with 80, or leave it blank.'); return; }
-  P.initial = initial;
+  P.studentName = name;
+  P.initials = initialsOf(name);
   P.studentId = sid || null;
   P.grade = document.getElementById('s-grade')?.value || null;
   P.date = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
@@ -1239,7 +1359,7 @@ function startSession() {
   P.incident = document.getElementById('s-incident').value.trim();
   P.pattern = document.getElementById('s-pattern').value.trim();
   P.squad = document.getElementById('s-squad').value;
-  document.getElementById('hdr-session').textContent = 'Student ' + initial + ' · ' + new Date(P.date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('hdr-session').textContent = 'Student ' + name + ' · ' + new Date(P.date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
   if (P.squad) document.getElementById('hdr-badge').textContent = P.squad + ' Squad';
   buildPanelistRows();
   goTo(1);
@@ -1371,8 +1491,8 @@ async function importTrailJournal() {
     const p3 = r.part3_json || {};
 
     // Pre-fill case setup fields
-    if ((r.student_name || r.initial) && !document.getElementById('s-initial').value)
-      document.getElementById('s-initial').value = r.student_name || r.initial;
+    if ((r.student_name || r.initial) && !document.getElementById('s-name').value)
+      document.getElementById('s-name').value = r.student_name || r.initial;
     if (r.grade && !document.getElementById('s-grade').value)
       document.getElementById('s-grade').value = r.grade;
     if (r.student_id && !document.getElementById('s-id').value)
@@ -1438,7 +1558,7 @@ async function runInquiryAI() {
   })).filter(x => x.question || x.response);
 
   const result = await callEdge('panel_inquiry_analysis', {
-    initial: P.initial,
+    initials: P.initials, // never the name
     incident: P.incident,
     studentReflection: {
       whatHappened: document.getElementById('r-what')?.value,
@@ -1476,7 +1596,7 @@ async function runDelibAI() {
   })).filter(x => x.statement);
 
   const result = await callEdge('panel_recommendation_draft', {
-    initial: P.initial,
+    initials: P.initials, // never the name
     incident: P.incident,
     pattern: P.pattern,
     studentReflection: {
@@ -1569,18 +1689,29 @@ function removeRec(i) {
 }
 
 // ── FOLLOW-UP DATES ───────────────────────────────────────────────────────
-function autoFillDates() {
-  const base = new Date();
-  const fmt = d => d.toISOString().split('T')[0];
-  const add = (d, days) => { const n = new Date(d); n.setDate(n.getDate()+days); return n; };
-  document.getElementById('fu-2days').value  = fmt(add(base, 2));
-  document.getElementById('fu-1week').value  = fmt(add(base, 7));
-  document.getElementById('fu-2weeks').value = fmt(add(base, 14));
-  document.getElementById('fu-1month').value = fmt(add(base, 30));
+async function autoFillDates() {
+  const from = document.getElementById('s-date').value || new Date().toISOString().split('T')[0];
+  const note = document.getElementById('fu-dates-note');
+  note.textContent = 'Counting school days…';
+  try {
+    const d = await callBackend({ action: 'followupDates', payload: { from } }, true); // 11_Trailback.gs
+    document.getElementById('fu-3').value  = d.checkin_3;
+    document.getElementById('fu-10').value = d.checkin_10;
+    document.getElementById('fu-30').value = d.checkin_30;
+    note.textContent = 'School days after ' + from + ': weekends and the No School Dates tab are skipped.';
+  } catch (e) {
+    note.textContent = '⚠️ Could not count school days (' + e.message + '). Pick the dates by hand.';
+  }
 }
 
-// ── SUBMIT AND RECORD ─────────────────────────────────────────────────────
-async function submitAndRecord() {
+// ── IMPACT MODE ───────────────────────────────────────────────────────────
+function updateImpactMode() {
+  const inPerson = document.getElementById('impact-in-person').checked;
+  document.getElementById('impact-written-note').classList.toggle('hidden', inPerson);
+}
+
+// ── THE RECORD (shared by Approve and Submit) ─────────────────────────────
+function buildRecord() {
   const panelists = P.panelists.filter(p => p.name.trim());
   const inquiryNotes = panelists.map((p,i) => ({
     panelist: p.name,
@@ -1595,21 +1726,11 @@ async function submitAndRecord() {
     statement: row.querySelector('textarea')?.value || '',
   }));
 
-  const squad = document.getElementById('s-squad').value || null;
-  const recNarrative = document.getElementById('rec-narrative').value;
-  const lrgTrait = document.getElementById('rec-trait').value;
-  const followupPerson = document.getElementById('fu-person').value;
-  const followupDates = {
-    two_days:  document.getElementById('fu-2days').value,
-    one_week:  document.getElementById('fu-1week').value,
-    two_weeks: document.getElementById('fu-2weeks').value,
-    one_month: document.getElementById('fu-1month').value,
-  };
-
-  const record = {
+  return {
     session_id: P.sessionId,
     panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
-    student_initial: P.initial,
+    student_name: P.studentName,          // staff only
+    student_initials: P.initials,
     student_id: P.studentId || null,
     grade: P.grade || null,
     referring_staff: document.getElementById('s-staff').value,
@@ -1622,125 +1743,121 @@ async function submitAndRecord() {
     student_what_needs: document.getElementById('r-needs').value,
     panel_questions: inquiryNotes,
     impact_statements: impacts,
+    impact_shared_in_person: document.getElementById('impact-in-person').checked,
     deliberation_harm: document.getElementById('d-harm').value,
     deliberation_student_needs: document.getElementById('d-student-needs').value,
     deliberation_community_needs: document.getElementById('d-community-needs').value,
     recommendation_categories: P.selectedRecs,
-    recommendation_narrative: recNarrative,
-    lrg_trait: lrgTrait,
-    followup_person: followupPerson,
-    followup_dates: followupDates,
+    recommendation_narrative: document.getElementById('rec-narrative').value,
+    lrg_trait: document.getElementById('rec-trait').value,
+    followup_person: document.getElementById('fu-person').value,
+    followup_dates: {
+      checkin_3:  document.getElementById('fu-3').value,
+      checkin_10: document.getElementById('fu-10').value,
+      checkin_30: document.getElementById('fu-30').value,
+    },
     fu_criteria: document.getElementById('fu-criteria').value,
-    status: 'complete',
-    clash_squad: squad,
+    fu_fallback: document.getElementById('fu-fallback').value,
+    clash_squad: document.getElementById('s-squad').value || null,
     ai_recommendation: P.aiRec,
   };
-
-  // Run all three saves in parallel — none block the UI
-  const saves = [];
-
-  // 1. Save panel session
-  saves.push(
-    callBackend({ action: 'insert', table: 'panel_sessions', row: record }, true)
-      .then(() => toast('✓ Panel record saved'))
-      .catch(e => console.error('Panel save error:', e))
-  );
-
-  // 2. Back-write to Trail Journal reflection if imported
-  if (P.tjId) {
-    saves.push(
-      callBackend({ action: 'update', table: 'reflections', match: { session_id: P.tjId }, patch: {
-        panel_completed: true,
-        panel_session_id: P.sessionId,
-        panel_recommendation: recNarrative.slice(0, 500),
-        panel_lrg_trait: lrgTrait,
-        panel_checkin_person: followupPerson,
-        panel_checkin_date: followupDates.two_days || null,
-        panel_completed_at: new Date().toISOString(),
-      }}, true)
-        .then(() => console.log('✓ Trail Journal back-write complete'))
-        .catch(e => console.error('TJ back-write error:', e))
-    );
-  }
-
-  // 3. Award CoC growth point if squad is known
-  if (squad) {
-    saves.push(awardPanelCoCPoint(squad, record));
-  }
-
-  await Promise.allSettled(saves);
-
-  buildRecordSummary(record);
-  buildBICLink(record);
-  goTo(8);
 }
 
-// ── COC PANEL POINT ───────────────────────────────────────────────────────
-const COC_URL  = 'https:\/\/yvutgnpgnthvnonhgdux.supabase.co';
-const COC_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
-
-async function awardPanelCoCPoint(squad, record) {
-  try {
-    const sq = squad.toUpperCase();
-    const res = await fetch(
-      `${COC_URL}/rest/v1/app_data?key=eq.coc&select=value`,
-      { headers: { apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON } }
-    );
-    const rows = await res.json();
-    if (!rows?.[0]) return;
-    const coc = rows[0].value;
-
-    const newId = (coc.nextId || 200);
-    const today = new Date().toISOString().split('T')[0];
-    const pts = { GOLD: 0, GREY: 0, BLACK: 0, PURPLE: 0 };
-    pts[sq] = 2; // Panel completion = 2 pts (deeper accountability than single reflection)
-
-    const newEvent = {
-      id: newId,
-      name: `Trailback Panel Restoration — ${sq} (+2 pts)`,
-      note: `Panel session completed for ${record.student_initial} — restorative process finished`,
-      type: 'trailback_panel',
-      date: today,
-      pts,
-    };
-
-    const newActivity = {
-      ts: Date.now(),
-      time: new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }),
-      action: `🏔️ Trailback Panel completed: +2 restoration points to ${sq}`,
-    };
-
-    // Freudenfreude ticker entry — community-visible, no student details
-    const freudenEntry = {
-      ts: Date.now(),
-      type: 'trailback_panel',
-      squad: sq,
-      message: `A Mountaineer completed a Trailback Panel — restoration point for ${squad}`,
-      pts: 2,
-    };
-
-    const updated = {
-      ...coc,
-      nextId: newId + 1,
-      events: [...(coc.events || []), newEvent],
-      activityLog: [...(coc.activityLog || []), newActivity],
-      freudenLog: [...(coc.freudenLog || []), freudenEntry],
-    };
-
-    await fetch(`${COC_URL}/rest/v1/app_data?key=eq.coc`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: COC_ANON, Authorization: 'Bearer ' + COC_ANON,
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({ value: updated }),
-    });
-
-    console.log(`✓ CoC panel point awarded to ${sq}`);
-  } catch(e) {
-    console.error('CoC panel point error:', e);
+// ── AP APPROVAL (Screen 8) ────────────────────────────────────────────────
+function renderApproval() {
+  const recs = P.selectedRecs.map(r => `<div class="summary-item"><strong>${r.category}:</strong> ${r.action}</div>`).join('');
+  document.getElementById('approve-summary').innerHTML = `
+    <div class="summary-item"><strong>Student:</strong> ${P.studentName || '—'}${P.grade ? ' (Grade ' + P.grade + ')' : ''}</div>
+    ${recs || '<div class="summary-item">No specific actions selected.</div>'}
+    <div class="summary-item" style="margin-top:8px">${document.getElementById('rec-narrative').value || '<em>No narrative written yet.</em>'}</div>
+    <div class="summary-item"><strong>LRG trait:</strong> ${document.getElementById('rec-trait').value || '—'}</div>`;
+  const who = TJ_BOOT.staff || '';
+  const btn = document.getElementById('approve-btn');
+  if (P.approval) {
+    showApproved();
+  } else if (IS_PREVIEW) {
+    document.getElementById('approve-signed-in').textContent = 'Preview: approving here is practice and saves nothing.';
+    btn.disabled = false; btn.style.opacity = '1';
+  } else if (!who) {
+    document.getElementById('approve-signed-in').textContent = 'Approving needs a school Google sign-in. Open the panel from trailjournal.org/panel (the staff link).';
+    btn.disabled = true; btn.style.opacity = '.4';
+  } else {
+    document.getElementById('approve-signed-in').textContent = 'Signed in as ' + who + '. Approving records this account and the time.';
+    btn.disabled = false; btn.style.opacity = '1';
   }
+}
+
+async function approvePlan() {
+  if (!document.getElementById('rec-narrative').value.trim()) { toast('Write the recommendation narrative before approving.'); return; }
+  const btn = document.getElementById('approve-btn');
+  const status = document.getElementById('approve-status');
+  btn.disabled = true; btn.textContent = 'Approving…';
+  try {
+    P.approval = await callBackend({ action: 'approvePanelPlan', payload: { record: buildRecord() } }, true); // 11_Trailback.gs
+    showApproved();
+  } catch (e) {
+    status.textContent = '⚠️ ' + e.message;
+    btn.disabled = false; btn.textContent = 'Approve Plan';
+  }
+}
+
+function showApproved() {
+  const a = P.approval;
+  const when = a.approved_at ? new Date(a.approved_at).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '';
+  document.getElementById('approve-status').innerHTML = `✅ <strong>Approved</strong> by ${a.approved_by}${when ? ' · ' + when : ''}`;
+  const btn = document.getElementById('approve-btn');
+  btn.classList.add('hidden');
+  document.getElementById('approve-next').classList.remove('hidden');
+  const sub = document.getElementById('submit-record-btn');
+  sub.disabled = false; sub.style.opacity = '1'; sub.style.cursor = 'pointer'; sub.title = '';
+}
+
+// ── SUBMIT AND RECORD ─────────────────────────────────────────────────────
+async function submitAndRecord() {
+  if (!P.approval) { toast('The AP approves the plan first (previous screen).'); return; }
+  const record = buildRecord();
+  const sub = document.getElementById('submit-record-btn');
+  sub.disabled = true;
+
+  // The server refuses a session that wasn't approved and sets status repair_in_progress.
+  try {
+    await callBackend({ action: 'submitPanelSession', payload: { record } }, true);
+    toast(IS_PREVIEW ? 'Preview: practice record, not saved' : '✓ Panel record saved');
+  } catch (e) {
+    sub.disabled = false;
+    toast('⚠️ Could not save: ' + e.message);
+    return;
+  }
+
+  // Back-write to the Trail Journal reflection if one was imported
+  if (P.tjId) {
+    await callBackend({ action: 'update', table: 'reflections', match: { session_id: P.tjId }, patch: {
+      panel_completed: true,
+      panel_session_id: P.sessionId,
+      panel_recommendation: (record.recommendation_narrative || '').slice(0, 500),
+      panel_lrg_trait: record.lrg_trait,
+      panel_checkin_person: record.followup_person,
+      panel_checkin_date: record.followup_dates.checkin_3 || null,
+      panel_completed_at: new Date().toISOString(),
+    }}, true).catch(e => console.error('TJ back-write error:', e));
+  }
+  // No Clash point here: one is requested (anonymously) when the case closes as Completed.
+
+  buildRecordSummary(Object.assign({}, record, P.approval));
+  buildBICLink(record);
+  goTo(9);
+  if (IS_PREVIEW) {
+    document.querySelector('#screen-9 h2').textContent = 'Preview Record (not saved)';
+    document.querySelector('#screen-9 .screen-hero p').textContent = 'This was a practice run. Nothing went to the Sheet, Trail Journal, Clash of Classes or anyone\'s inbox.';
+  }
+}
+
+// Old rows: followup_dates { two_days, one_week, two_weeks, one_month }. New: checkin_3/10/30.
+function panelCheckins(d) {
+  d = d || {};
+  if (d.checkin_3 || d.checkin_10 || d.checkin_30)
+    return [[3,'3 school days'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
+  return [['two_days','2 days'],['one_week','1 week'],['two_weeks','2 weeks'],['one_month','1 month']].map(([k,label]) => ({ label, date: d[k] || '' }));
 }
 
 function buildRecordSummary(r) {
@@ -1748,20 +1865,23 @@ function buildRecordSummary(r) {
   const recs = (r.recommendation_categories||[]).map(rc =>
     `<div class="summary-item"><strong>${rc.category}:</strong> ${rc.action}</div>`
   ).join('');
+  const checkins = panelCheckins(r.followup_dates);
 
   summary.innerHTML = `
     <div class="card">
       <div class="summary-section">
         <h4>Case</h4>
-        <div class="summary-item"><strong>Student:</strong> ${r.student_initial}${r.grade?' (Grade '+r.grade+')':''} · ${r.panel_date} · ${r.clash_squad ? r.clash_squad + ' Squad' : 'Squad not recorded'}</div>
+        <div class="summary-item"><strong>Student:</strong> ${r.student_name || r.student_initial || '—'}${r.grade?' (Grade '+r.grade+')':''} · ${r.panel_date} · ${r.clash_squad ? r.clash_squad + ' Squad' : 'Squad not recorded'}</div>
         <div class="summary-item"><strong>Referred by:</strong> ${r.referring_staff||'—'}</div>
         <div class="summary-item"><strong>Incident:</strong> ${r.incident_summary||'—'}</div>
+        <div class="summary-item"><strong>Impact shared:</strong> ${r.impact_shared_in_person ? 'In person, student present' : 'Written statement read aloud, student present'}</div>
         ${r.trail_journal_id ? `<div class="summary-item"><strong>Trail Journal imported:</strong> Yes (${r.trail_journal_id})</div>` : ''}
       </div>
       <div class="summary-section">
-        <h4>Panel Recommendation</h4>
+        <h4>Approved Plan</h4>
         ${recs || '<div class="summary-item">No specific actions selected.</div>'}
         <div class="summary-item" style="margin-top:10px">${r.recommendation_narrative||'—'}</div>
+        <div class="summary-item"><strong>Approved by:</strong> ${r.approved_by||'—'}</div>
       </div>
       <div class="summary-section">
         <h4>Growth Focus</h4>
@@ -1770,29 +1890,29 @@ function buildRecordSummary(r) {
       <div class="summary-section">
         <h4>Follow-Up</h4>
         <div class="summary-item"><strong>Check-in person:</strong> ${r.followup_person||'—'}</div>
-        <div class="summary-item"><strong>2 days:</strong> ${r.followup_dates?.two_days||'—'}</div>
-        <div class="summary-item"><strong>1 week:</strong> ${r.followup_dates?.one_week||'—'}</div>
-        <div class="summary-item"><strong>2 weeks:</strong> ${r.followup_dates?.two_weeks||'—'}</div>
-        <div class="summary-item"><strong>1 month:</strong> ${r.followup_dates?.one_month||'—'}</div>
+        ${checkins.map(c => `<div class="summary-item"><strong>${c.label}:</strong> ${c.date||'—'}</div>`).join('')}
+        <div class="summary-item"><strong>Finished means:</strong> ${r.fu_criteria||'—'}</div>
+        <div class="summary-item"><strong>If not finished:</strong> ${r.fu_fallback||'—'}</div>
       </div>
     </div>
   `;
 
-  document.getElementById('first-checkin').textContent = r.followup_dates?.two_days || 'not set';
+  document.getElementById('first-checkin').textContent = checkins[0].date || 'not set';
+  document.getElementById('record-approved-by').textContent = r.approved_by || 'the AP';
 }
 
 function buildBICLink(r) {
   const params = new URLSearchParams({
     import: '1',
     source: 'trailback_panel',
-    initial: r.student_initial || '',
+    initial: r.student_initials || '', // BIC reads 'initial'; it gets initials, never the name (a link to another site)
     situation: (r.incident_summary || '').slice(0,300),
     harm: (r.deliberation_harm || '').slice(0,200),
     studentNeeds: (r.deliberation_student_needs || '').slice(0,200),
     trait: r.lrg_trait || '',
     recommendation: (r.recommendation_narrative || '').slice(0,300),
     followupPerson: r.followup_person || '',
-    followupDate: r.followup_dates?.two_days || '',
+    followupDate: r.followup_dates?.checkin_3 || '',
     panelSessionId: P.sessionId,
   });
   document.getElementById('bic-link').href =
@@ -1807,6 +1927,85 @@ function saveDelib() {
   document.getElementById('d-community-needs').value = document.getElementById('do-community').value;
   closeDelib();
   toast('Deliberation notes saved');
+}
+
+// ── ADMIN PREVIEW: test panel ─────────────────────────────────────────────
+if (IS_PREVIEW) {
+  const banner = document.createElement('div');
+  banner.className = 'preview-banner';
+  banner.innerHTML = '🧪 <strong>Panel Preview</strong>: practice mode, nothing is saved. <a href="?">Exit preview</a>';
+  document.body.appendChild(banner);
+  document.body.classList.add('is-preview');
+  document.getElementById('ptp').classList.remove('hidden');
+  if (window.innerWidth < 700) document.getElementById('ptp').classList.add('min'); // phones: start small
+}
+
+// Jump anywhere. Screens past Setup need a started session, so start one with what's there.
+function previewGo(n) {
+  if (n > 0 && !P.studentName) {
+    if (!document.getElementById('s-name').value.trim()) document.getElementById('s-name').value = 'Sample Student';
+    startSession();
+  }
+  if (n === 9) {
+    if (!P.approval) P.approval = previewAnswer({ action: 'approvePanelPlan' });
+    buildRecordSummary(Object.assign({}, buildRecord(), P.approval));
+  }
+  goTo(n);
+}
+
+// A made-up case (no real student) filled into every screen, for practice runs.
+function fillSampleCase(jumpTo) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('s-name', 'Riley Sample');
+  set('s-id', '8000000');
+  set('s-grade', '7');
+  set('s-staff', 'Ms. Example (science)');
+  set('s-incident', 'During lunch, the student knocked over a classmate\'s tray on purpose and laughed when it spilled. Lunch staff had to stop serving to clean it up.');
+  set('s-pattern', 'Third lunch incident in four weeks. Tried a seat change and a lunch detention.');
+  set('s-squad', 'Gold');
+  P.studentName = null;
+  startSession();
+
+  document.querySelectorAll('.norm-item:not(.checked)').forEach(el => toggleNorm(el));
+  ['Ms. AP', 'Mr. Dean', 'Student Panelist A', 'Student Panelist B', 'Student Panelist C']
+    .forEach((name, i) => { if (P.panelists[i]) P.panelists[i].name = name; });
+  renderPanelists();
+
+  set('r-what', 'I was messing around and pushed the tray. I thought it would be funny.');
+  set('r-who', 'The kid whose lunch it was, and the lunch ladies who had to clean it.');
+  set('r-thought', 'That he didn\'t get to eat. I didn\'t think about that then.');
+  set('r-needs', 'A different seat, maybe. And to say sorry.');
+  const qs = [
+    ['What were you thinking right before it happened?', 'That my friends would laugh.'],
+    ['How do you think he felt?', 'Embarrassed. And hungry.'],
+    ['What would make it right with the lunch staff?', 'Help clean up for a few days?'],
+  ];
+  qs.forEach(([q, r], i) => { set('rq-q-' + i, q); set('rq-r-' + i, r); });
+
+  const first = document.querySelector('#impact-rows .impact-row');
+  if (first) {
+    first.querySelector('input').value = 'Lunch staff member';
+    first.querySelector('textarea').value = 'We had to stop the line for ten minutes. Other students were late getting their food.';
+  }
+  document.getElementById('impact-in-person').checked = true;
+  updateImpactMode();
+
+  set('d-harm', 'A classmate lost his lunch and was embarrassed; lunch staff lost time; the line was held up.');
+  set('d-student-needs', 'To see the other student\'s side, and a plan for lunch that keeps him out of the same spot.');
+  set('d-community-needs', 'An apology to the classmate and some help for the lunch staff.');
+
+  if (!P.selectedRecs.length) {
+    document.querySelectorAll('.rec-chip').forEach(chip => {
+      if (/Verbal Apology|Service Act|Lunchbassadors/.test(chip.textContent)) chip.click();
+    });
+  }
+  set('rec-narrative', 'The panel recommends that the student apologize to his classmate with a trusted adult present, help the lunch staff after lunch for three days, and join Lunchbassadors for two weeks.');
+  set('rec-trait', 'Communication & Empathy');
+  set('fu-person', 'Mr. Dean (Dean of Student Success)');
+  set('fu-criteria', 'Apology done, three days of lunch help signed off by lunch staff, two weeks of Lunchbassadors attended.');
+
+  goTo(jumpTo || 1);
+  toast('Made-up case filled. Nothing is saved in preview.');
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────

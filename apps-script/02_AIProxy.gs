@@ -286,6 +286,14 @@ function buildAiPromptInner_(type, payload) {
       'Return ONLY valid JSON: {"summary":"overview","triggerPattern":"pattern","emotionPattern":"pattern","insightPattern":"suggestion","lrgPattern":"suggestion","recommendations":["r1","r2","r3"]}';
   }
 
+  // Trailback Panel prompts: initials only, never the name. An older Panel page sent the full
+  // name as payload.initial, so that is cut down to initials too.
+  function panelAiInitials_(p) {
+    const given = String(p.initials || '').trim();
+    if (given && !/\s/.test(given)) return given;
+    return initialsOf_(given || p.initial) || 'not given';
+  }
+
   if (type === 'panel_inquiry_analysis') {
     const sr = payload.studentReflection || {};
     const tjNote = payload.tjData ? ('\n\nTrail Journal: insight ' + payload.tjData.insightLevel + ', trait ' + payload.tjData.trait + '.') : '';
@@ -294,7 +302,7 @@ function buildAiPromptInner_(type, payload) {
     }).join('\n\n');
     return 'You are an experienced school counselor analyzing what emerged from a Trailback Panel inquiry. Write for adults deliberating -- not for student consumption.\n\n' +
       'Incident: ' + payload.incident + '\n' +
-      'Student initial: ' + payload.initial + tjNote + '\n\n' +
+      'Student initials: ' + panelAiInitials_(payload) + tjNote + '\n\n' +
       'Student shared:\n' +
       '- What happened: ' + (sr.whatHappened || 'not captured') + '\n' +
       '- Who was affected: ' + (sr.whoAffected || 'not captured') + '\n' +
@@ -314,7 +322,7 @@ function buildAiPromptInner_(type, payload) {
     return 'You are an experienced assistant principal drafting a Trailback Panel recommendation.\n\n' +
       'Incident: ' + payload.incident + '\n' +
       'Pattern: ' + (payload.pattern || 'none noted') + '\n' +
-      'Student: ' + payload.initial + tjNote + '\n\n' +
+      'Student initials: ' + panelAiInitials_(payload) + tjNote + '\n\n' +
       'Student shared: What happened: ' + (sr.whatHappened || '—') + ' | Who affected: ' + (sr.whoAffected || '—') +
       ' | Thinking since: ' + (sr.thoughtSince || '—') + ' | Needs: ' + (sr.whatNeeds || '—') + '\n\n' +
       'Impact statements:\n' + impacts + '\n\n' +

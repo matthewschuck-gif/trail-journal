@@ -228,7 +228,8 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div style="margin-bottom:10px">
         <div style="font-size:.62rem;font-weight:700;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Preview Forms</div>
         <a href="https://trailjournal.org/?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);border-radius:7px;color:var(--gold);font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none;margin-bottom:5px">🏔 Trail Journal Preview</a>
-        <a href="https://trailjournal.org/respond/?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(74,127,168,.1);border:1px solid #2a4a6a;border-radius:7px;color:#5b8dd9;font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none">🏔 Your Side Preview</a>
+        <a href="https://trailjournal.org/respond/?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(74,127,168,.1);border:1px solid #2a4a6a;border-radius:7px;color:#5b8dd9;font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none;margin-bottom:5px">🏔 Your Side Preview</a>
+        <a href="https://trailjournal.org/panel/?preview=true" target="_blank" style="display:block;padding:8px 10px;background:rgba(92,61,143,.12);border:1px solid rgba(92,61,143,.45);border-radius:7px;color:#b79cf0;font-size:.78rem;font-family:'Barlow',sans-serif;text-decoration:none">⛺ Trailback Panel Preview</a>
       </div>
       <button class="sb-out" onclick="doLogout()">Sign Out</button>
     </div>
@@ -1038,6 +1039,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="tbl-wrap">
         <div id="clash-tbl-body"><div class="empty"><div class="ei">🏆</div><p>Loading…</p></div></div>
       </div>
+      <h3 style="margin:26px 0 6px;font-size:1rem">Trailback Panel requests</h3>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 10px">A completed Trailback plan asks for a squad point. Approving adds one row to the Clash of Classes sheet. No names or initials, just the squad.</p>
+      <div class="tbl-wrap">
+        <div id="clash-tb-body"><div class="empty"><p>Loading…</p></div></div>
+      </div>
     </div>
 
     <!-- EXPORT TO SHEETS -->
@@ -1152,7 +1158,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="page" id="page-followup">
       <div class="page-hd">
         <h2>Follow-Up Tracker</h2>
-        <p>Two separate follow-up workflows live here: Trailback Panel sessions (2-day/2-week/2-month check-ins) and single-event Trail Journal follow-ups (scheduled from the student's own final screen). They're tracked in different tables, so they get their own tabs below.</p>
+        <p>Two separate follow-up workflows live here: Trailback Panel sessions (3, 10 and 30 school-day check-ins) and single-event Trail Journal follow-ups (scheduled from the student's own final screen). They're tracked in different tables, so they get their own tabs below.</p>
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--border)">
@@ -1166,7 +1172,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(92,61,143,.1) 0%,rgba(201,168,76,.08) 100%);border:1.5px solid rgba(92,61,143,.3);border-radius:12px;padding:14px 18px;margin:16px 0 20px">
           <div style="flex:1;min-width:180px">
             <div style="font-weight:700;font-size:.9rem;color:var(--text)">📅 Outlook Check-In Scheduler</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule 2-day, 2-week &amp; 2-month Outlook calendar events — workday-snapped, grade-timed. Or click any row below to schedule from an existing session.</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule Outlook calendar events at 3, 10 &amp; 30 school days — weekends and days off skipped, grade-timed. Or click any row below to schedule from an existing session.</div>
           </div>
           <a href="https://trailjournal.org/panel/followup/" target="_blank" style="display:inline-block;padding:9px 18px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;box-shadow:0 2px 10px rgba(92,61,143,.3);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Open Scheduler →</a>
         </div>
@@ -2079,7 +2085,39 @@ async function generateBrief() {
 function copyBrief() { navigator.clipboard.writeText(document.getElementById('brief-text').value); }
 
 // ── FEATURE 9: CLASH FLAGS ────────────────────────────────────────────────
+// Trailback Panel point requests (07_ClashOfClasses.gs): squad + note only.
+async function loadTrailbackClash() {
+  const el = document.getElementById('clash-tb-body');
+  let rows;
+  try { rows = await callBackend({ action: 'clashRequests' }, true); }
+  catch (e) { el.innerHTML = '<div class="empty"><p>Could not load requests: ' + e.message + '</p></div>'; return; }
+  if (!rows || !rows.length) { el.innerHTML = '<div class="empty"><div class="ei">🏔️</div><p>No Trailback requests yet.</p></div>'; return; }
+  el.innerHTML = '<table><thead><tr><th>Date</th><th>Squad</th><th>Points</th><th>Note</th><th>Status</th><th></th></tr></thead><tbody>' +
+    rows.map(r => {
+      const d = r.created_at ? new Date(r.created_at).toLocaleDateString() : '—';
+      const status = r.status === 'pending' ? '<span style="color:var(--muted)">Pending</span>'
+        : r.status === 'approved' ? '<span style="color:var(--green)">✓ Approved</span>' : '<span style="color:var(--muted)">Declined</span>';
+      const btns = r.status === 'pending'
+        ? `<button class="save-btn" style="padding:5px 12px;font-size:.74rem" onclick="decideTrailbackClash('${r.id}','approve',this)">Approve</button>
+           <button class="save-btn" style="padding:5px 12px;font-size:.74rem;background:var(--navy3)" onclick="decideTrailbackClash('${r.id}','decline',this)">Decline</button>`
+        : '';
+      return `<tr><td>${d}</td><td>${r.squad||'—'}</td><td>${r.points||1}</td><td>${r.note||''}</td><td>${status}</td><td>${btns}</td></tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+async function decideTrailbackClash(id, decision, btn) {
+  btn.disabled = true;
+  try {
+    await callBackend({ action: 'decideClashRequest', payload: { id, decision } }, true);
+    loadTrailbackClash();
+  } catch (e) {
+    alert('Could not ' + decision + ': ' + e.message);
+    btn.disabled = false;
+  }
+}
+
 async function loadClashFlags() {
+  loadTrailbackClash();
   const data = await sb('reflections?clash_flagged=eq.true&select=session_id,initial,student_name,grade,squad,created_at,insight_level,clash_points_awarded,part3_json&order=created_at.desc&limit=50');
   if (!data || !data.length) {
     document.getElementById('clash-tbl-body').innerHTML = '<div class="empty"><div class="ei">🏆</div><p>No High insight flags yet.</p></div>';
@@ -2256,12 +2294,30 @@ function copyCSV() {
 
 // Add export to showPage
 
+// ── PANEL ROW HELPERS ─────────────────────────────────────────────────────
+// New panel rows: student_name + student_initials. Older rows kept the full name in
+// student_initial. Follow-up dates: new rows checkin_3/10/30 (school days), older rows
+// two_days/one_week/two_weeks/one_month.
+function panelName(s) { return (s && (s.student_name || s.student_initial)) || ''; }
+function panelInitials(s) {
+  if (s && s.student_initials) return s.student_initials;
+  const parts = panelName(s).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  return parts[0].charAt(0).toUpperCase() + '.' + (parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() + '.' : '');
+}
+function panelCheckins(d) {
+  d = d || {};
+  if (d.checkin_3 || d.checkin_10 || d.checkin_30)
+    return [[3,'3 school days'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
+  return [['two_days','2 days'],['one_week','1 week'],['two_weeks','2 weeks'],['one_month','1 month']].map(([k,label]) => ({ label, date: d[k] || '' }));
+}
+
 // ── PANEL FOLLOW-UP TRACKER ───────────────────────────────────────────────
 // ── FOLLOW-UP SCHEDULER URL BUILDER ──────────────────────────────────────
 // Builds a pre-filled URL to /panel/followup from a panel_sessions record
 function buildSchedulerUrl(s) {
   const p = new URLSearchParams();
-  if (s.student_initial)         p.set('initials',   s.student_initial);
+  if (panelInitials(s))          p.set('initials',   panelInitials(s)); // never the name
   if (s.clash_squad)             p.set('squad',      s.clash_squad);
   if (s.panel_date)              p.set('date',       s.panel_date);
   if (s.session_id)              p.set('session_id', s.session_id);
@@ -2290,7 +2346,7 @@ async function loadFollowUps() {
 
   const enriched = data.map(s => {
     const dates = s.followup_dates||{};
-    const allDates = [dates.two_days,dates.one_week,dates.two_weeks,dates.one_month]
+    const allDates = panelCheckins(dates).map(c => c.date)
       .filter(Boolean).map(d => new Date(d+'T12:00'));
     const future = allDates.filter(d => d >= today);
     const nextDate = future.length ? future[0] : null;
@@ -2337,7 +2393,7 @@ async function loadFollowUps() {
     const nextStr = s._nextDate ? s._nextDate.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
     const dateStr = s.panel_date ? new Date(s.panel_date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
     return `<tr style="cursor:pointer" onclick="showFUDetail('${s.session_id}')">
-      <td><strong>${s.student_initial||'—'}</strong></td>
+      <td><strong>${panelName(s)||'—'}</strong></td>
       <td style="color:${sqColor[s.clash_squad]||'var(--text)'};font-weight:700">${s.clash_squad||'—'}</td>
       <td>${dateStr}</td>
       <td>${s.followup_person||'—'}</td>
@@ -2356,7 +2412,7 @@ function showFUDetail(sessionId) {
   const s = (window._fuData||[]).find(r => r.session_id===sessionId);
   if (!s) return;
   const detail = document.getElementById('fu-detail');
-  document.getElementById('fu-detail-title').textContent = `Student ${s.student_initial||'?'} — Panel ${s.panel_date||''}`;
+  document.getElementById('fu-detail-title').textContent = `${panelName(s)||'Student'} — Panel ${s.panel_date||''}`;
   const d = s.followup_dates||{};
   document.getElementById('fu-detail-body').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -2364,14 +2420,14 @@ function showFUDetail(sessionId) {
         <div class="ed-lbl">Referring Staff</div><div style="margin-bottom:10px">${s.referring_staff||'—'}</div>
         <div class="ed-lbl">Incident</div><div style="margin-bottom:10px">${s.incident_summary||'—'}</div>
         <div class="ed-lbl">LRG Trait</div><div style="margin-bottom:10px">${s.lrg_trait||'—'}</div>
-        <div class="ed-lbl">Recommendation</div><div>${s.recommendation_narrative||'—'}</div>
+        <div class="ed-lbl">Recommendation</div><div style="margin-bottom:10px">${s.recommendation_narrative||'—'}</div>
+        <div class="ed-lbl">Finished means</div><div style="margin-bottom:10px">${s.fu_criteria||'—'}</div>
+        <div class="ed-lbl">If not finished</div><div>${s.fu_fallback||'—'}</div>
       </div>
       <div>
         <div class="ed-lbl">Check-In Person</div><div style="margin-bottom:10px">${s.followup_person||'—'}</div>
-        <div class="ed-lbl">2-Day</div><div style="margin-bottom:6px">${d.two_days||'—'}</div>
-        <div class="ed-lbl">1-Week</div><div style="margin-bottom:6px">${d.one_week||'—'}</div>
-        <div class="ed-lbl">2-Week</div><div style="margin-bottom:6px">${d.two_weeks||'—'}</div>
-        <div class="ed-lbl">1-Month</div><div style="margin-bottom:10px">${d.one_month||'—'}</div>
+        ${panelCheckins(d).map(c => `<div class="ed-lbl">${c.label}</div><div style="margin-bottom:6px">${c.date||'—'}</div>`).join('')}
+        ${s.approved_by ? `<div class="ed-lbl">Approved by</div><div style="margin-bottom:10px">${s.approved_by}</div>` : ''}
         ${s.trail_journal_id?`<div class="ed-lbl">Trail Journal ID</div><div style="font-size:.76rem;font-family:monospace;margin-bottom:12px">${s.trail_journal_id}</div>`:''}
         <a href="${buildSchedulerUrl(s)}" target="_blank" style="display:inline-block;padding:8px 14px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.8rem;text-decoration:none;box-shadow:0 2px 8px rgba(92,61,143,.25);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📅 Schedule Outlook Check-Ins →</a>
         <div style="font-size:.72rem;color:var(--muted);margin-top:5px">Opens pre-filled with this student's session data</div>
@@ -2425,7 +2481,7 @@ async function loadTjFollowUps() {
     const badge = r.completed
       ? `<span style="background:var(--navy3);color:var(--green);padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">✓ Completed</span>`
       : `<span style="background:#fdf5df;color:#8a6820;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">📅 Pending</span>`;
-    const scheduledFor = r.checkin_2day_date || '—';
+    const scheduledFor = r.checkin_3_date || r.checkin_2day_date || '—';
     const noteOrOutcome = r.completed
       ? (r.completion_notes || '—')
       : (r.outcome_summary || '—').slice(0, 100);
@@ -2596,7 +2652,7 @@ async function loadLongitudinal() {
   // just against a differently-named column.
   const panels = (allPanels || []).filter(p => isSingleInitial
     ? (p.student_initial || '').toUpperCase() === needle.toUpperCase()
-    : (p.student_initial || '').toLowerCase().includes(needle));
+    : panelName(p).toLowerCase().includes(needle));
 
   if (!reflections?.length && !panels?.length) {
     document.getElementById('lg-empty').style.display = 'block'; return;
@@ -2676,7 +2732,7 @@ async function loadLongitudinal() {
           <span style="background:rgba(92,61,143,.2);color:#c4b5fd;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700">🏔️ Trailback Panel</span>
         </div>
         <div style="font-size:.8rem;color:var(--text);margin-bottom:4px"><strong>Recommendation:</strong> ${p.recommendation_narrative||'—'}</div>
-        <div style="font-size:.78rem;color:var(--muted)"><strong>Trait:</strong> ${p.lrg_trait||'—'} · <strong>Next check-in:</strong> ${d.two_days||'—'} · <strong>Person:</strong> ${p.followup_person||'—'}</div>
+        <div style="font-size:.78rem;color:var(--muted)"><strong>Trait:</strong> ${p.lrg_trait||'—'} · <strong>Next check-in:</strong> ${panelCheckins(d)[0].date||'—'} · <strong>Person:</strong> ${p.followup_person||'—'}</div>
       </div>`;
     }).join('');
   } else panelSec.style.display='none';

@@ -67,8 +67,30 @@ function handleRequest_(e, method) {
 function dispatch_(body) {
     enforceAdminGate_(body); // throws if this action needs staff access and none was provided (see 05_AdminAuth.gs)
 
+    // A panel's approval is recorded only by approvePanelPlan_ (11_Trailback.gs), from the
+    // Google sign-in. The generic writes can't set or change it.
+    if (body.table === TABS.PANEL_SESSIONS) {
+      if (body.action === 'insert') body.row = stripPanelApproval_(body.row);
+      if (body.action === 'update') body.patch = stripPanelApproval_(body.patch);
+    }
+
     let result;
     switch (body.action) {
+      case 'followupDates': // 3 / 10 / 30 school days after a date (11_Trailback.gs)
+        result = followupSchedule_(body.payload);
+        break;
+      case 'approvePanelPlan':
+        result = approvePanelPlan_(body);
+        break;
+      case 'submitPanelSession':
+        result = submitPanelSession_(body);
+        break;
+      case 'clashRequests':
+        result = clashRequests_();
+        break;
+      case 'decideClashRequest':
+        result = decideClashRequest_(body);
+        break;
       case 'insert':
         result = genericInsert_(body.table, body.row);
         break;
@@ -142,6 +164,7 @@ const JSON_COLUMNS = {
   followup_records: ['attendee_emails', 'calendar_status'],
   incident_reports: [],
   site_config: [],
+  clash_requests: [],
 };
 
 // --- Default values applied on insert, mirroring the Postgres column defaults ---
@@ -150,8 +173,9 @@ const DEFAULTS = {
   responder_reflections: { status: 'submitted' },
   panel_sessions: { status: 'open', clash_point_awarded: false },
   incident_reports: { status: 'open' },
-  followup_records: { calendar_status: { day2: 'pending', week2: 'pending', month2: 'pending' } },
+  followup_records: { calendar_status: { day3: 'pending', day10: 'pending', day30: 'pending' } },
   site_config: {},
+  clash_requests: { status: 'pending' },
 };
 
 function genericInsert_(table, row) {

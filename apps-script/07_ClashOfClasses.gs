@@ -85,3 +85,75 @@ function awardClashPoint_(payload) {
 
   return { ok: true, squad: squad, studentLabel: studentLabel };
 }
+
+// ── TRAILBACK PANEL POINTS (approval queue) ─────────────────────────────
+// A completed Trailback plan asks for a squad point; staff approve it on the admin Clash Flags
+// page, and only then does one row go to the Clash events tab. Neither the request nor the
+// row carries a name or initials -- just the squad and "Trailback plan completed."
+// Settings tab: TRAILBACK_CLASH_POINTS (default 1).
+const TRAILBACK_CLASH_NOTE_ = 'Trailback plan completed.';
+
+function trailbackClashPoints_() {
+  const n = Number(webSetting_('TRAILBACK_CLASH_POINTS'));
+  return n > 0 ? n : 1;
+}
+
+/**
+ * Internal (the case closing as Completed calls it -- 11_Trailback.gs / Part B).
+ * opts: { squad, caseId, requestedBy }. Returns the request row.
+ */
+function requestClashPoint_(opts) {
+  const squad = String((opts && opts.squad) || '').trim().toUpperCase();
+  if (COC_SQUADS_.indexOf(squad) === -1) throw new Error('A Clash point needs the student\'s squad (got: ' + ((opts && opts.squad) || 'none') + ').');
+  ensureSchemaTab_(TABS.CLASH_REQUESTS);
+  const caseId = String((opts && opts.caseId) || '');
+  if (caseId) {
+    const dup = genericQuery_(TABS.CLASH_REQUESTS, { case_id: caseId }).filter(function (r) { return r.status !== 'declined'; })[0];
+    if (dup) return dup;
+  }
+  return genericInsert_(TABS.CLASH_REQUESTS, {
+    source: 'trailback_panel', squad: squad, points: trailbackClashPoints_(), note: TRAILBACK_CLASH_NOTE_,
+    case_id: caseId, status: 'pending', requested_by: (opts && opts.requestedBy) || '',
+  });
+}
+
+/** Staff: the queue for the admin page. Squad, points, note, date and status only. */
+function clashRequests_() {
+  ensureSchemaTab_(TABS.CLASH_REQUESTS);
+  return genericQuery_(TABS.CLASH_REQUESTS, {}).map(function (r) {
+    return { id: r.id, created_at: r.created_at, source: r.source, squad: r.squad, points: r.points, note: r.note,
+      status: r.status, decided_by: r.decided_by, decided_at: r.decided_at };
+  }).reverse();
+}
+
+/**
+ * Staff: body.payload { id, decision: 'approve' | 'decline' }. Approving appends one row to the
+ * Clash events tab: '' | Trailback Panel | trailback_panel | date | Trailback plan completed. | '' | squad points.
+ */
+function decideClashRequest_(body) {
+  const p = body.payload || {};
+  const decision = p.decision === 'decline' ? 'decline' : p.decision === 'approve' ? 'approve' : '';
+  if (!p.id || !decision) throw new Error('id and decision (approve or decline) are required.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const req = genericQuery_(TABS.CLASH_REQUESTS, { id: p.id }, 1)[0];
+    if (!req) throw new Error('No Clash request ' + p.id);
+    if (req.status !== 'pending') throw new Error('This request was already ' + req.status + '.');
+    const squad = String(req.squad || '').toUpperCase();
+    if (decision === 'approve') {
+      if (COC_SQUADS_.indexOf(squad) === -1) throw new Error('This request has no valid squad.');
+      const sheet = SpreadsheetApp.openById(COC_SHEET_ID_).getSheetByName(COC_EVENTS_TAB_);
+      if (!sheet) throw new Error('Could not find the "' + COC_EVENTS_TAB_ + '" tab on the Clash of Classes Points sheet.');
+      const pts = Number(req.points) > 0 ? Number(req.points) : 1;
+      const today = Utilities.formatDate(new Date(), 'America/New_York', 'yyyy-MM-dd');
+      sheet.appendRow(['', 'Trailback Panel', 'trailback_panel', today, TRAILBACK_CLASH_NOTE_, '',
+        squad === 'BLACK' ? pts : '', squad === 'GOLD' ? pts : '', squad === 'GREY' ? pts : '', squad === 'PURPLE' ? pts : '']);
+    }
+    const patch = { status: decision === 'approve' ? 'approved' : 'declined', decided_by: body._staffEmail || 'staff password', decided_at: nowIso_() };
+    genericUpdate_(TABS.CLASH_REQUESTS, { id: p.id }, patch);
+    return Object.assign({ id: p.id, squad: squad }, patch);
+  } finally {
+    lock.releaseLock();
+  }
+}

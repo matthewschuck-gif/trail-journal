@@ -25,6 +25,8 @@ const WEB_DEFAULTS_ = [
   ['STAFF_EMAILS', '', 'Optional: only these staff emails (comma separated) get staff access. Blank = anyone at STAFF_DOMAIN.'],
   ['STUDENT_EXEC_URL', '', 'The student deployment\'s /exec link (Deploy › Manage deployments). The journal\'s exit auto-save goes there. Blank = this deployment.'],
   ['LEGACY_API', 'ON', 'ON while the old GitHub pages are still in use. Set OFF after the switch: the old token route then only takes the exit auto-save.'],
+  ['PANEL_APPROVERS', '', 'Trailback Panel: emails (comma separated) allowed to approve a plan. Blank = anyone signed in on the staff link.'],
+  ['TRAILBACK_CLASH_POINTS', '1', 'Trailback Panel: Clash of Classes points for a completed plan (after staff approve the request).'],
 ];
 const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup' };
 
@@ -112,6 +114,7 @@ function setupTrailWeb() {
   ensureWebSettings_();
   addMissingColumns_(TABS.REFLECTIONS, ['student_id']);
   addMissingColumns_(TABS.RESPONDER_REFLECTIONS, ['student_name', 'student_id', 'share_name_with_other']);
-  addMissingColumns_(TABS.PANEL_SESSIONS, ['student_id']);
-  safeAlert_('Trail Journal is set up for the Apps Script pages: Settings tab added, reflections and panel_sessions have a student_id (800#) column, and responder_reflections has student_name, student_id and share_name_with_other.');
+  [TABS.PANEL_SESSIONS, TABS.FOLLOWUP_RECORDS, TABS.CLASH_REQUESTS].forEach(ensureSchemaTab_); // 11_Trailback.gs
+  ensureNoSchoolTab_();
+  safeAlert_('Trail Journal is set up: Settings tab (with PANEL_APPROVERS and TRAILBACK_CLASH_POINTS), the 800# columns, the new panel_sessions and followup_records columns, the clash_requests tab, and a No School Dates tab. Add the school\'s days off to No School Dates.');
 }

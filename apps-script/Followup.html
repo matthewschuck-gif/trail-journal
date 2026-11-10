@@ -390,7 +390,7 @@ window.TJ_SEARCH = '?' + Object.keys(TJ_BOOT.params || {}).filter(function (k) {
   <div class="hero">
     <div class="hero-step">Panel Tool · Follow-Up</div>
     <h2>Schedule the Check-Ins</h2>
-    <p>After an intervention or Trailback Panel, the work continues. This tool logs the record to Google Sheets and sends Outlook calendar events to your follow-up team — snapped to the nearest workday, timed to the student's grade schedule.</p>
+    <p>After an intervention or Trailback Panel, the work continues. This tool logs the record to Google Sheets and sends Outlook calendar events to your follow-up team at 3, 10 and 30 school days (weekends and days off skipped), timed to the student's grade schedule.</p>
   </div>
 
   <!-- ── SECTION 1: STUDENT & GRADE ── -->
@@ -473,21 +473,21 @@ window.TJ_SEARCH = '?' + Object.keys(TJ_BOOT.params || {}).filter(function (k) {
       <div class="guideline day2">
         <div class="guideline-icon">🌱</div>
         <div>
-          <div class="guideline-title">2-Day Check-In <span>· Early Pulse</span></div>
+          <div class="guideline-title">3-School-Day Check-In <span>· Early Pulse</span></div>
           <div class="guideline-text">Keep it brief and relational — this is not a consequence review. Ask: "How are you doing since we last talked?" and "Is there anything still unresolved?" Look for re-engagement and early signs of follow-through on any commitments. Reinforce their capacity to grow. <strong>5–10 minutes max.</strong></div>
         </div>
       </div>
       <div class="guideline week2">
         <div class="guideline-icon">📋</div>
         <div>
-          <div class="guideline-title">2-Week Review <span>· First Assessment</span></div>
+          <div class="guideline-title">10-School-Day Review <span>· First Assessment</span></div>
           <div class="guideline-text">Look at the whole picture: grades, attendance, relationships with staff and peers. First real opportunity to assess whether the intervention is holding. Ask: "What's been hard? What's gotten easier?" Review any repair commitments; update the plan if needed. <strong>10–20 minutes.</strong></div>
         </div>
       </div>
       <div class="guideline month2">
         <div class="guideline-icon">🏔️</div>
         <div>
-          <div class="guideline-title">2-Month Follow-Up <span>· Long-Term Accountability</span></div>
+          <div class="guideline-title">30-School-Day Follow-Up <span>· Long-Term Accountability</span></div>
           <div class="guideline-text">Pull the data: attendance, referrals, academic progress. Has the behavior pattern changed? Has the relationship with the community been repaired? Celebrate authentic growth. Determine if additional support — Camp, BIC, another panel — is needed. Document the outcome in Google Sheets. <strong>15–30 minutes.</strong></div>
         </div>
       </div>
@@ -511,38 +511,38 @@ window.TJ_SEARCH = '?' + Object.keys(TJ_BOOT.params || {}).filter(function (k) {
   <!-- ── SECTION 5: PREVIEW & SCHEDULE ── -->
   <div class="card">
     <div class="card-label">📅 Scheduled Events Preview</div>
-    <div class="card-sub">Dates snap to the nearest workday (Mon–Fri). Time window is set by grade.</div>
+    <div class="card-sub">School days only: weekends and the No School Dates tab are skipped. Time window is set by grade.</div>
 
     <p class="snap-note" id="snap-note">Select a grade and trigger date above to see exact times.</p>
 
-    <div id="preview-2day" class="preview-row">
+    <div id="preview-d3" class="preview-row">
       <div class="preview-icon">🌱</div>
       <div class="preview-body">
-        <div class="preview-title">2-Day Check-In</div>
-        <div class="preview-meta" id="date-2day">—</div>
-        <div class="preview-time" id="time-2day"></div>
+        <div class="preview-title">3-School-Day Check-In</div>
+        <div class="preview-meta" id="date-d3">—</div>
+        <div class="preview-time" id="time-d3"></div>
       </div>
-      <span class="status-pill pill-pending" id="pill-2day">Pending</span>
+      <span class="status-pill pill-pending" id="pill-d3">Pending</span>
     </div>
 
-    <div id="preview-2week" class="preview-row">
+    <div id="preview-d10" class="preview-row">
       <div class="preview-icon">📋</div>
       <div class="preview-body">
-        <div class="preview-title">2-Week Review</div>
-        <div class="preview-meta" id="date-2week">—</div>
-        <div class="preview-time" id="time-2week"></div>
+        <div class="preview-title">10-School-Day Review</div>
+        <div class="preview-meta" id="date-d10">—</div>
+        <div class="preview-time" id="time-d10"></div>
       </div>
-      <span class="status-pill pill-pending" id="pill-2week">Pending</span>
+      <span class="status-pill pill-pending" id="pill-d10">Pending</span>
     </div>
 
-    <div id="preview-2month" class="preview-row">
+    <div id="preview-d30" class="preview-row">
       <div class="preview-icon">🏔️</div>
       <div class="preview-body">
-        <div class="preview-title">2-Month Follow-Up</div>
-        <div class="preview-meta" id="date-2month">—</div>
-        <div class="preview-time" id="time-2month"></div>
+        <div class="preview-title">30-School-Day Follow-Up</div>
+        <div class="preview-meta" id="date-d30">—</div>
+        <div class="preview-time" id="time-d30"></div>
       </div>
-      <span class="status-pill pill-pending" id="pill-2month">Pending</span>
+      <span class="status-pill pill-pending" id="pill-d30">Pending</span>
     </div>
 
     <div id="global-alert" class="alert"></div>
@@ -626,35 +626,9 @@ function setTrigger(type) {
 }
 
 // ─────────────────────────────────────────────
-//  WORKDAY SNAP
-//  Adds N calendar days then snaps forward to Mon-Fri.
-//  We parse the date string as local noon to avoid timezone drift.
+//  CHECK-IN DATES
+//  3 / 10 / 30 school days, counted on the server (followupDates).
 // ─────────────────────────────────────────────
-function addCalendarDays(dateStr, days) {
-  const d = new Date(dateStr + 'T12:00:00');
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function snapToWorkday(date) {
-  // 0 = Sun, 6 = Sat
-  const dow = date.getDay();
-  if (dow === 0) date.setDate(date.getDate() + 1); // Sun → Mon
-  if (dow === 6) date.setDate(date.getDate() + 2); // Sat → Mon
-  return date;
-}
-
-// Returns { date: Date (snapped), snapped: bool }
-function getCheckinDate(trigDateStr, calDays) {
-  const raw = addCalendarDays(trigDateStr, calDays);
-  const rawDow = raw.getDay();
-  const snapped = snapToWorkday(raw);
-  return {
-    date: snapped,
-    wasWeekend: rawDow === 0 || rawDow === 6,
-  };
-}
-
 // ─────────────────────────────────────────────
 //  FORMAT HELPERS
 // ─────────────────────────────────────────────
@@ -680,12 +654,16 @@ function fmtEventTime(date, isEnd) {
 // ─────────────────────────────────────────────
 document.getElementById('trigger-date').addEventListener('input', updatePreview);
 
-function updatePreview() {
+let checkinDates = null; // { checkin_3, checkin_10, checkin_30 } from the server
+let previewSeq = 0;
+
+async function updatePreview() {
   const raw = document.getElementById('trigger-date').value;
   const win = GRADE_WINDOWS[grade];
+  checkinDates = null;
 
   if (!raw) {
-    ['2day','2week','2month'].forEach(k => {
+    ['d3','d10','d30'].forEach(k => {
       document.getElementById('date-' + k).textContent = '—';
       document.getElementById('time-' + k).textContent = '';
     });
@@ -693,28 +671,23 @@ function updatePreview() {
     return;
   }
 
-  const intervals = [
-    { key: '2day',   days: 2,  label: '2 calendar days' },
-    { key: '2week',  days: 14, label: '2 weeks' },
-    { key: '2month', days: 60, label: '~2 months' },
-  ];
-
-  let snapMessages = [];
-
-  intervals.forEach(({ key, days, label }) => {
-    const { date, wasWeekend } = getCheckinDate(raw, days);
-    document.getElementById('date-' + key).textContent = fmtDisplay(date);
-    document.getElementById('time-' + key).textContent = `${win.label} · Grade ${grade}`;
-    if (wasWeekend) snapMessages.push(label);
-  });
-
-  if (snapMessages.length > 0) {
-    document.getElementById('snap-note').innerHTML =
-      `<strong>Snapped to Monday:</strong> ${snapMessages.join(', ')} fell on a weekend.`;
-  } else {
-    document.getElementById('snap-note').innerHTML =
-      `All three check-ins land on weekdays. <strong>Grade ${grade}</strong> window: ${win.label}.`;
+  const seq = ++previewSeq;
+  document.getElementById('snap-note').innerHTML = 'Counting school days…';
+  let d;
+  try {
+    d = await callBackend({ action: 'followupDates', payload: { from: raw } });
+  } catch (e) {
+    document.getElementById('snap-note').innerHTML = '<strong>Could not count school days:</strong> ' + e.message;
+    return;
   }
+  if (seq !== previewSeq) return; // a newer date was picked meanwhile
+  checkinDates = d;
+  [['d3', d.checkin_3], ['d10', d.checkin_10], ['d30', d.checkin_30]].forEach(([key, ymd]) => {
+    document.getElementById('date-' + key).textContent = fmtDisplay(new Date(ymd + 'T12:00:00'));
+    document.getElementById('time-' + key).textContent = `${win.label} · Grade ${grade}`;
+  });
+  document.getElementById('snap-note').innerHTML =
+    `3, 10 and 30 school days after the ${triggerType === 'intervention' ? 'intervention' : 'panel'}, skipping weekends and the No School Dates tab. <strong>Grade ${grade}</strong> window: ${win.label}.`;
 }
 
 // Pre-fill from URL params (from panel Screen 7 or admin dashboard)
@@ -825,12 +798,14 @@ async function scheduleAll() {
   if (!initials)         { showAlert('error', "Please enter the student's initials."); return; }
   if (!trigDateStr)      { showAlert('error', 'Please select the date of the intervention or panel.'); return; }
   if (!attendees.length) { showAlert('error', 'Add at least one staff email address.'); return; }
+  if (!checkinDates || checkinDates.from !== trigDateStr) { showAlert('error', 'Still counting school days. Try again in a moment.'); updatePreview(); return; }
+  if (/\s/.test(initials)) { showAlert('error', 'Initials only, please (for example A.L.), not the full name.'); return; }
 
   scheduling = true;
   document.getElementById('btn-schedule').disabled = true;
 
   // Show all three as loading immediately
-  ['2day','2week','2month'].forEach(k => setStatus(k, 'loading'));
+  ['d3','d10','d30'].forEach(k => setStatus(k, 'loading'));
 
   // 1 — Save to Supabase
   let record = null;
@@ -842,30 +817,30 @@ async function scheduleAll() {
       outcome_summary:  outcome || null,
       panel_session_id: sessionId || null,
       attendee_emails:  attendees.map(a => a.email),
-      checkin_2day_date:   getCheckinDate(trigDateStr, 2).date.toISOString().split('T')[0],
-      checkin_2week_date:  getCheckinDate(trigDateStr, 14).date.toISOString().split('T')[0],
-      checkin_2month_date: getCheckinDate(trigDateStr, 60).date.toISOString().split('T')[0],
+      checkin_3_date:  checkinDates.checkin_3,
+      checkin_10_date: checkinDates.checkin_10,
+      checkin_30_date: checkinDates.checkin_30,
       submitted_by: submittedBy || null,
       squad:        squad || null,
       notes:        `Grade ${grade} · ${GRADE_WINDOWS[grade].label}`,
-      calendar_status: { day2: 'pending', week2: 'pending', month2: 'pending' },
+      calendar_status: { day3: 'pending', day10: 'pending', day30: 'pending' },
     });
   } catch (err) {
     showAlert('warn', 'Could not save the record — continuing to send emails.');
   }
 
   // 2 — Send all 3 emails via Edge Function (one call)
-  let calStatuses = { day2: 'failed', week2: 'failed', month2: 'failed' };
+  let calStatuses = { day3: 'failed', day10: 'failed', day30: 'failed' };
   let successCount = 0;
 
   try {
     const result = await sendCalendarEmails({ initials, squad, trigDateStr, outcome, attendees, submittedBy });
     calStatuses = {
-      day2:   result.results?.day2   || 'failed',
-      week2:  result.results?.week2  || 'failed',
-      month2: result.results?.month2 || 'failed',
+      day3:  result.results?.day3  || 'failed',
+      day10: result.results?.day10 || 'failed',
+      day30: result.results?.day30 || 'failed',
     };
-    const keyMap = { day2: '2day', week2: '2week', month2: '2month' };
+    const keyMap = { day3: 'd3', day10: 'd10', day30: 'd30' };
     for (const [sbKey, uiKey] of Object.entries(keyMap)) {
       const ok = calStatuses[sbKey] === 'sent';
       setStatus(uiKey, ok ? 'success' : 'error');
@@ -873,7 +848,7 @@ async function scheduleAll() {
     }
     if (result.errors?.length) console.warn('Email errors:', result.errors);
   } catch (err) {
-    ['2day','2week','2month'].forEach(k => setStatus(k, 'error'));
+    ['d3','d10','d30'].forEach(k => setStatus(k, 'error'));
     console.error('Edge function failed:', err);
   }
 
@@ -914,7 +889,7 @@ function resetForm() {
       <input type="email" placeholder="email@ephrata.org" style="flex:2">
     </div>`;
   attendeeCount = 1;
-  ['2day','2week','2month'].forEach(k => setStatus(k, 'pending'));
+  ['d3','d10','d30'].forEach(k => setStatus(k, 'pending'));
   hideAlert();
   scheduling = false;
   allDone    = false;

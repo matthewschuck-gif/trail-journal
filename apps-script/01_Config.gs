@@ -44,6 +44,7 @@ const TABS = {
   INCIDENT_REPORTS: 'incident_reports',
   SITE_CONFIG: 'site_config',
   STAFF_USERS: 'staff_users',
+  CLASH_REQUESTS: 'clash_requests',
 };
 
 // Exact column order per tab -- matches the original Postgres schema field-for-field.
@@ -164,6 +165,13 @@ const SCHEMA = {
     'grade',
     // Added 2026-11-01: the student's 800#, so the session shows on their Climb-er page.
     'student_id',
+    // Added 2026-11-09 (Trailback pipeline). student_name is staff-only; student_initials is
+    // what the AI helpers and follow-up emails get. Old rows keep the name in student_initial.
+    // approved_by / approved_at are written only by approvePanelPlan_ (11_Trailback.gs).
+    'student_name', 'student_initials', 'impact_shared_in_person', 'approved_by', 'approved_at',
+    // What "finished" means and what happens if it isn't. The page sent fu_criteria before, but
+    // there was no column, so the Sheet dropped it; the fallback was never sent at all.
+    'fu_criteria', 'fu_fallback',
   ],
   [TABS.FOLLOWUP_RECORDS]: [
     'id', 'created_at', 'student_initials', 'trigger_type', 'trigger_date', 'outcome_summary',
@@ -178,6 +186,9 @@ const SCHEMA = {
     // that reads/writes these. Appended at the end -- see
     // migrateAddFollowupCompletionColumns_() below.
     'completed', 'completed_at', 'completed_by', 'completion_notes',
+    // Added 2026-11-09: one cadence, 3 / 10 / 30 school days (11_Trailback.gs). The 2day/2week/
+    // 2month columns stay for older rows and for the journal's single-event follow-up.
+    'checkin_3_date', 'checkin_10_date', 'checkin_30_date',
   ],
   [TABS.INCIDENT_REPORTS]: [
     'id', 'created_at', 'student_name', 'grade', 'homeroom',
@@ -194,6 +205,10 @@ const SCHEMA = {
   // living in Script Properties -- protect this tab's sharing settings accordingly. See
   // migrateAddStaffUsersTab_() below for one-time setup and the starting name list.
   [TABS.STAFF_USERS]: ['name', 'password'],
+  // Clash of Classes point requests waiting for staff approval (07_ClashOfClasses.gs). No names
+  // or initials, ever: the approved row goes to a public site.
+  [TABS.CLASH_REQUESTS]: ['id', 'created_at', 'source', 'squad', 'points', 'note', 'case_id',
+    'status', 'requested_by', 'decided_by', 'decided_at'],
 };
 
 /**
