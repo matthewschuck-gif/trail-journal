@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const dir = path.join(__dirname, '..', 'apps-script');
-const NEW = ['09_RecordText.gs', '10_Records.gs', '11_Trailback.gs', '12_TrailbackCases.gs', 'Admin.html', 'Followup.html', 'Journal.html', 'Panel.html', 'Respond.html', 'TjBridge.html', 'TrailCss.html'];
+const NEW = ['11_Trailback.gs', '12_TrailbackCases.gs']; // files that don't exist in the Apps Script project yet
 const files = fs.readdirSync(dir).filter(f => /\.(gs|html)$/.test(f)).sort((a, b) => {
   const ga = a.endsWith('.gs') ? 0 : 1, gb = b.endsWith('.gs') ? 0 : 1;
   return ga - gb || a.localeCompare(b);
