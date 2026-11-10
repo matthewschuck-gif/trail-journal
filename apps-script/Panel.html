@@ -493,6 +493,19 @@ textarea { min-height: 90px; }
 .callout-red    { background: var(--red-lt); border-left: 3px solid var(--red); }
 .hidden { display: none !important; }
 
+/* ── SQUAD THEMES (same palette as the journal's body.squad-*) ── */
+body.squad-gold   { --forest:#3d2900; --trail:#5a3a00; --trail-mid:#8a5a00; --trail-lt:#fef5d8; --gold:#c9a84c; --gold-lt:#fef5d8; --gold-dk:#5a3a00; --paper:#fffcf0; }
+body.squad-black  { --forest:#111111; --trail:#2a2a2a; --trail-mid:#444444; --trail-lt:#f0f0f0; --gold:#888888; --gold-lt:#f2f2f2; --gold-dk:#333333; --paper:#fafafa; }
+body.squad-grey   { --forest:#2d3748; --trail:#4a5568; --trail-mid:#6b7280; --trail-lt:#eef0f3; --gold:#718096; --gold-lt:#eef0f3; --gold-dk:#2d3748; --paper:#f8f9fa; }
+body.squad-purple { --forest:#2a1550; --trail:#3a2060; --trail-mid:#5c3d8f; --trail-lt:#f0ebf8; --gold:#9f7aea; --gold-lt:#f0ebf8; --gold-dk:#3a2060; --paper:#faf8ff; }
+.hdr-badge.squad-on { background: var(--gold); color: #fff; }
+/* Queue rows: a stripe in the case's squad color */
+.sq-stripe { border-left: 4px solid transparent; padding-left: 10px; }
+.sq-stripe.sq-gold { border-left-color: #c9a84c; } .sq-stripe.sq-black { border-left-color: #2a2a2a; }
+.sq-stripe.sq-grey { border-left-color: #718096; } .sq-stripe.sq-purple { border-left-color: #7c5db5; }
+.sq-chip { display:inline-block; padding:1px 8px; border-radius:20px; font-size:.68rem; font-weight:800; letter-spacing:.04em; color:#fff; }
+.sq-chip.sq-gold { background:#b07820; } .sq-chip.sq-black { background:#2a2a2a; } .sq-chip.sq-grey { background:#6b7280; } .sq-chip.sq-purple { background:#5c3d8f; }
+
 /* Admin preview (?preview=true) */
 .preview-banner { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #4a2d7f; color: #fff;
   text-align: center; padding: 10px 16px; font-size: .82rem; }
@@ -652,7 +665,7 @@ body.is-preview main { padding-bottom: 110px; }
     </div>
     <div class="field">
       <label>Clash of Classes Squad (optional)</label>
-      <select id="s-squad">
+      <select id="s-squad" onchange="applySquadTheme(this.value)">
         <option value="">Not known / not participating</option>
         <option value="Gold">Gold</option>
         <option value="Grey">Grey</option>
@@ -1395,8 +1408,20 @@ function startSession() {
   P.squad = document.getElementById('s-squad').value;
   document.getElementById('hdr-session').textContent = 'Student ' + name + ' · ' + new Date(P.date+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
   if (P.squad) document.getElementById('hdr-badge').textContent = P.squad + ' Squad';
+  applySquadTheme(P.squad);
   buildPanelistRows();
   goTo(1);
+}
+
+// The session takes on the student's Clash squad colors, like the journal (body.squad-*).
+const SQUADS = ['gold', 'black', 'grey', 'purple'];
+function applySquadTheme(squad) {
+  const s = String(squad || '').toLowerCase();
+  SQUADS.forEach(x => document.body.classList.remove('squad-' + x));
+  if (SQUADS.includes(s)) document.body.classList.add('squad-' + s);
+  const badge = document.getElementById('hdr-badge');
+  badge.classList.toggle('squad-on', SQUADS.includes(s));
+  if (!SQUADS.includes(s)) badge.textContent = 'Panel';
 }
 
 // ── NORMS ─────────────────────────────────────────────────────────────────
@@ -1978,8 +2003,11 @@ function queueRow(c, withStart) {
   const bits = [c.grade ? 'Grade ' + esc(c.grade) : '', esc(c.behavior_type || ''), c.scheduled_date ? 'Panel ' + fmtDay(c.scheduled_date) : '',
     c.trail_journal_id ? '🗺️ Trail Journal done' : ''].filter(Boolean).join(' · ');
   const session = c.panel_session_id ? `<div style="font-size:.74rem;color:var(--ink-lt)">Panel record: session ${esc(String(c.panel_session_id).slice(0, 8))}… (Admin › Trailback Cases)</div>` : '';
-  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap">
-    <div style="min-width:0;flex:1"><strong>${who}</strong> <span class="tag" style="margin-left:4px">${esc(c.status_label)}</span>
+  const sq = String(c.squad || '').toLowerCase();
+  const sqOk = SQUADS.includes(sq);
+  const chip = sqOk ? ` <span class="sq-chip sq-${sq}">${esc(sq.charAt(0).toUpperCase() + sq.slice(1))}</span>` : '';
+  return `<div class="${sqOk ? 'sq-stripe sq-' + sq : ''}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;padding-bottom:10px;border-top:1px solid var(--border);flex-wrap:wrap">
+    <div style="min-width:0;flex:1"><strong>${who}</strong>${chip} <span class="tag" style="margin-left:4px">${esc(c.status_label)}</span>
       <div style="font-size:.78rem;color:var(--ink-lt)">${bits || '&nbsp;'}</div>${session}</div>
     ${withStart ? `<button class="btn-primary" style="padding:8px 14px;font-size:.8rem" onclick="startFromCase('${esc(c.case_id)}')">Start session →</button>` : ''}
   </div>`;
@@ -2017,6 +2045,7 @@ function startFromCase(caseId) {
   set('s-pattern', c.behavior_pattern);
   const sq = String(c.squad || '').toLowerCase();
   if (sq) set('s-squad', sq.charAt(0).toUpperCase() + sq.slice(1));
+  applySquadTheme(document.getElementById('s-squad').value);
   if (c.scheduled_date) set('s-date', c.scheduled_date);
   const banner = document.getElementById('case-banner');
   banner.innerHTML = `🗂️ <strong>Case ${esc(c.case_id)}</strong> · ${esc(c.status_label)}${c.behavior_type ? ' · ' + esc(c.behavior_type) : ''}${c.consequence_type ? ' · held: ' + esc(c.consequence_type) : ''}`;
@@ -2030,6 +2059,7 @@ function startFromCase(caseId) {
 
 function startWithoutCase() {
   P.caseId = null;
+  applySquadTheme(document.getElementById('s-squad').value);
   document.getElementById('case-banner').classList.add('hidden');
   goTo(0);
 }

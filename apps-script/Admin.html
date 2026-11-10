@@ -67,6 +67,9 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 .tb-filters{display:flex;flex-wrap:wrap;gap:6px;}
 .tb-filters .flt-btn.on{border-color:var(--gold);color:var(--gold);}
 .tb-card{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-family:'Barlow',sans-serif;}
+.tb-card-gold{border-left:4px solid #c9a84c;} .tb-card-black{border-left:4px solid #9a9a9a;} .tb-card-grey{border-left:4px solid #8a94a6;} .tb-card-purple{border-left:4px solid #9f7aea;}
+.tb-sq{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:20px;font-size:.66rem;font-weight:800;letter-spacing:.04em;vertical-align:middle;}
+.tb-sq-gold{background:#c9a84c;color:#1a1200;} .tb-sq-black{background:#0b0b0b;color:#e5e5e5;border:1px solid #666;} .tb-sq-grey{background:#8a94a6;color:#0d1117;} .tb-sq-purple{background:#9f7aea;color:#14092a;}
 .tb-card-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;}
 .tb-name{font-weight:700;color:var(--text);font-size:.95rem;}
 .tb-meta{font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.5;}
@@ -2901,7 +2904,7 @@ function tbCard(c) {
   const id = tbEsc(c.case_id);
   const badge = TB_OPEN.includes(c.status) ? 'open' : c.status === 'closed_completed' ? 'done' : 'bad';
   const meta = [
-    c.student_id ? '800# ' + tbEsc(c.student_id) : '', c.grade ? 'Grade ' + tbEsc(c.grade) : '', c.squad ? tbEsc(c.squad) + ' squad' : '',
+    c.student_id ? '800# ' + tbEsc(c.student_id) : '', c.grade ? 'Grade ' + tbEsc(c.grade) : '',
     tbEsc(c.behavior_type || ''), c.consequence_type ? tbEsc(c.consequence_type) + (c.consequence_original_date ? ' (was ' + tbDay(c.consequence_original_date) + ')' : '') : '',
     c.master_log_row ? 'Entry ID ' + tbEsc(c.master_log_row) : '', c.scheduled_date ? '⛺ Panel ' + tbDay(c.scheduled_date) : '',
     c.trail_journal_id ? '🗺️ Trail Journal done' : '', 'via ' + tbEsc(String(c.source || '').replace('_', ' ')),
@@ -2912,9 +2915,13 @@ function tbCard(c) {
     const cls = log ? (log.on_time ? 'ok' : 'late') : (due && due < today ? 'late' : '');
     return `<span class="${cls}">${n} days: ${log ? '✓ ' + (log.on_time ? 'on time' : 'late') : due ? (due < today ? 'overdue ' : 'due ') + tbDay(due) : '—'}</span>`;
   }).join('') + '</div>' : '';
-  return `<div class="tb-card" id="tb-card-${id}">
+  // Squad color, like the journal: a stripe down the card and a chip by the name.
+  const sq = String(c.squad || '').toLowerCase();
+  const sqOk = ['gold', 'black', 'grey', 'purple'].includes(sq);
+  const chip = sqOk ? ` <span class="tb-sq tb-sq-${sq}">${tbEsc(sq.charAt(0).toUpperCase() + sq.slice(1))}</span>` : '';
+  return `<div class="tb-card${sqOk ? ' tb-card-' + sq : ''}" id="tb-card-${id}">
     <div class="tb-card-top">
-      <div style="min-width:0;flex:1"><div class="tb-name">${tbEsc(c.student_name || c.student_id || c.case_id)}</div><div class="tb-meta">${meta}</div></div>
+      <div style="min-width:0;flex:1"><div class="tb-name">${tbEsc(c.student_name || c.student_id || c.case_id)}${chip}</div><div class="tb-meta">${meta}</div></div>
       <span class="tb-badge ${badge}">${tbEsc(c.status_label)}</span>
     </div>
     ${checks}

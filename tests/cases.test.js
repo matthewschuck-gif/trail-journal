@@ -272,6 +272,7 @@ test('Tuesday brief: Wednesday cases, adults on Panel Members only, conflict lin
   assert.strictEqual(off.to, 'ap@easdpa.org,dean@easdpa.org', 'no student panelists, no inactive members');
   assert.ok(/Pat Quill/.test(off.html) && /Third time this month/.test(off.html) && /Argued with a sub/.test(off.html));
   assert.ok(/tell Kelly by <strong>Wednesday morning, before the panel/.test(off.html));
+  assert.ok(/border-left:6px solid #8a5a00/.test(off.html) && /Gold squad/.test(off.html), 'the case card wears the Gold squad color');
   assert.strictEqual(w.sent.length, 0);
   w.tabs.Settings.rows.push(['TRAILBACK_EMAILS', 'ON', '']);
   w.tabs.Settings.rows.splice(1, 1);

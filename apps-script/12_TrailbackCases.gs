@@ -450,8 +450,11 @@ function sendTrailbackMail_(to, subject, html, preview) {
 function briefHtml_(wed, cases) {
   const deadline = webSetting_('TRAILBACK_CONFLICT_DEADLINE') || 'Wednesday morning, before the panel';
   const body = cases.map(function (c) {
-    return '<div style="border:1.5px solid #e2d6ee;border-radius:8px;padding:12px 14px;margin:0 0 12px;font-family:Verdana,sans-serif">' +
-      emailInfoRow_('Student', escHtml_(c.student_name || '—') + (c.grade ? ' &middot; Grade ' + escHtml_(c.grade) : '')) +
+    // Each case card wears the student's squad color, like the journal's emails (squadTheme_).
+    const t = squadTheme_(c.squad);
+    const squadLine = t === DEFAULT_THEME_ ? '' : ' &middot; ' + t.emoji + ' ' + t.label + ' squad';
+    return '<div style="border:1.5px solid ' + t.primary + ';border-left:6px solid ' + t.primary + ';border-radius:8px;padding:12px 14px;margin:0 0 12px;font-family:Verdana,sans-serif">' +
+      emailInfoRow_('Student', escHtml_(c.student_name || '—') + (c.grade ? ' &middot; Grade ' + escHtml_(c.grade) : '') + squadLine, t) +
       emailInfoRow_('Behavior', escHtml_(c.behavior_type || '—')) +
       emailInfoRow_('Incident', escHtml_(c.incident_summary || '—')) +
       emailInfoRow_('Pattern', escHtml_(c.behavior_pattern || '—')) +
@@ -488,7 +491,8 @@ function trailbackOverdueEmail_(preview) {
   const list = overdueCheckins_();
   if (!list.length && !preview) return { skipped: 'Nothing overdue' };
   const body = (list.length ? list.map(function (o) {
-    return emailInfoRow_(escHtml_(o.c.student_name || o.c.student_id || o.c.case_id), o.n + '-school-day check-in was due ' + o.due +
+    const t = squadTheme_(o.c.squad);
+    return emailInfoRow_((t === DEFAULT_THEME_ ? '' : t.emoji + ' ') + escHtml_(o.c.student_name || o.c.student_id || o.c.case_id), o.n + '-school-day check-in was due ' + o.due +
       (o.c.checkin_person ? ' &middot; check-in person: ' + escHtml_(o.c.checkin_person) : ''));
   }).join('') : '<p style="font-family:Verdana,sans-serif">Nothing is overdue today.</p>') +
     emailCallout_('Log it', 'Open Trail Journal Admin &rsaquo; Trailback Cases and use <strong>Log check-in</strong> on each case.');
@@ -497,10 +501,12 @@ function trailbackOverdueEmail_(preview) {
 }
 
 function notifyReverted_(c, reason) {
-  const html = emailShell_('&#8617;', 'Trailback case reverted', escHtml_(c.student_name || c.student_id || c.case_id),
-    emailInfoRow_('Reason', escHtml_(reason)) +
-    emailInfoRow_('Master Log Entry ID', escHtml_(c.master_log_row || 'none on the case')) +
-    emailCallout_('Pick a new date', 'The Master Log row is back to <strong>Scheduled</strong>. Pick a new detention date there; nothing was booked automatically.'));
+  const t = squadTheme_(c.squad); // the student's squad colors, like the journal's emails
+  const html = emailShell_('&#8617;', 'Trailback case reverted', escHtml_(c.student_name || c.student_id || c.case_id) +
+      (t === DEFAULT_THEME_ ? '' : ' &middot; ' + t.label + ' squad'),
+    emailInfoRow_('Reason', escHtml_(reason), t) +
+    emailInfoRow_('Master Log Entry ID', escHtml_(c.master_log_row || 'none on the case'), t) +
+    emailCallout_('Pick a new date', 'The Master Log row is back to <strong>Scheduled</strong>. Pick a new detention date there; nothing was booked automatically.', null, t), t);
   const r = sendTrailbackMail_(coordinatorEmails_(), 'Trailback reverted: pick a new detention date', html, false);
   return r.sent ? [] : ['Reverted email not sent: ' + r.why];
 }
