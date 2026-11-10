@@ -51,6 +51,12 @@ function handleRequest_(e, method) {
     }
 
     delete body._staffEmail; // only tjCall (08_Web.gs) sets this, from the Google sign-in
+    delete body._caller;
+    // Other EMS tools (Accountability system, Climb-er) reach two Trailback actions with their
+    // own key (Script Property TRAILBACK_API_KEY), even after LEGACY_API is OFF. 12_TrailbackCases.gs
+    if (TRAILBACK_API_ACTIONS_.indexOf(body.action) !== -1 && body.key) {
+      return jsonOut_({ ok: true, data: trailbackApi_(body) });
+    }
     checkAppToken_(body.token);
     // After the switch to the Apps Script pages (Settings LEGACY_API = OFF), the old token route
     // only takes the exit auto-save beacon a closing journal page sends.
@@ -90,6 +96,21 @@ function dispatch_(body) {
         break;
       case 'decideClashRequest':
         result = decideClashRequest_(body);
+        break;
+      case 'trailbackCases': // 12_TrailbackCases.gs
+        result = trailbackCases_(body);
+        break;
+      case 'trailbackCase':
+        result = trailbackCase_(body);
+        break;
+      case 'updateTrailbackCase':
+        result = updateTrailbackCase_(body);
+        break;
+      case 'createTrailbackCase':
+        result = createTrailbackCase_(body);
+        break;
+      case 'trailbackCasesByStudent':
+        result = trailbackCasesByStudent_(body);
         break;
       case 'insert':
         result = genericInsert_(body.table, body.row);
@@ -165,6 +186,7 @@ const JSON_COLUMNS = {
   incident_reports: [],
   site_config: [],
   clash_requests: [],
+  panel_cases: ['checkin_notes', 'history', 'referral_json'],
 };
 
 // --- Default values applied on insert, mirroring the Postgres column defaults ---

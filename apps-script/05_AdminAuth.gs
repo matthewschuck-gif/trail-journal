@@ -21,11 +21,12 @@
 // Table names that require a valid staff password on every request, for every action
 // (insert/update/query alike). followup_records is deliberately NOT in this list -- see the
 // carve-out below enforceAdminGate_ for why.
-const ADMIN_ONLY_TABLES_ = ['panel_sessions', 'incident_reports', 'clash_requests'];
+const ADMIN_ONLY_TABLES_ = ['panel_sessions', 'incident_reports', 'clash_requests', 'panel_cases'];
 
 // Staff-only actions added with the Trailback pipeline (11_Trailback.gs, 07_ClashOfClasses.gs).
 // approvePanelPlan also needs a Google sign-in, not just the password (checked in its function).
-const STAFF_ACTIONS_ = ['followupDates', 'approvePanelPlan', 'submitPanelSession', 'clashRequests', 'decideClashRequest'];
+const STAFF_ACTIONS_ = ['followupDates', 'approvePanelPlan', 'submitPanelSession', 'clashRequests', 'decideClashRequest',
+  'trailbackCases', 'trailbackCase', 'updateTrailbackCase', 'createTrailbackCase', 'trailbackCasesByStudent'];
 
 // AI proxy "type" values that are staff-only tools, not part of the student-facing flow.
 const ADMIN_ONLY_AI_TYPES_ = ['pattern_analysis', 'parent_letter', 'panel_inquiry_analysis', 'panel_recommendation_draft'];

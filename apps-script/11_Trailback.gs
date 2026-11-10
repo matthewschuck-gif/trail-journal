@@ -146,13 +146,14 @@ function stripPanelApproval_(obj) {
   PANEL_PROTECTED_FIELDS_.forEach(function (k) { delete out[k]; });
   // Approval statuses come only from approvePanelPlan_ / submitPanelSession_.
   if (out.status === 'heard_approved' || out.status === 'repair_in_progress') delete out.status;
+  delete out.case_id;
   return out;
 }
 
 function stripProtected_(obj) {
   const out = Object.assign({}, obj || {});
   PANEL_PROTECTED_FIELDS_.forEach(function (k) { delete out[k]; });
-  delete out.id; delete out.created_at; delete out.status;
+  delete out.id; delete out.created_at; delete out.status; delete out.case_id; // case_id is set at approval only
   return out;
 }
 
@@ -175,9 +176,12 @@ function approvePanelPlan_(body) {
   ensureSchemaTab_(TABS.PANEL_SESSIONS);
 
   const existing = panelRow_(sid);
-  if (existing && existing.approved_by) return { approved_by: existing.approved_by, approved_at: existing.approved_at, status: existing.status };
+  if (existing && existing.approved_by) return { approved_by: existing.approved_by, approved_at: existing.approved_at, status: existing.status, case_id: existing.case_id };
 
   const approval = { approved_by: email, approved_at: nowIso_(), status: 'heard_approved' };
+  // The case moves first (12_TrailbackCases.gs): a closed case stops the approval here. A panel
+  // started without a queued case gets one.
+  approval.case_id = casePanelApproved_(Object.assign({}, record, { case_id: record.case_id || '' }), approval);
   if (existing) genericUpdate_(TABS.PANEL_SESSIONS, { session_id: sid }, Object.assign(stripProtected_(record), approval));
   else genericInsert_(TABS.PANEL_SESSIONS, Object.assign(stripProtected_(record), { session_id: sid }, approval));
   return approval;
@@ -194,5 +198,6 @@ function submitPanelSession_(body) {
   const existing = panelRow_(sid);
   if (!existing || !existing.approved_by) throw new Error('This plan has not been approved yet. The AP approves it before the record is submitted.');
   genericUpdate_(TABS.PANEL_SESSIONS, { session_id: sid }, Object.assign(stripProtected_(record), { status: 'repair_in_progress' }));
+  casePanelSubmitted_(existing.case_id, record, body._staffEmail || 'staff password'); // 12_TrailbackCases.gs
   return Object.assign({}, panelRow_(sid));
 }

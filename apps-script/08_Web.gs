@@ -27,6 +27,11 @@ const WEB_DEFAULTS_ = [
   ['LEGACY_API', 'ON', 'ON while the old GitHub pages are still in use. Set OFF after the switch: the old token route then only takes the exit auto-save.'],
   ['PANEL_APPROVERS', '', 'Trailback Panel: emails (comma separated) allowed to approve a plan. Blank = anyone signed in on the staff link.'],
   ['TRAILBACK_CLASH_POINTS', '1', 'Trailback Panel: Clash of Classes points for a completed plan (after staff approve the request).'],
+  ['TRAILBACK_EMAILS', 'OFF', 'Trailback Panel: ON sends the Tuesday brief, the overdue check-in email and the reverted-case email. OFF sends nothing (the menu previews still work).'],
+  ['TRAILBACK_COORDINATOR_EMAIL', '', 'Trailback Panel: Kelly\'s email (comma separated for more). Gets overdue check-ins, reverted cases, and conflict-of-interest replies.'],
+  ['TRAILBACK_CONFLICT_DEADLINE', 'Wednesday morning, before the panel', 'Trailback Panel: when panelists must tell Kelly about a conflict of interest (shown in the Tuesday brief).'],
+  ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', 'Trailback Panel: the Accountability & Intervention Log Sheet. Its Master Log Status changes when a case is held, resolved or reverted.'],
+  ['TRAILBACK_REFERRAL_FORM_ID', '19qZF3mndYFktrkrwHZz-lr5IGSJUAoU46w99rUTShvc', 'Trailback Panel: the "Trailback Panel Staff Referral" Google Form. Connect it from the menu.'],
 ];
 const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup' };
 
@@ -107,6 +112,16 @@ function onOpen() {
     .addItem('Turn on the record safety net', 'setupRecordSafetyNet') // 10_Records.gs
     .addItem('Email all journal records once…', 'emailAllRecordsOnce')
     .addItem('Send missed journal records one by one…', 'sendMissedRecords')
+    .addSeparator()
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('Trailback') // 12_TrailbackCases.gs
+      .addItem('Turn on the Tuesday brief + overdue check (timers)', 'setupTrailbackTriggers')
+      .addItem('Preview the Tuesday brief (nothing sent)', 'previewTuesdayBrief')
+      .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
+      .addItem('Connect the staff referral form', 'connectReferralForm')
+      .addItem('Show the key for other tools', 'showTrailbackKey')
+      .addSeparator()
+      .addItem('Add a test case', 'addTrailbackTestCase')
+      .addItem('Remove test cases', 'removeTrailbackTestCases'))
     .addToUi();
 }
 
@@ -114,7 +129,8 @@ function setupTrailWeb() {
   ensureWebSettings_();
   addMissingColumns_(TABS.REFLECTIONS, ['student_id']);
   addMissingColumns_(TABS.RESPONDER_REFLECTIONS, ['student_name', 'student_id', 'share_name_with_other']);
-  [TABS.PANEL_SESSIONS, TABS.FOLLOWUP_RECORDS, TABS.CLASH_REQUESTS].forEach(ensureSchemaTab_); // 11_Trailback.gs
+  [TABS.PANEL_SESSIONS, TABS.FOLLOWUP_RECORDS, TABS.CLASH_REQUESTS, TABS.PANEL_CASES].forEach(ensureSchemaTab_); // 11_Trailback.gs
   ensureNoSchoolTab_();
+  ensurePanelMembersTab_(); // 12_TrailbackCases.gs
   safeAlert_('Trail Journal is set up: Settings tab (with PANEL_APPROVERS and TRAILBACK_CLASH_POINTS), the 800# columns, the new panel_sessions and followup_records columns, the clash_requests tab, and a No School Dates tab. Add the school\'s days off to No School Dates.');
 }

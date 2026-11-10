@@ -56,6 +56,40 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 .page.active{display:block;animation:fadeUp .25s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .page-hd{margin-bottom:28px;}
+/* Trailback Cases */
+.tb-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;}
+.tb-counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-bottom:18px;}
+.tb-count{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.tb-count b{display:block;font-size:1.5rem;color:var(--text);font-family:'Walter Turncoat',cursive;}
+.tb-count span{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.tb-section{margin:22px 0;}
+.tb-section h3{font-size:1rem;margin:0 0 10px;color:var(--text);}
+.tb-filters{display:flex;flex-wrap:wrap;gap:6px;}
+.tb-filters .flt-btn.on{border-color:var(--gold);color:var(--gold);}
+.tb-card{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-family:'Barlow',sans-serif;}
+.tb-card-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+.tb-name{font-weight:700;color:var(--text);font-size:.95rem;}
+.tb-meta{font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.5;}
+.tb-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--navy3);color:var(--muted);white-space:nowrap;}
+.tb-badge.open{background:rgba(201,168,76,.15);color:var(--gold);}
+.tb-badge.done{background:var(--green-soft);color:var(--green);}
+.tb-badge.bad{background:rgba(240,120,120,.12);color:#f0a0a0;}
+.tb-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tb-actions button{padding:5px 11px;font-size:.74rem;}
+.tb-checkins{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:.74rem;}
+.tb-checkins span{padding:2px 8px;border-radius:6px;background:var(--navy3);color:var(--muted);}
+.tb-checkins span.ok{color:var(--green);}
+.tb-checkins span.late{color:#f0a0a0;}
+.tb-flag{background:rgba(240,120,120,.1);border:1px solid rgba(240,120,120,.35);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.82rem;color:var(--text);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;}
+.tb-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);}
+.tb-detail li{margin-bottom:3px;}
+.tb-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px;}
+.tb-modal.show{display:flex;}
+.tb-modal-box{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;}
+.tb-modal-box h3{margin:0 0 12px;font-size:1rem;color:var(--text);}
+.tb-modal-box .ed-inp{width:100%;margin-bottom:8px;box-sizing:border-box;}
+.tb-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 10px;}
+@media (max-width:560px){.tb-form-grid{grid-template-columns:minmax(0,1fr);}}
 .page-hd h2{font-family:'Walter Turncoat',cursive;font-size:1.9rem;margin-bottom:6px;color:var(--text);}
 .page-hd p{font-size:.87rem;color:var(--muted);}
 
@@ -219,6 +253,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <button class="sb-item" onclick="showPage('letters')" id="nav-letters"><span class="si" aria-hidden="true">📬</span>Parent Letters</button>
       <button class="sb-item" onclick="showPage('patterns')" id="nav-patterns"><span class="si" aria-hidden="true">📈</span>Pattern Analysis</button>
       <button class="sb-item" onclick="showPage('responders')" id="nav-responders"><span class="si" aria-hidden="true">🏔️</span>Your Side of the Trail</button>
+      <button class="sb-item" onclick="showPage('trailback')" id="nav-trailback"><span class="si" aria-hidden="true">⛺</span>Trailback Cases</button>
       <button class="sb-item" onclick="showPage('clash')" id="nav-clash"><span class="si" aria-hidden="true">🏆</span>Clash Flags</button>
       <button class="sb-item" onclick="showPage('export')" id="nav-export"><span class="si" aria-hidden="true">📊</span>Export to Sheets</button>
       <button class="sb-item" onclick="showPage('followup')" id="nav-followup"><span class="si" aria-hidden="true">📅</span>Follow-Ups</button>
@@ -1043,6 +1078,49 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <p style="font-size:.8rem;color:var(--muted);margin:0 0 10px">A completed Trailback plan asks for a squad point. Approving adds one row to the Clash of Classes sheet. No names or initials, just the squad.</p>
       <div class="tbl-wrap">
         <div id="clash-tb-body"><div class="empty"><p>Loading…</p></div></div>
+      </div>
+    </div>
+
+    <!-- TRAILBACK CASES (12_TrailbackCases.gs) -->
+    <div class="page" id="page-trailback">
+      <div class="page-hd">
+        <h2>Trailback Cases</h2>
+        <p>Every Trailback Panel case from suggestion to close. Each button moves a case one step; the Master Log on the Accountability Sheet follows (held at consent, resolved or back to scheduled at the close).</p>
+      </div>
+
+      <div class="tb-toolbar">
+        <label class="ed-lbl" style="margin:0">Week of <input type="date" class="ed-inp" id="tb-week" style="width:auto;display:inline-block;margin-left:6px" onchange="loadTrailbackBoard()"></label>
+        <button class="flt-btn" onclick="loadTrailbackBoard()">↻ Refresh</button>
+        <button class="save-btn" onclick="openNewCase()">+ New case</button>
+        <span id="tb-loadtime" style="font-size:.74rem;color:var(--muted)"></span>
+      </div>
+
+      <div class="tb-counts" id="tb-counts"></div>
+      <div id="tb-flags"></div>
+
+      <div class="tb-section">
+        <h3 id="tb-docket-title">This Wednesday</h3>
+        <div id="tb-docket"><div class="empty"><p>Loading…</p></div></div>
+      </div>
+
+      <div class="tb-section">
+        <h3>Status board</h3>
+        <div class="tb-filters" id="tb-filters"></div>
+        <input class="tbl-search" id="tb-search" placeholder="Search name, 800#, behavior…" oninput="renderTrailbackBoard()" style="width:100%;max-width:360px;margin:8px 0 12px">
+        <div id="tb-board"></div>
+      </div>
+    </div>
+
+    <!-- Trailback case form (one small dialog, reused by every step that needs input) -->
+    <div class="tb-modal" id="tb-modal" onclick="if(event.target===this)closeTbModal()">
+      <div class="tb-modal-box" role="dialog" aria-modal="true" aria-labelledby="tb-modal-title">
+        <h3 id="tb-modal-title"></h3>
+        <div id="tb-modal-body"></div>
+        <div id="tb-modal-msg" style="color:#f0a0a0;font-size:.8rem;min-height:1em;margin-top:6px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button class="flt-btn" onclick="closeTbModal()">Cancel</button>
+          <button class="save-btn" id="tb-modal-ok">Save</button>
+        </div>
       </div>
     </div>
 
@@ -2755,6 +2833,252 @@ window.showPage = function(name) {
     document.getElementById('lg-empty').style.display = 'none';
     document.getElementById('lg-loading').style.display = 'none';
   }
+};
+
+// ── TRAILBACK CASES (12_TrailbackCases.gs) ────────────────────────────────
+// One board for every case. Each button is one step on the server (updateTrailbackCase), which
+// refuses steps out of order and keeps the Master Log on the Accountability Sheet in step.
+let TB = { cases: [], filter: 'open' };
+const TB_OPEN = ['suggested', 'offered', 'consented', 'tj_done', 'scheduled', 'heard_approved', 'repair_in_progress'];
+function tbEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function tbDay(ymd) { return ymd ? new Date(String(ymd).slice(0, 10) + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '—'; }
+function tbLocalYmd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+async function loadTrailbackBoard() {
+  const t0 = Date.now();
+  const week = document.getElementById('tb-week').value || '';
+  document.getElementById('tb-board').innerHTML = '<div class="empty"><p>Loading…</p></div>';
+  try {
+    const data = await callBackend({ action: 'trailbackCases', payload: { week } }, true);
+    TB = Object.assign(TB, data);
+    if (!week) document.getElementById('tb-week').value = data.today;
+    document.getElementById('tb-loadtime').textContent = 'Loaded in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's' + (data.linked ? ' · ' + data.linked + ' Trail Journal(s) linked' : '');
+    renderTrailbackBoard();
+  } catch (e) {
+    document.getElementById('tb-board').innerHTML = '<div class="empty"><p>Could not load cases: ' + tbEsc(e.message) + '</p></div>';
+  }
+}
+
+function renderTrailbackBoard() {
+  const k = TB.counts || {};
+  const tile = (n, label) => `<div class="tb-count"><b>${n}</b><span>${label}</span></div>`;
+  document.getElementById('tb-counts').innerHTML =
+    tile(k.offered || 0, 'Offered') + tile(k.accepted || 0, 'Accepted') + tile(k.held || 0, 'Held (panel)') +
+    tile(k.completed || 0, 'Completed') + tile(k.reverted || 0, 'Reverted') +
+    tile((k.checkins_on_time || 0) + ' / ' + (k.checkins_due || 0), 'Check-ins on time') +
+    `<div class="tb-count" style="grid-column:1/-1;padding:6px 14px"><span>Week ${tbDay(k.week_start)} – ${tbDay(k.week_end)}</span></div>`;
+
+  const flagged = TB.cases.filter(c => c.admin_flag);
+  document.getElementById('tb-flags').innerHTML = flagged.map(c =>
+    `<div class="tb-flag"><span>⚠️ <strong>${tbEsc(c.student_name || c.student_id)}</strong>: ${tbEsc(c.admin_flag)}${c.master_log_row ? ' (Entry ID ' + tbEsc(c.master_log_row) + ')' : ''}</span>
+      <button class="flt-btn" onclick="tbStep('${tbEsc(c.case_id)}','clear_flag')">Done</button></div>`).join('');
+
+  document.getElementById('tb-docket-title').textContent = 'This Wednesday · ' + tbDay(TB.wednesday);
+  document.getElementById('tb-docket').innerHTML = (TB.docket || []).length
+    ? TB.docket.map(tbCard).join('') + `<a class="flt-btn" style="display:inline-block;text-decoration:none" href="https:\/\/trailjournal.org/panel/" target="_blank">⛺ Open the panel →</a>`
+    : '<div class="empty"><p>No cases scheduled for this Wednesday. Use <strong>Schedule</strong> on a consented case.</p></div>';
+
+  const groups = [['open', 'All open']].concat(TB_OPEN.map(s => [s, (TB.statuses || []).find(x => x.key === s)?.label || s]), [['closed', 'Closed']]);
+  document.getElementById('tb-filters').innerHTML = groups.map(([key, label]) => {
+    const n = TB.cases.filter(c => tbMatch(c, key)).length;
+    return `<button class="flt-btn${TB.filter === key ? ' on' : ''}" onclick="TB.filter='${key}';renderTrailbackBoard()">${tbEsc(label)} (${n})</button>`;
+  }).join('');
+
+  const q = (document.getElementById('tb-search').value || '').toLowerCase().trim();
+  const list = TB.cases.filter(c => tbMatch(c, TB.filter)).filter(c => !q ||
+    [c.student_name, c.student_id, c.behavior_type, c.case_id, c.referring_staff].join(' ').toLowerCase().includes(q));
+  document.getElementById('tb-board').innerHTML = list.length ? list.map(tbCard).join('')
+    : `<div class="empty"><div class="ei">⛺</div><p>${TB.cases.length ? 'No cases match.' : 'No Trailback cases yet. Add one with <strong>+ New case</strong>, or they arrive from the referral form and the Consequence Entry Form.'}</p></div>`;
+}
+
+function tbMatch(c, key) {
+  if (key === 'open') return TB_OPEN.includes(c.status);
+  if (key === 'closed') return !TB_OPEN.includes(c.status);
+  return c.status === key;
+}
+
+function tbCard(c) {
+  const id = tbEsc(c.case_id);
+  const badge = TB_OPEN.includes(c.status) ? 'open' : c.status === 'closed_completed' ? 'done' : 'bad';
+  const meta = [
+    c.student_id ? '800# ' + tbEsc(c.student_id) : '', c.grade ? 'Grade ' + tbEsc(c.grade) : '', c.squad ? tbEsc(c.squad) + ' squad' : '',
+    tbEsc(c.behavior_type || ''), c.consequence_type ? tbEsc(c.consequence_type) + (c.consequence_original_date ? ' (was ' + tbDay(c.consequence_original_date) + ')' : '') : '',
+    c.master_log_row ? 'Entry ID ' + tbEsc(c.master_log_row) : '', c.scheduled_date ? '⛺ Panel ' + tbDay(c.scheduled_date) : '',
+    c.trail_journal_id ? '🗺️ Trail Journal done' : '', 'via ' + tbEsc(String(c.source || '').replace('_', ' ')),
+  ].filter(Boolean).join(' · ');
+  const today = TB.today || tbLocalYmd(new Date());
+  const checks = (c.status === 'repair_in_progress' || c.checkin_3) ? '<div class="tb-checkins">' + [3, 10, 30].map(n => {
+    const due = c['checkin_' + n], log = (c.checkin_notes || {})[n];
+    const cls = log ? (log.on_time ? 'ok' : 'late') : (due && due < today ? 'late' : '');
+    return `<span class="${cls}">${n} days: ${log ? '✓ ' + (log.on_time ? 'on time' : 'late') : due ? (due < today ? 'overdue ' : 'due ') + tbDay(due) : '—'}</span>`;
+  }).join('') + '</div>' : '';
+  return `<div class="tb-card" id="tb-card-${id}">
+    <div class="tb-card-top">
+      <div style="min-width:0;flex:1"><div class="tb-name">${tbEsc(c.student_name || c.student_id || c.case_id)}</div><div class="tb-meta">${meta}</div></div>
+      <span class="tb-badge ${badge}">${tbEsc(c.status_label)}</span>
+    </div>
+    ${checks}
+    <div class="tb-actions">${tbButtons(c)}<button class="flt-btn" onclick="tbToggleDetail('${id}')">Details</button></div>
+    <div class="tb-detail" id="tb-detail-${id}" style="display:none"></div>
+  </div>`;
+}
+
+function tbButtons(c) {
+  const b = (op, label, primary) => `<button class="${primary ? 'save-btn' : 'flt-btn'}" onclick="tbAction('${tbEsc(c.case_id)}','${op}')">${label}</button>`;
+  switch (c.status) {
+    case 'suggested': return b('offer', 'Mark offered', 1) + b('consent', 'Consent received') + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'offered': return b('consent', 'Consent received', 1) + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'consented': return b('schedule', 'Schedule', 1) + b('link_tj', 'Link Trail Journal') + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'tj_done': return b('schedule', 'Schedule', 1) + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'scheduled': return b('schedule', 'Reschedule') + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'heard_approved': return b('fixit', 'Fix-it meeting') + b('close_reverted', 'Close reverted');
+    case 'repair_in_progress': return b('checkin', 'Log check-in', 1) + b('fixit', 'Fix-it meeting') + b('close_completed', 'Close completed') + b('close_reverted', 'Close reverted') + b('edit', 'Edit');
+    default: return '';
+  }
+}
+
+async function tbToggleDetail(caseId) {
+  const el = document.getElementById('tb-detail-' + caseId);
+  if (el.style.display === 'block') { el.style.display = 'none'; return; }
+  const c = TB.cases.find(x => x.case_id === caseId);
+  const ref = c.referral_json && typeof c.referral_json === 'object'
+    ? '<p><strong>Referral answers</strong></p><ul>' + Object.keys(c.referral_json).filter(k => c.referral_json[k]).map(k => `<li>${tbEsc(k)}: ${tbEsc(c.referral_json[k])}</li>`).join('') + '</ul>' : '';
+  el.innerHTML = `
+    ${c.incident_summary ? '<p><strong>Incident:</strong> ' + tbEsc(c.incident_summary) + '</p>' : ''}
+    ${c.behavior_pattern ? '<p><strong>Pattern:</strong> ' + tbEsc(c.behavior_pattern) + '</p>' : ''}
+    ${c.referring_staff ? '<p><strong>Referred by:</strong> ' + tbEsc(c.referring_staff) + '</p>' : ''}
+    ${c.checkin_person ? '<p><strong>Check-in person:</strong> ' + tbEsc(c.checkin_person) + '</p>' : ''}
+    ${c.completion_criteria ? '<p><strong>Finished means:</strong> ' + tbEsc(c.completion_criteria) + '</p>' : ''}
+    ${c.fixit_meeting_at ? '<p><strong>Fix-it meeting:</strong> ' + tbEsc(String(c.fixit_meeting_at).slice(0, 10)) + '</p>' : ''}
+    ${c.closed_reason ? '<p><strong>Closed:</strong> ' + tbEsc(c.closed_reason) + '</p>' : ''}
+    ${Object.keys(c.checkin_notes || {}).map(n => `<p><strong>${n}-day check-in:</strong> ${tbEsc(c.checkin_notes[n].note || '')} <em>(${tbEsc(c.checkin_notes[n].by || '')})</em></p>`).join('')}
+    ${ref}
+    <div id="tb-session-${tbEsc(caseId)}">${c.panel_session_id ? 'Loading the panel record…' : ''}</div>
+    <p><strong>History</strong></p><ul>${(c.history || []).slice().reverse().map(h =>
+      `<li>${tbEsc(h.at ? new Date(h.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '')} · ${tbEsc(h.by || '')}: ${tbEsc(h.from || 'new')} → ${tbEsc(h.to)}${h.note ? ' (' + tbEsc(h.note) + ')' : ''}</li>`).join('')}</ul>
+    <p style="font-size:.7rem">Case ${tbEsc(c.case_id)}</p>`;
+  el.style.display = 'block';
+  if (c.panel_session_id) {
+    const box = document.getElementById('tb-session-' + caseId);
+    try {
+      const s = (await callBackend({ action: 'query', table: 'panel_sessions', filters: { session_id: c.panel_session_id } }, true))[0];
+      box.innerHTML = s ? `<p><strong>Panel record</strong> (${tbEsc(s.panel_date ? String(s.panel_date).slice(0, 10) : '')}, approved by ${tbEsc(s.approved_by || '—')}):
+        ${tbEsc(s.recommendation_narrative || '—')}</p>${s.fu_fallback ? '<p><strong>If not finished:</strong> ' + tbEsc(s.fu_fallback) + '</p>' : ''}` : 'Panel record not found.';
+    } catch (e) { box.textContent = 'Could not load the panel record: ' + e.message; }
+  }
+}
+
+// ── the small dialog ──
+let tbModalSubmit = null;
+function openTbModal(title, html, okLabel, onSubmit) {
+  document.getElementById('tb-modal-title').textContent = title;
+  document.getElementById('tb-modal-body').innerHTML = html;
+  document.getElementById('tb-modal-msg').textContent = '';
+  const ok = document.getElementById('tb-modal-ok');
+  ok.textContent = okLabel || 'Save'; ok.disabled = false;
+  tbModalSubmit = onSubmit;
+  ok.onclick = async () => {
+    ok.disabled = true;
+    try { await tbModalSubmit(); closeTbModal(); }
+    catch (e) { document.getElementById('tb-modal-msg').textContent = e.message; ok.disabled = false; }
+  };
+  document.getElementById('tb-modal').classList.add('show');
+  const first = document.querySelector('#tb-modal-body input, #tb-modal-body select, #tb-modal-body textarea');
+  if (first) first.focus();
+}
+function closeTbModal() { document.getElementById('tb-modal').classList.remove('show'); }
+function tbVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+async function tbStep(caseId, op, extra) {
+  const r = await callBackend({ action: 'updateTrailbackCase', payload: Object.assign({ case_id: caseId, op }, extra || {}) }, true);
+  const i = TB.cases.findIndex(c => c.case_id === caseId);
+  if (i > -1) TB.cases[i] = r.case;
+  if (r.warnings && r.warnings.length) alert('Saved, but check this:\n\n• ' + r.warnings.join('\n• '));
+  loadTrailbackBoard();
+  return r;
+}
+
+function tbWednesdays() {
+  const d = new Date(); const out = [];
+  while (out.length < 8) { if (d.getDay() === 3) out.push(tbLocalYmd(d)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+
+function tbAction(caseId, op) {
+  const c = TB.cases.find(x => x.case_id === caseId);
+  const who = tbEsc(c.student_name || c.student_id);
+  const ml = c.master_log_row ? `Master Log row <strong>${tbEsc(c.master_log_row)}</strong>` : 'No Master Log Entry ID on this case, so the Master Log won\'t change';
+  const note = (id, ph) => `<label class="ed-lbl" for="${id}">${ph}</label><textarea class="ed-inp" id="${id}" rows="3"></textarea>`;
+  switch (op) {
+    case 'offer': return tbStep(caseId, 'offer').catch(e => alert(e.message));
+    case 'consent':
+      return openTbModal('Consent received: ' + c.student_name, `<p class="tb-meta">The family agreed to the Trailback Panel. ${ml}${c.master_log_row ? ' becomes <strong>Held (Trailback)</strong>: the detention is on hold.' : '.'}</p>`,
+        'Consent received', () => tbStep(caseId, 'consent'));
+    case 'schedule':
+      return openTbModal('Schedule the panel: ' + c.student_name, `<label class="ed-lbl" for="tb-f-date">Wednesday</label>
+        <select class="ed-inp" id="tb-f-date">${tbWednesdays().map(w => `<option value="${w}"${w === c.scheduled_date ? ' selected' : ''}>${tbDay(w)}</option>`).join('')}</select>
+        <p class="tb-meta">Days on the No School Dates tab are refused.</p>`, 'Schedule', () => tbStep(caseId, 'schedule', { date: tbVal('tb-f-date') }));
+    case 'link_tj':
+      return openTbModal('Link a Trail Journal', `<label class="ed-lbl" for="tb-f-tj">Trail Journal session ID</label><input class="ed-inp" id="tb-f-tj">
+        <p class="tb-meta">Usually not needed: a journal the student finishes after consent links itself.</p>`, 'Link', () => tbStep(caseId, 'link_tj', { trail_journal_id: tbVal('tb-f-tj') }));
+    case 'checkin': {
+      const next = [3, 10, 30].find(n => !(c.checkin_notes || {})[n]) || 3;
+      return openTbModal('Log a check-in: ' + c.student_name, `<label class="ed-lbl" for="tb-f-n">Which check-in</label>
+        <select class="ed-inp" id="tb-f-n">${[3, 10, 30].map(n => `<option value="${n}"${n === next ? ' selected' : ''}>${n} school days (due ${tbDay(c['checkin_' + n])})</option>`).join('')}</select>
+        ${note('tb-f-note', 'How is the plan going?')}`, 'Log check-in', () => tbStep(caseId, 'checkin', { n: Number(tbVal('tb-f-n')), note: tbVal('tb-f-note') }));
+    }
+    case 'fixit':
+      return openTbModal('Fix-it meeting: ' + c.student_name, `<label class="ed-lbl" for="tb-f-date">Date</label><input type="date" class="ed-inp" id="tb-f-date" value="${tbLocalYmd(new Date())}">
+        ${note('tb-f-note', 'What was agreed?')}`, 'Save', () => tbStep(caseId, 'fixit', { date: tbVal('tb-f-date'), note: tbVal('tb-f-note') }));
+    case 'close_completed':
+      return openTbModal('Close completed: ' + c.student_name, `<p class="tb-meta">The plan is finished, so the detention is cleared. ${ml}${c.master_log_row ? ' becomes <strong>Resolved (Trailback)</strong>.' : '.'}
+        ${c.squad ? ' A Clash of Classes point for <strong>' + tbEsc(c.squad) + '</strong> goes to the approval queue on Clash Flags (no name).' : ' No squad on file, so no Clash point.'}</p>
+        ${note('tb-f-note', 'Note (optional)')}`, 'Close completed', () => tbStep(caseId, 'close_completed', { reason: tbVal('tb-f-note') || 'Plan completed' }));
+    case 'close_reverted':
+      return openTbModal('Close reverted: ' + c.student_name, `<p class="tb-meta">The plan was not finished, so the detention is served. ${ml}${c.master_log_row ? ' goes back to <strong>Scheduled</strong> with a note.' : '.'}
+        Pick the new date on the Master Log yourself: nothing is booked automatically. Kelly gets an email when Trailback emails are on.</p>
+        ${note('tb-f-note', 'Why did it revert? (required)')}`, 'Close reverted', () => tbStep(caseId, 'close_reverted', { reason: tbVal('tb-f-note') }));
+    case 'decline':
+      return openTbModal('Declined: ' + c.student_name, `<p class="tb-meta">${c.consent_at ? ml + (c.master_log_row ? ' goes back to <strong>Scheduled</strong> with a note to pick a new date.' : '.') : 'The detention stays as it is.'}</p>
+        ${note('tb-f-note', 'Reason (optional)')}`, 'Declined', () => tbStep(caseId, 'decline', { reason: tbVal('tb-f-note') || 'Declined' }));
+    case 'edit':
+      return openTbModal('Edit case: ' + c.student_name, tbCaseFields(c), 'Save', () => tbStep(caseId, 'edit', { fields: tbReadCaseFields() }));
+  }
+}
+
+const TB_FIELDS = [
+  ['student_name', 'Student name'], ['student_id', 'Student 800#'], ['grade', 'Grade'], ['squad', 'Squad (Black, Gold, Grey, Purple)'],
+  ['behavior_type', 'Behavior type'], ['referring_staff', 'Referring staff'], ['consequence_type', 'Consequence held (ASD, Admin LD, Saturday)'],
+  ['consequence_original_date', 'Original consequence date', 'date'], ['master_log_row', 'Master Log Entry ID (EMS-…)'], ['checkin_person', 'Check-in person'],
+];
+function tbCaseFields(c) {
+  c = c || {};
+  return '<div class="tb-form-grid">' + TB_FIELDS.map(([k, label, type]) =>
+    `<div><label class="ed-lbl" for="tb-f-${k}">${label}</label><input class="ed-inp" id="tb-f-${k}" type="${type || 'text'}" value="${tbEsc(c[k] || '')}"></div>`).join('') + '</div>' +
+    `<label class="ed-lbl" for="tb-f-incident_summary">Incident summary (what happened, not why)</label><textarea class="ed-inp" id="tb-f-incident_summary" rows="2">${tbEsc(c.incident_summary || '')}</textarea>
+     <label class="ed-lbl" for="tb-f-behavior_pattern">Pattern and what's been tried</label><textarea class="ed-inp" id="tb-f-behavior_pattern" rows="2">${tbEsc(c.behavior_pattern || '')}</textarea>`;
+}
+function tbReadCaseFields() {
+  const f = {};
+  TB_FIELDS.concat([['incident_summary'], ['behavior_pattern']]).forEach(([k]) => { f[k] = tbVal('tb-f-' + k); });
+  return f;
+}
+
+function openNewCase() {
+  openTbModal('New Trailback case', tbCaseFields({}) + `<label class="ed-lbl" for="tb-f-status">Start as</label>
+    <select class="ed-inp" id="tb-f-status"><option value="suggested">Suggested (not offered yet)</option><option value="offered">Offered to the family</option></select>`,
+    'Add case', async () => {
+      const f = Object.assign(tbReadCaseFields(), { status: tbVal('tb-f-status'), source: 'admin_conference' });
+      const r = await callBackend({ action: 'createTrailbackCase', payload: f }, true);
+      if (r.existing) alert('This student already has an open case (' + r.case_id + '), so no new one was added.');
+      loadTrailbackBoard();
+    });
+}
+
+const _origShowPageTrailback = window.showPage;
+window.showPage = function (name) {
+  _origShowPageTrailback(name);
+  if (name === 'trailback') loadTrailbackBoard();
 };
 </script>
 </body>

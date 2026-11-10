@@ -45,6 +45,7 @@ const TABS = {
   SITE_CONFIG: 'site_config',
   STAFF_USERS: 'staff_users',
   CLASH_REQUESTS: 'clash_requests',
+  PANEL_CASES: 'panel_cases',
 };
 
 // Exact column order per tab -- matches the original Postgres schema field-for-field.
@@ -172,6 +173,8 @@ const SCHEMA = {
     // What "finished" means and what happens if it isn't. The page sent fu_criteria before, but
     // there was no column, so the Sheet dropped it; the fallback was never sent at all.
     'fu_criteria', 'fu_fallback',
+    // The Trailback case this session belongs to (panel_cases, 12_TrailbackCases.gs).
+    'case_id',
   ],
   [TABS.FOLLOWUP_RECORDS]: [
     'id', 'created_at', 'student_initials', 'trigger_type', 'trigger_date', 'outcome_summary',
@@ -209,6 +212,16 @@ const SCHEMA = {
   // or initials, ever: the approved row goes to a public site.
   [TABS.CLASH_REQUESTS]: ['id', 'created_at', 'source', 'squad', 'points', 'note', 'case_id',
     'status', 'requested_by', 'decided_by', 'decided_at'],
+  // One Trailback Panel case per student per consequence, suggestion to close (12_TrailbackCases.gs).
+  // student_id (800#) is the key; master_log_row is the Entry ID on the Accountability Master Log.
+  [TABS.PANEL_CASES]: ['case_id', 'created_at', 'student_id', 'student_name', 'grade', 'squad', 'behavior_type',
+    'source', 'referring_staff', 'consequence_type', 'consequence_original_date', 'master_log_row', 'status',
+    'offered_at', 'consent_at', 'trail_journal_id', 'scheduled_date', 'panel_session_id', 'checkin_person',
+    'checkin_3', 'checkin_10', 'checkin_30', 'checkin_notes', 'completion_criteria', 'fixit_meeting_at',
+    'closed_at', 'closed_reason', 'clash_request_id',
+    // Beyond the spec list: what the Tuesday brief shows, the referral form's answers, a flag for
+    // admin (pick a new date), and who changed what.
+    'incident_summary', 'behavior_pattern', 'referral_json', 'admin_flag', 'history', 'updated_by', 'updated_at'],
 };
 
 /**

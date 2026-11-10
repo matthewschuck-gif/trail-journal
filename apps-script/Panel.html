@@ -560,6 +560,34 @@ body.is-preview main { padding-bottom: 110px; }
 
 <main>
 
+<!-- ═══ QUEUE (before Case Setup) ═══ -->
+<div class="screen" id="screen-queue">
+  <div class="screen-hero">
+    <span class="sh-step">⛺</span>
+    <span class="sh-badge">Queue</span>
+    <h2>Trailback Queue</h2>
+    <p>Cases waiting for a panel. Start a scheduled case to fill Case Setup and bring in the student's Trail Journal.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <span>📅 <span id="queue-wed-label">This Wednesday</span></span>
+      <button class="btn-secondary" style="padding:6px 12px;font-size:.76rem" onclick="loadQueue()">↻ Refresh</button>
+    </div>
+    <div id="queue-docket" style="font-size:.86rem;color:var(--ink-mid)">Loading…</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🗂️ Other Open Cases</div>
+    <div id="queue-other" style="font-size:.84rem;color:var(--ink-mid)"></div>
+  </div>
+
+  <div class="btn-row">
+    <div></div>
+    <button class="btn-secondary" onclick="startWithoutCase()">Start without a queued case →</button>
+  </div>
+</div>
+
 <!-- ═══ SCREEN 0: CASE SETUP ═══ -->
 <div class="screen active" id="screen-0">
   <div class="screen-hero">
@@ -568,6 +596,8 @@ body.is-preview main { padding-bottom: 110px; }
     <h2>New Panel Session</h2>
     <p>Enter the case details before the session begins. If the student completed a Trail Journal, you can import their reflection automatically.</p>
   </div>
+
+  <div class="callout callout-green hidden" id="case-banner" style="margin-bottom:14px"></div>
 
   <!-- Trail Journal import -->
   <div class="import-banner" id="tj-import-banner">
@@ -643,7 +673,7 @@ body.is-preview main { padding-bottom: 110px; }
   </div>
 
   <div class="btn-row">
-    <div></div>
+    <button class="btn-secondary" onclick="goTo('queue'); loadQueue();">← Queue</button>
     <button class="btn-primary" onclick="startSession()">Begin Session →</button>
   </div>
 </div>
@@ -1120,6 +1150,7 @@ body.is-preview main { padding-bottom: 110px; }
   <div class="ptp-title"><span>🧪 Panel Preview</span><button onclick="document.getElementById('ptp').classList.toggle('min')" title="Shrink / expand">–</button></div>
   <div class="ptp-body">
     <div class="ptp-row">
+      <button onclick="goTo('queue'); loadQueue();">Queue</button>
       <button onclick="previewGo(0)">Setup</button>
       <button onclick="previewGo(1)">Norms</button>
       <button onclick="previewGo(2)">Student</button>
@@ -1221,6 +1252,7 @@ async function checkGatePW() {
     // Store the actual password (not just a flag) so panel/followup/index.html -- a
     // separate page on the same origin -- can reuse it without prompting again.
     sessionStorage.setItem('panel-auth-pw', pw);
+    if (document.getElementById('screen-queue').classList.contains('active')) loadQueue();
   } catch (e) {
     ADMIN_PW_VALUE = null;
     err.textContent = 'Incorrect password. Try again.';
@@ -1290,6 +1322,7 @@ const P = {
   sessionId: genUUID(),
   date: null, studentName: null, initials: null, grade: null, staff: null,
   approval: null, // { approved_by, approved_at } once the AP approves (approvePanelPlan)
+  caseId: null,   // the Trailback case this session is for (panel_cases); set from the queue or at approval
   incident: null, pattern: null, squad: null,
   tjId: null, tjData: null,
   panelists: [],
@@ -1329,6 +1362,7 @@ function goTo(n) {
     if (i < n) el.classList.add('done');
     if (i === n) el.classList.add('active');
   });
+  if (n === 'queue') document.getElementById('prog-fill').style.width = '0%';
   if (n === 7) renderApproval();
   // Refresh follow-up scheduler strip (and fill the dates) when landing on the follow-up screen
   if (n === 8) {
@@ -1728,6 +1762,7 @@ function buildRecord() {
 
   return {
     session_id: P.sessionId,
+    case_id: P.caseId || '',
     panel_date: document.getElementById('s-date').value || new Date().toISOString().split('T')[0],
     student_name: P.studentName,          // staff only
     student_initials: P.initials,
@@ -1794,6 +1829,7 @@ async function approvePlan() {
   btn.disabled = true; btn.textContent = 'Approving…';
   try {
     P.approval = await callBackend({ action: 'approvePanelPlan', payload: { record: buildRecord() } }, true); // 11_Trailback.gs
+    if (P.approval.case_id) P.caseId = P.approval.case_id; // a panel started without a queued case gets one
     showApproved();
   } catch (e) {
     status.textContent = '⚠️ ' + e.message;
@@ -1929,6 +1965,75 @@ function saveDelib() {
   toast('Deliberation notes saved');
 }
 
+// ── QUEUE (12_TrailbackCases.gs) ──────────────────────────────────────────
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+let QUEUE = { cases: [] };
+
+function fmtDay(ymd) {
+  return ymd ? new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+}
+
+function queueRow(c, withStart) {
+  const who = esc(c.student_name || c.student_id || c.case_id);
+  const bits = [c.grade ? 'Grade ' + esc(c.grade) : '', esc(c.behavior_type || ''), c.scheduled_date ? 'Panel ' + fmtDay(c.scheduled_date) : '',
+    c.trail_journal_id ? '🗺️ Trail Journal done' : ''].filter(Boolean).join(' · ');
+  const session = c.panel_session_id ? `<div style="font-size:.74rem;color:var(--ink-lt)">Panel record: session ${esc(String(c.panel_session_id).slice(0, 8))}… (Admin › Trailback Cases)</div>` : '';
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap">
+    <div style="min-width:0;flex:1"><strong>${who}</strong> <span class="tag" style="margin-left:4px">${esc(c.status_label)}</span>
+      <div style="font-size:.78rem;color:var(--ink-lt)">${bits || '&nbsp;'}</div>${session}</div>
+    ${withStart ? `<button class="btn-primary" style="padding:8px 14px;font-size:.8rem" onclick="startFromCase('${esc(c.case_id)}')">Start session →</button>` : ''}
+  </div>`;
+}
+
+async function loadQueue() {
+  const docket = document.getElementById('queue-docket');
+  const other = document.getElementById('queue-other');
+  docket.textContent = 'Loading…';
+  let data;
+  try { data = await callBackend({ action: 'trailbackCases', payload: {} }, true); }
+  catch (e) { docket.textContent = '⚠️ Could not load cases: ' + e.message; other.innerHTML = ''; return; }
+  data = Object.assign({ cases: [], docket: [] }, Array.isArray(data) ? {} : data); // an older backend answers []
+  QUEUE = data;
+  document.getElementById('queue-wed-label').textContent = data.wednesday ? 'Wednesday ' + fmtDay(data.wednesday) : 'This Wednesday';
+  docket.innerHTML = data.docket.length ? data.docket.map(c => queueRow(c, true)).join('')
+    : '<div style="padding:6px 0">No cases scheduled for this Wednesday. Schedule one in Admin › Trailback Cases, or start without a queued case.</div>';
+  const order = ['scheduled', 'tj_done', 'consented', 'offered', 'suggested', 'heard_approved', 'repair_in_progress'];
+  const rest = data.cases.filter(c => order.includes(c.status) && !data.docket.some(d => d.case_id === c.case_id))
+    .sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status));
+  other.innerHTML = rest.length ? rest.map(c => queueRow(c, c.status === 'scheduled' || c.status === 'tj_done' || c.status === 'consented')).join('')
+    : '<div style="padding:6px 0">No other open cases.</div>';
+}
+
+function startFromCase(caseId) {
+  const c = (QUEUE.cases || []).find(x => x.case_id === caseId);
+  if (!c) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
+  P.caseId = c.case_id;
+  set('s-name', c.student_name);
+  set('s-id', c.student_id);
+  set('s-grade', String(c.grade || '').replace(/\D/g, ''));
+  set('s-staff', c.referring_staff);
+  set('s-incident', c.incident_summary);
+  set('s-pattern', c.behavior_pattern);
+  const sq = String(c.squad || '').toLowerCase();
+  if (sq) set('s-squad', sq.charAt(0).toUpperCase() + sq.slice(1));
+  if (c.scheduled_date) set('s-date', c.scheduled_date);
+  const banner = document.getElementById('case-banner');
+  banner.innerHTML = `🗂️ <strong>Case ${esc(c.case_id)}</strong> · ${esc(c.status_label)}${c.behavior_type ? ' · ' + esc(c.behavior_type) : ''}${c.consequence_type ? ' · held: ' + esc(c.consequence_type) : ''}`;
+  banner.classList.remove('hidden');
+  if (c.trail_journal_id) {
+    document.getElementById('tj-import-id').value = c.trail_journal_id;
+    importTrailJournal();
+  }
+  goTo(0);
+}
+
+function startWithoutCase() {
+  P.caseId = null;
+  document.getElementById('case-banner').classList.add('hidden');
+  goTo(0);
+}
+
 // ── ADMIN PREVIEW: test panel ─────────────────────────────────────────────
 if (IS_PREVIEW) {
   const banner = document.createElement('div');
@@ -2019,6 +2124,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tjId) {
     document.getElementById('tj-import-id').value = tjId;
     importTrailJournal();
+  } else {
+    // Open on the queue; load it now if staff access is already there, else after the password.
+    goTo('queue');
+    if (document.getElementById('pw-gate-full').classList.contains('hidden')) loadQueue();
+    else document.getElementById('queue-docket').textContent = 'Enter the staff password to see the queue.';
   }
 });
 </script>
