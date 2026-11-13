@@ -293,10 +293,10 @@ test('overdue check-ins: only past-due ones not logged yet; goes to the coordina
   assert.ok(/10-school-day check-in was due 2020-01-15/.test(w.sent[0].htmlBody));
 });
 
-test('turning the timers on makes the Tuesday brief and the daily check', () => {
+test('turning the timers on makes the daily case brief (the school day before each panel) and the daily check', () => {
   const w = world();
   w.setupTrailbackTriggers();
-  assert.deepStrictEqual(J(w.triggers), ['trailbackTuesdayBrief', 'trailbackDailyCheck']);
+  assert.deepStrictEqual(J(w.triggers), ['panelDailyBriefs', 'trailbackDailyCheck']);
 });
 
 // ── referral form ──

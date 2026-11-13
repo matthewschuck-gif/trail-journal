@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<!-- trailjournal.org staff page: goes to the staff deployment (Anyone within EASD), where staff are signed in with Google. -->
+<html lang="en"><head><meta charset="UTF-8"><title>Trailback Panel Sign-Up</title></head><body>
+<script>
+  // The STAFF deployment link (Deploy > New deployment > Web app, Anyone within EASD). Paste it at the switch.
+  var STAFF = 'https://script.google.com/a/macros/easdpa.org/s/AKfycbypRpxjHYGnuOlc7kObO19qqHCAdlVXV706DRxYz_nO0icOsOTh47iyybZu1p7sa2f4UA/exec';
+  var q = location.search ? location.search.slice(1) + '&' : '';
+  location.replace(STAFF + '?' + q + 'page=signup');
+</script>
+<p>Opening the Trailback Panel sign-up… <a href="#" onclick="location.reload()">Click here</a> if nothing happens.</p></body></html>

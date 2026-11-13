@@ -221,7 +221,11 @@ const SCHEMA = {
     'closed_at', 'closed_reason', 'clash_request_id',
     // Beyond the spec list: what the Tuesday brief shows, the referral form's answers, a flag for
     // admin (pick a new date), and who changed what.
-    'incident_summary', 'behavior_pattern', 'referral_json', 'admin_flag', 'history', 'updated_by', 'updated_at'],
+    'incident_summary', 'behavior_pattern', 'referral_json', 'admin_flag', 'history', 'updated_by', 'updated_at',
+    // The sign-up page (13_PanelSignup.gs): panel details set by the panel leads, and the Climb-er
+    // summary Climb-er's Trailback.gs writes onto upcoming cases every hour.
+    'panel_start_time', 'panel_minutes', 'panel_room', 'panel_seats', 'signups', 'panel_notes',
+    'climber_brief', 'climber_brief_at', 'brief_sent_at'],
 };
 
 /**

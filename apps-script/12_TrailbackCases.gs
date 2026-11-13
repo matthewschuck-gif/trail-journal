@@ -447,7 +447,7 @@ function sendTrailbackMail_(to, subject, html, preview) {
   return Object.assign({ html: html }, result);
 }
 
-function briefHtml_(wed, cases) {
+function briefHtml_(wed, cases, extra) {
   const deadline = webSetting_('TRAILBACK_CONFLICT_DEADLINE') || 'Wednesday morning, before the panel';
   const body = cases.map(function (c) {
     // Each case card wears the student's squad color, like the journal's emails (squadTheme_).
@@ -461,6 +461,7 @@ function briefHtml_(wed, cases) {
       '</div>';
   }).join('') +
     emailCallout_('Conflict of interest?', 'If you know a student on this list, or the people involved, in a way that makes it hard to be fair, tell Kelly by <strong>' + escHtml_(deadline) + '</strong>. Someone else will sit in for that case.') +
+    (extra || '') +
     '<p style="font-family:Verdana,sans-serif;font-size:12px;color:#666">Please keep these details to the panel. This email went to the adult panel members only.</p>';
   return emailShell_('&#9978;', 'Trailback Panel Brief', 'Wednesday ' + escHtml_(wed) + ' &middot; ' + cases.length + ' case' + (cases.length === 1 ? '' : 's'), body);
 }
@@ -512,7 +513,9 @@ function notifyReverted_(c, reason) {
 }
 
 // ── TRIGGERS (menu) ─────────────────────────────────────────────────
-function trailbackTuesdayBrief() { trailbackTuesdayBrief_(false); }
+// The old Tuesday timer runs the daily brief now (13_PanelSignup.gs): signed-up panelists get the case
+// brief, cases with nobody signed up go to the Panel Members. Safe to run twice (brief_sent_at).
+function trailbackTuesdayBrief() { panelDailyBriefs(); }
 function trailbackDailyCheck() {
   const dow = new Date().getDay();
   if (dow === 0 || dow === 6 || noSchoolDates_()[todayYmd_()]) return;
@@ -521,12 +524,12 @@ function trailbackDailyCheck() {
 }
 
 function setupTrailbackTriggers() {
-  ['trailbackTuesdayBrief', 'trailbackDailyCheck'].forEach(function (fn) {
+  ['trailbackTuesdayBrief', 'panelDailyBriefs', 'trailbackDailyCheck'].forEach(function (fn) {
     ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === fn) ScriptApp.deleteTrigger(t); });
   });
-  ScriptApp.newTrigger('trailbackTuesdayBrief').timeBased().onWeekDay(ScriptApp.WeekDay.TUESDAY).atHour(15).nearMinute(0).create();
+  ScriptApp.newTrigger('panelDailyBriefs').timeBased().everyDays(1).atHour(15).nearMinute(0).create(); // the school day before each panel
   ScriptApp.newTrigger('trailbackDailyCheck').timeBased().everyDays(1).atHour(7).create();
-  safeAlert_('Trailback timers are on: the Tuesday brief (about 3:00 p.m.) and the weekday overdue check (about 7 a.m.).\n\n' +
+  safeAlert_('Trailback timers are on: the case briefs (about 3:00 p.m. the school day before each panel) and the weekday overdue check (about 7 a.m.).\n\n' +
     'Emails only go out when Settings TRAILBACK_EMAILS is ON (it is ' + (trailbackEmailsOn_() ? 'ON' : 'OFF') + ').');
 }
 
