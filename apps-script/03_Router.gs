@@ -156,6 +156,16 @@ function dispatch_(body) {
       case 'clashStandings':
         result = clashStandings_();
         break;
+      // The panel's questions and the repair plan check-ins (14_RepairPlan.gs). Staff sign-in only.
+      case 'panelQuestions':
+        result = panelQuestions_(body);
+        break;
+      case 'repairCheckins':
+        result = repairCheckins_(body);
+        break;
+      case 'repairCheckin':
+        result = repairCheckin_(body);
+        break;
       // Trailback Panel sign-up (13_PanelSignup.gs). Each checks the signed-in staff account itself.
       case 'panelBoard':
         result = panelBoard_(body);
@@ -197,7 +207,7 @@ function checkAppToken_(token) {
 const JSON_COLUMNS = {
   reflections: ['part1_json', 'part2_json', 'part3_json', 'ai_staff_summary', 'ai_reading_list', 'conference_brief'],
   responder_reflections: ['emotions_json'],
-  panel_sessions: ['panel_questions', 'impact_statements', 'recommendation_categories', 'followup_dates', 'followup_notes', 'ai_recommendation'],
+  panel_sessions: ['panel_questions', 'impact_statements', 'recommendation_categories', 'followup_dates', 'followup_notes', 'ai_recommendation', 'plan_actions', 'panel_strengths', 'stage_minutes'],
   followup_records: ['attendee_emails', 'calendar_status'],
   incident_reports: [],
   site_config: [],

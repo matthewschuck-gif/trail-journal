@@ -286,8 +286,11 @@ function casePanelSubmitted_(caseId, record, by) {
   const c = getCase_(caseId);
   if (c.status !== 'heard_approved' && c.status !== 'repair_in_progress') return;
   const d = record.followup_dates || {};
+  const actions = planActionsFrom_(record, by); // 14_RepairPlan.gs: one entry per action, tracked at each check-in
+  const tests = actions.map(function (a) { return a.action + ': ' + (a.test || 'done when the check-in adult says so'); }).join('\n');
   saveCase_(c, { status: 'repair_in_progress', checkin_3: d.checkin_3 || '', checkin_10: d.checkin_10 || '', checkin_30: d.checkin_30 || '',
-    checkin_person: record.followup_person || '', completion_criteria: record.fu_criteria || '' }, by, c.status, 'Panel record submitted');
+    checkin_person: record.followup_person || (actions[0] && actions[0].adult) || '', completion_criteria: record.fu_criteria || tests,
+    repair_actions: JSON.stringify(actions) }, by, c.status, 'Panel record submitted' + (actions.length ? ': ' + actions.length + ' action' + (actions.length === 1 ? '' : 's') : ''));
 }
 
 // ── TRAIL JOURNAL AUTO-LINK ─────────────────────────────────────────
@@ -521,6 +524,7 @@ function trailbackDailyCheck() {
   if (dow === 0 || dow === 6 || noSchoolDates_()[todayYmd_()]) return;
   try { autoLinkTrailJournals_(); } catch (e) { console.error(e); }
   trailbackOverdueEmail_(false);
+  try { repairReminders_(false); } catch (e) { console.error(e); } // 14_RepairPlan.gs: check-in links, due-soon and past-due notes
 }
 
 function setupTrailbackTriggers() {

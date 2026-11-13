@@ -175,6 +175,10 @@ const SCHEMA = {
     'fu_criteria', 'fu_fallback',
     // The Trailback case this session belongs to (panel_cases, 12_TrailbackCases.gs).
     'case_id',
+    // The v2 question sheet's stages and deliberation (14_RepairPlan.gs): notes per stage, the
+    // strengths panelists named at the close, the theme of the year and its bucket, and the plan.
+    'strengths_notes', 'story_notes', 'impact_notes', 'themes_notes', 'making_right_notes', 'panel_strengths',
+    'theme_sentence', 'need_bucket', 'plan_actions', 'stage_minutes',
   ],
   [TABS.FOLLOWUP_RECORDS]: [
     'id', 'created_at', 'student_initials', 'trigger_type', 'trigger_date', 'outcome_summary',
@@ -225,7 +229,9 @@ const SCHEMA = {
     // The sign-up page (13_PanelSignup.gs): panel details set by the panel leads, and the Climb-er
     // summary Climb-er's Trailback.gs writes onto upcoming cases every hour.
     'panel_start_time', 'panel_minutes', 'panel_room', 'panel_seats', 'signups', 'panel_notes',
-    'climber_brief', 'climber_brief_at', 'brief_sent_at'],
+    'climber_brief', 'climber_brief_at', 'brief_sent_at',
+    // The approved plan, one entry per action, tracked at each check-in (14_RepairPlan.gs).
+    'repair_actions'],
 };
 
 /**

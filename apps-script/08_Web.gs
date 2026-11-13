@@ -30,6 +30,7 @@ const WEB_DEFAULTS_ = [
   ['PANEL_MINUTES', '25', 'Trailback Panel: how long a panel runs (minutes), for the calendar invite.'],
   ['PANEL_ROOM', '', 'Trailback Panel: the usual room. A lead can change it per case.'],
   ['PANEL_SEATS', '6', 'Trailback Panel: staff seats per case on the sign-up page.'],
+  ['TRAILBACK_AUTO_CLOSE', 'ON', 'Trailback: ON = when the check-in adult marks every action Done, the case closes as completed by itself (Master Log Resolved + the Clash point). OFF = staff close it. Nothing ever reverts by itself.'],
   ['LEGACY_API', 'ON', 'ON while the old GitHub pages are still in use. Set OFF after the switch: the old token route then only takes the exit auto-save.'],
   ['PANEL_APPROVERS', '', 'Trailback Panel: emails (comma separated) allowed to approve a plan. Blank = anyone signed in on the staff link.'],
   ['TRAILBACK_CLASH_POINTS', '1', 'Trailback Panel: Clash of Classes points for a completed plan (after staff approve the request).'],
@@ -39,7 +40,7 @@ const WEB_DEFAULTS_ = [
   ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', 'Trailback Panel: the Accountability & Intervention Log Sheet. Its Master Log Status changes when a case is held, resolved or reverted.'],
   ['TRAILBACK_REFERRAL_FORM_ID', '19qZF3mndYFktrkrwHZz-lr5IGSJUAoU46w99rUTShvc', 'Trailback Panel: the "Trailback Panel Staff Referral" Google Form. Connect it from the menu.'],
 ];
-const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup' };
+const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin' };
 
 function webSetting_(key) {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WEB_SETTINGS_TAB_);
@@ -89,7 +90,7 @@ function serveTrailPage_(e) {
   });
   return t.evaluate()
     .setTitle({ journal: 'Trail Journal — Camp Mountaineer', respond: 'Your Side of the Trail — Camp Mountaineer', admin: 'Trail Journal Admin',
-      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up' }[page])
+      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In' }[page])
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // trailjournal.org shows it in a frame
 }
@@ -123,6 +124,7 @@ function onOpen() {
       .addItem('Turn on the case briefs (3:00 the school day before) + overdue check', 'setupTrailbackTriggers')
       .addItem('Preview the next case briefs (nothing sent)', 'previewPanelBriefs')
       .addItem('Open the panel sign-up page', 'showPanelSignupLink')
+      .addItem('Open the one-tap check-in page', 'showCheckinLink')
       .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
       .addItem('Add missing questions to the staff referral form', 'addReferralQuestions')
       .addItem('Connect the staff referral form', 'connectReferralForm')
@@ -138,6 +140,7 @@ function setupTrailWeb() {
   addMissingColumns_(TABS.REFLECTIONS, ['student_id']);
   addMissingColumns_(TABS.RESPONDER_REFLECTIONS, ['student_name', 'student_id', 'share_name_with_other']);
   [TABS.PANEL_SESSIONS, TABS.FOLLOWUP_RECORDS, TABS.CLASH_REQUESTS, TABS.PANEL_CASES].forEach(ensureSchemaTab_); // 11_Trailback.gs
+  ensurePanelQuestionsTab_(); // 14_RepairPlan.gs: the v2 question sheet, editable
   ensureNoSchoolTab_();
   ensurePanelMembersTab_(); // 12_TrailbackCases.gs
   safeAlert_('Trail Journal is set up: Settings tab (with PANEL_APPROVERS and TRAILBACK_CLASH_POINTS), the 800# columns, the new panel_sessions and followup_records columns, the clash_requests tab, and a No School Dates tab. Add the school\'s days off to No School Dates.');

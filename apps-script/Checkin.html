@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>window.TJ_BOOT = <?!= boot ?>; // page, staff, siteUrl, beaconUrl, beaconToken, params (08_Web.gs)</script>
+<?!= include('TjBridge'); ?>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailback Check-In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --trail: #243d2d; --trail-mid: #365c44; --trail-lt: #d6e8db;
+    --gold: #b8821e; --ink: #1e190f; --ink-lt: #6f6250;
+    --paper: #f6efe1; --paper-dk: #ede3cc; --paper-dkr: #cbbfa5; --cream: #faf5eb;
+    --error: #9e2a2a; --error-lt: #fceeee; --warn-lt: #fdecd4; --warn: #8a5800;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: var(--paper); color: var(--ink); line-height: 1.5; }
+  main { max-width: 720px; margin: 0 auto; padding: 22px 16px 80px; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; font-weight: 700; color: var(--trail); }
+  .lead { color: var(--ink-lt); margin-top: 4px; font-size: 15px; }
+  .case { background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: var(--radius); padding: 16px; margin: 14px 0; }
+  .case.focus { border-color: var(--trail-mid); box-shadow: inset 0 0 0 2px var(--trail-mid); }
+  .who { font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 700; }
+  .sub { color: var(--ink-lt); font-size: 14px; }
+  .due { display: inline-block; margin-top: 8px; font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--warn-lt); color: var(--warn); }
+  .act { border-top: 1px dashed var(--paper-dkr); padding: 12px 0 4px; margin-top: 12px; }
+  .act .t { font-weight: 600; }
+  .act .k { font-size: 13px; color: var(--ink-lt); margin-top: 2px; }
+  .seg { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .seg button { flex: 1 1 0; min-width: 88px; font: 600 15px 'Lora', Georgia, serif; padding: 12px 8px; border-radius: 10px; border: 1.5px solid var(--paper-dkr); background: #fff; color: var(--ink); cursor: pointer; }
+  .seg button.on.done, .seg button.on.on_track { background: var(--trail); border-color: var(--trail); color: #fff; }
+  .seg button.on.partly, .seg button.on.needs_help { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .seg button.on.not_yet, .seg button.on.not_done { background: var(--error); border-color: var(--error); color: #fff; }
+  input.note, textarea { display: block; width: 100%; margin-top: 8px; font: 15px 'Lora', Georgia, serif; padding: 9px 10px; border: 1px solid var(--paper-dkr); border-radius: 8px; background: #fff; }
+  .how { font-size: 14px; font-weight: 600; margin-top: 14px; }
+  .save { margin-top: 14px; width: 100%; font: 700 17px 'Lora', Georgia, serif; padding: 14px; border-radius: 12px; border: 0; background: var(--trail); color: #fff; cursor: pointer; }
+  .save:disabled { opacity: .5; }
+  .msg { margin: 14px 0; padding: 12px 14px; border-radius: 10px; background: var(--trail-lt); color: var(--trail); font-size: 15px; }
+  .msg.err { background: var(--error-lt); color: var(--error); }
+  .empty { padding: 26px; text-align: center; color: var(--ink-lt); border: 1px dashed var(--paper-dkr); border-radius: var(--radius); margin-top: 14px; }
+  .hidden { display: none; }
+  button:focus-visible, input:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Trailback check-in</h1>
+  <p class="lead">Mark each action, say how it's going, save. That logs the check-in. When every action is done, the case closes as completed and the detention is cleared.</p>
+  <div id="msg" class="msg hidden" role="status"></div>
+  <div id="cases"><div class="empty">Loading your cases…</div></div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var focusId = (TJ_BOOT.params && TJ_BOOT.params['case']) || '';
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function say(t, err) { var m = $('msg'); m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); m.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  function call(action, payload) {
+    return window.tjCall_({ action: action, payload: payload || {} }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r.data; });
+  }
+  function nice(ymd) { if (!ymd) return ''; return new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+  function seg(options, current, onPick) {
+    var box = el('div', 'seg');
+    options.forEach(function (o) {
+      var b = el('button', o[0] + (current === o[0] ? ' on' : ''), o[1]);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', current === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Array.prototype.forEach.call(box.children, function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+        b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); onPick(o[0]);
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+  function card(c) {
+    var art = el('article', 'case' + (c.case_id === focusId ? ' focus' : ''));
+    art.id = 'case-' + c.case_id;
+    art.appendChild(el('div', 'who', c.student_name || 'A student'));
+    art.appendChild(el('div', 'sub', [c.grade ? 'Grade ' + c.grade : '', c.squad ? c.squad + ' squad' : '', c.behavior_type].filter(Boolean).join(' · ')));
+    if (c.next_checkin) art.appendChild(el('span', 'due', c.next_checkin.n + '-school-day check-in' + (c.next_checkin.date ? ' · ' + nice(c.next_checkin.date) : '')));
+    var marks = {}, notes = {}, overall = '';
+    if (!c.actions.length) art.appendChild(el('p', 'sub', 'No actions on this case (it was made before the plan tracker). Use the note below.'));
+    c.actions.forEach(function (a) {
+      var row = el('div', 'act');
+      row.appendChild(el('div', 't', a.action));
+      row.appendChild(el('div', 'k', 'Done when: ' + (a.test || 'the check-in adult says so') + (a.due ? ' · due ' + nice(a.due) : '')));
+      marks[a.id] = a.status === 'open' ? '' : a.status;
+      if (a.status === 'done') { row.appendChild(el('div', 'k', '✓ Done' + (a.note ? ': ' + a.note : ''))); art.appendChild(row); return; }
+      row.appendChild(seg([['done', '✓ Done'], ['partly', 'Partly'], ['not_yet', 'Not yet']], marks[a.id], function (v) { marks[a.id] = v; }));
+      var n = el('input', 'note'); n.placeholder = 'A note (optional)'; n.value = a.note || ''; n.maxLength = 300;
+      n.addEventListener('input', function () { notes[a.id] = n.value; });
+      row.appendChild(n);
+      art.appendChild(row);
+    });
+    art.appendChild(el('div', 'how', 'How is it going?'));
+    art.appendChild(seg([['on_track', 'On track'], ['needs_help', 'Needs help'], ['not_done', 'Not done']], '', function (v) { overall = v; }));
+    var note = el('textarea'); note.rows = 2; note.placeholder = 'Anything the coordinator should know (optional)'; note.maxLength = 600;
+    art.appendChild(note);
+    var save = el('button', 'save', 'Save check-in'); save.type = 'button';
+    save.addEventListener('click', function () {
+      if (!overall) { say('Pick On track, Needs help or Not done first.', true); return; }
+      save.disabled = true; save.textContent = 'Saving…';
+      call('repairCheckin', { case_id: c.case_id, actions: marks, notes: notes, overall: overall, note: note.value }).then(function (r) {
+        if (r.closed) say('🎉 Every action is done: the case is closed as completed and the detention is cleared.' + (r.warnings && r.warnings.length ? ' (' + r.warnings.join(' ') + ')' : ''));
+        else say('Saved' + (r.logged ? ': the ' + r.logged + '-school-day check-in is logged.' : '.') + (overall !== 'on_track' ? ' The coordinator was told.' : ''));
+        return load();
+      }).catch(function (e) { save.disabled = false; save.textContent = 'Save check-in'; say(e.message, true); });
+    });
+    art.appendChild(save);
+    return art;
+  }
+  function load() {
+    return call('repairCheckins').then(function (d) {
+      var box = $('cases'); box.textContent = '';
+      if (!d.cases.length) { box.appendChild(el('div', 'empty', 'No open repair plans for ' + d.me + '. 🎒')); return; }
+      d.cases.sort(function (a, b) { return (a.case_id === focusId ? -1 : 0) - (b.case_id === focusId ? -1 : 0); }).forEach(function (c) { box.appendChild(card(c)); });
+    });
+  }
+  if (!TJ_BOOT.staff) { $('cases').textContent = ''; $('cases').appendChild(el('div', 'empty', 'Sign in with your school Google account to check in.')); }
+  else load().catch(function (e) { $('cases').textContent = ''; say(e.message, true); });
+})();
+</script>
+</body>
+</html>
