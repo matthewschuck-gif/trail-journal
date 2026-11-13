@@ -432,6 +432,34 @@ textarea { min-height: 90px; }
 }
 
 /* ── PRIVATE DELIBERATION OVERLAY ── */
+.qlist { margin: 4px 0 12px; font-size: .86rem; }
+.q-when { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-lt); margin: 8px 0 4px; font-weight: 700; }
+.q-first { margin: 0 0 6px 18px; } .q-first li { font-weight: 600; margin: 3px 0; }
+.q-more summary { cursor: pointer; color: var(--ink-lt); font-size: .8rem; margin: 4px 0; }
+.q-more ul { margin: 4px 0 6px 18px; } .q-more li { margin: 2px 0; }
+.q-tag { font-size: .66rem; background: var(--gold-lt, #f6e7c6); color: var(--gold-dk, #7a5510); border-radius: 999px; padding: 1px 7px; font-weight: 600; }
+.q-none { font-size: .76rem; color: var(--ink-lt); font-style: italic; }
+.stage-min { float: right; font-size: .7rem; color: var(--ink-lt); font-weight: 600; }
+.bucket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+.bucket { border: 1.5px solid var(--border, #d8cdb6); border-radius: 10px; padding: 10px; cursor: pointer; font-size: .8rem; display: flex; flex-direction: column; gap: 3px; }
+.bucket input { width: auto; } .bucket b { font-size: .9rem; } .bucket em { color: var(--ink-lt); font-size: .72rem; }
+.bucket:has(input:checked) { border-color: var(--forest, #2c4a35); background: rgba(44,74,53,.07); }
+.rec-category.suggest { outline: 2px solid var(--gold, #b8821e); outline-offset: 4px; border-radius: 8px; }
+.plan-row { border: 1.5px solid var(--border, #d8cdb6); border-radius: 12px; padding: 12px; margin: 10px 0; background: #fff; }
+.plan-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .plan-head .sel-rec-remove { margin-left: auto; }
+.plan-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rrr { display: flex; gap: 16px; flex-wrap: wrap; font-size: .84rem; } .rrr input { width: auto; margin-right: 4px; }
+.plan-empty { font-size: .8rem; color: var(--ink-lt); font-style: italic; }
+.plan-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-top: 8px; } .plan-table th, .plan-table td { border-bottom: 1px solid var(--border, #d8cdb6); padding: 6px 4px; text-align: left; vertical-align: top; }
+.return-steps { margin: 8px 0 0 20px; font-weight: 400; } .return-steps li { margin: 3px 0; }
+.agenda { position: sticky; top: 0; z-index: 50; display: flex; gap: 12px; align-items: center; padding: 6px 14px; background: #1f3a29; color: #e9f3ec; font-size: .78rem; }
+.agenda.over { background: #7a5510; } .agenda.late { background: #9e2a2a; }
+.agenda-track { flex: 1; height: 6px; background: rgba(255,255,255,.2); border-radius: 99px; overflow: hidden; } .agenda-track i { display: block; height: 100%; background: #f5c542; }
+.pocket { position: fixed; right: 14px; bottom: 14px; z-index: 60; }
+.pocket-btn { background: var(--forest, #2c4a35); color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+.pocket-body { display: none; position: absolute; right: 0; bottom: 48px; width: 300px; background: #fff; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.2); font-size: .82rem; }
+.pocket.open .pocket-body { display: block; } .pocket-body ul { margin: 6px 0 0 16px; } .pocket-body li { margin: 4px 0; }
+@media (max-width: 640px) { .plan-two { grid-template-columns: 1fr; } }
 .delib-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(10,20,12,.92); z-index: 200;
@@ -558,14 +586,16 @@ body.is-preview main { padding-bottom: 110px; }
 </header>
 
 <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+<div class="agenda hidden" id="agenda" role="timer" aria-live="off"></div>
+<div class="pocket" id="pocket"><button class="pocket-btn" onclick="togglePocket()">🎒 Stuck?</button><div class="pocket-body"><b>Back pocket questions</b><ul id="pocket-list"><li>They load when the session starts.</li></ul></div></div>
 <div class="steps-bar">
   <div class="step-pip active" id="pip-0">Setup</div>
   <div class="step-pip" id="pip-1">Norms</div>
-  <div class="step-pip" id="pip-2">Student</div>
-  <div class="step-pip" id="pip-3">Inquiry</div>
-  <div class="step-pip" id="pip-4">Impact</div>
+  <div class="step-pip" id="pip-2">Strengths</div>
+  <div class="step-pip" id="pip-3">Impact</div>
+  <div class="step-pip" id="pip-4">Themes</div>
   <div class="step-pip" id="pip-5">Deliberate</div>
-  <div class="step-pip" id="pip-6">Recommend</div>
+  <div class="step-pip" id="pip-6">Plan</div>
   <div class="step-pip" id="pip-7">Approve</div>
   <div class="step-pip" id="pip-8">Follow-Up</div>
   <div class="step-pip" id="pip-9">Record</div>
@@ -745,133 +775,161 @@ body.is-preview main { padding-bottom: 110px; }
 <div class="screen" id="screen-2">
   <div class="screen-hero">
     <span class="sh-step">03</span>
-    <span class="sh-badge">Student Reflection</span>
-    <h2>Student Presentation</h2>
-    <p>The student shares their perspective. Take notes as they speak — use their own words where possible. The panel listens without interrupting.</p>
+    <span class="sh-badge">Stages 1 and 2</span>
+    <h2>💪 Strengths, then 📖 the story</h2>
+    <p>Open warm: the student names a strength and each panelist adds one they have seen. Then the student tells it their way. No interruptions.</p>
   </div>
 
   <div class="callout callout-gold" style="margin-bottom:16px">
-    💬 <strong>Prompt the student:</strong> "Take your time. There are no wrong answers here — we just want to understand what happened from your point of view."
+    💬 <strong>Ask one question, then wait.</strong> Let silence do some of the work. No judgments, no verdicts, no lectures, no forced apology.
   </div>
 
   <div id="tj-context-block" class="hidden">
     <div class="callout callout-green" style="margin-bottom:14px">
-      🗺️ <strong>Trail Journal context available.</strong> This student completed a Trail Journal before this session. Their reflection has been loaded — you can use it to prompt deeper conversation.
+      🗺️ <strong>Trail Journal context available.</strong> This student completed a Trail Journal before this session. Use it to prompt deeper conversation.
     </div>
   </div>
 
   <div class="card">
-    <div class="card-label">🗣️ What the Student Shares</div>
-
+    <div class="card-label">💪 Stage 1 · Strengths <span class="stage-min">3 min</span></div>
+    <div class="qlist" data-stage="Strengths"></div>
     <div class="field">
-      <label>What happened — in their own words</label>
-      <textarea id="r-what" rows="3" placeholder="Record what the student says happened…"></textarea>
-    </div>
-    <div class="field">
-      <label>Who was affected — and how</label>
-      <textarea id="r-who" rows="3" placeholder="Who did they name? What impact did they acknowledge?"></textarea>
-    </div>
-    <div class="field">
-      <label>What they have thought about since</label>
-      <textarea id="r-thought" rows="3" placeholder="What have they reflected on since the incident?"></textarea>
-    </div>
-    <div class="field">
-      <label>What they need right now</label>
-      <textarea id="r-needs" rows="3" placeholder="What support, resources, or help do they say they need?"></textarea>
+      <label>Strengths the student named, and the ones panelists added</label>
+      <textarea id="r-strengths" rows="3" placeholder="Good at drawing; feels at home in the art room; Ms. Example says he helps set up labs…"></textarea>
     </div>
   </div>
 
-  <!-- AI context card - shows if TJ imported -->
+  <div class="card">
+    <div class="card-label">📖 Stage 2 · The story <span class="stage-min">4 min</span></div>
+    <div class="qlist" data-stage="Story"></div>
+    <div class="field">
+      <label>What happened, in their own words</label>
+      <textarea id="r-what" rows="3" placeholder="Their words, as close as you can…"></textarea>
+    </div>
+    <div class="field">
+      <label>What they were thinking then, and what they have thought about since</label>
+      <textarea id="r-thought" rows="3" placeholder="What was going through their head; what they think now…"></textarea>
+    </div>
+    <div class="field">
+      <label>The role they think they played, and what they wish adults knew</label>
+      <textarea id="r-role" rows="2" placeholder="Optional"></textarea>
+    </div>
+  </div>
+
   <div id="tj-reflection-context" class="hidden">
     <div class="card" style="border-color:var(--gold)">
-      <div class="card-label">🗺️ From Their Trail Journal — Use as Prompts</div>
+      <div class="card-label">🗺️ From Their Trail Journal: Use as Prompts</div>
       <div id="tj-context-body" style="font-size:.84rem;color:var(--ink-mid);line-height:1.7"></div>
     </div>
   </div>
 
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(1)">← Back</button>
-    <button class="btn-primary" onclick="goTo(3)">Continue to Panel Inquiry →</button>
+    <button class="btn-primary" onclick="goTo(3)">Continue to Impact →</button>
   </div>
 </div>
 
-<!-- ═══ SCREEN 3: PANEL INQUIRY ═══ -->
+<!-- ═══ SCREEN 3: IMPACT ═══ -->
 <div class="screen" id="screen-3">
   <div class="screen-hero">
     <span class="sh-step">04</span>
-    <span class="sh-badge">Panel Inquiry</span>
-    <h2>Restorative Questions</h2>
-    <p>Each panelist asks one restorative question. Record what the student says. The AI will suggest follow-up probes after each response.</p>
+    <span class="sh-badge">Stage 3</span>
+    <h2>🌊 Impact</h2>
+    <p>Most of our time goes here. Start with the person closest to it, then widen out: inside school, then outside the building.</p>
   </div>
 
-  <div class="callout callout-gold" style="margin-bottom:16px">
-    💬 <strong>Panelist reminder:</strong> Your goal is curiosity — help the student process, not defend. Ask one question at a time and wait for a full response before asking another.
+  <div class="card">
+    <div class="card-label">🌊 Who was impacted, and how <span class="stage-min">7 min</span></div>
+    <div class="qlist" data-stage="Impact"></div>
+    <div class="field">
+      <label>Who they named, inside and outside school, and how each was affected</label>
+      <textarea id="r-who" rows="4" placeholder="The classmate (embarrassed, hungry); lunch staff (lost ten minutes); his mom (got the call)…"></textarea>
+    </div>
+    <div class="field">
+      <label>What it cost them, and whose trust they want back</label>
+      <textarea id="st-impact" rows="2" placeholder="Optional"></textarea>
+    </div>
   </div>
 
-  <div id="inquiry-rows">
-    <!-- Built dynamically from panelists -->
-  </div>
-
-  <!-- AI Inquiry Debrief -->
-  <div class="card" style="margin-top:16px">
-    <div class="card-label">🤖 AI — Inquiry Analysis</div>
-    <div class="card-sub">After the student has answered all panel questions, generate an AI analysis of what the inquiry revealed.</div>
-    <button class="btn-secondary" onclick="runInquiryAI()" id="inquiry-ai-btn" style="margin-bottom:12px">Generate Inquiry Analysis</button>
-    <div id="inquiry-ai-block" class="ai-block hidden">
-      <div class="ai-thinking" id="inquiry-ai-thinking"><div class="spin"></div>Analyzing inquiry responses…</div>
-      <div class="ai-body hidden" id="inquiry-ai-body"></div>
+  <div class="card">
+    <div class="card-label">📄 Impact statements</div>
+    <div class="card-sub">An affected person shares in person, or a written statement is read aloud. The student stays in the room and hears it.</div>
+    <label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;font-size:.86rem;cursor:pointer">
+      <input type="checkbox" id="impact-in-person" onchange="updateImpactMode()" style="margin-top:3px;width:auto">
+      <span>The affected person agreed to share with the student present.</span>
+    </label>
+    <div class="callout callout-red" id="impact-written-note" style="margin-bottom:12px">
+      📄 <strong>Read the written statement aloud with the student present.</strong>
+    </div>
+    <div id="impact-rows">
+      <div class="impact-row" id="impact-row-0">
+        <div class="impact-row-head">
+          <div class="impact-from">
+            <input type="text" placeholder="Who this is from (role, not name)" style="margin-bottom:6px">
+          </div>
+          <button class="impact-remove" onclick="removeImpactRow(this)">✕ Remove</button>
+        </div>
+        <textarea rows="3" placeholder="What they want the panel to know about how this affected them or the community…"></textarea>
+      </div>
+    </div>
+    <button id="add-impact-btn" onclick="addImpactRow()">+ Add another perspective</button>
+    <div class="qlist" data-stage="Impact:after" style="margin-top:12px"></div>
+    <div class="field">
+      <label>What the student said after hearing it</label>
+      <textarea id="impact-notes" rows="2" placeholder="What stood out to them; what they want that person to know…"></textarea>
     </div>
   </div>
 
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(2)">← Back</button>
-    <button class="btn-primary" onclick="goTo(4)">Continue to Impact →</button>
+    <button class="btn-primary" onclick="goTo(4)">Continue to Themes →</button>
   </div>
 </div>
 
-<!-- ═══ SCREEN 4: IMPACT SHARING ═══ -->
+<!-- ═══ SCREEN 4: THEMES, MAKING IT RIGHT, CLOSE ═══ -->
 <div class="screen" id="screen-4">
   <div class="screen-hero">
     <span class="sh-step">05</span>
-    <span class="sh-badge">Impact Sharing</span>
-    <h2>Perspectives & Impact</h2>
-    <p>Any affected parties — staff, other students, the school community — can share their perspective here, in person or as a written statement. The student stays in the room and hears the impact.</p>
+    <span class="sh-badge">Stages 4 and 5</span>
+    <h2>🧭 Themes, then 🤝 making it right</h2>
+    <p>Find the pattern across the year. Then ask for their ideas first: what would make this right, and what do they need so it doesn't happen again.</p>
   </div>
 
-  <div class="callout callout-gold" style="margin-bottom:12px">
-    🪑 <strong>The student stays in the room.</strong> Hearing how others were affected is part of the repair. The student only steps out for deliberation (next screen).
-  </div>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;font-size:.86rem;cursor:pointer">
-    <input type="checkbox" id="impact-in-person" onchange="updateImpactMode()" style="margin-top:3px;width:auto">
-    <span>The affected person agreed to share with the student present.</span>
-  </label>
-  <div class="callout callout-red" id="impact-written-note" style="margin-bottom:16px">
-    📄 <strong>Read the written statement aloud with the student present.</strong>
-  </div>
-
-  <div id="impact-rows">
-    <div class="impact-row" id="impact-row-0">
-      <div class="impact-row-head">
-        <div class="impact-from">
-          <input type="text" placeholder="Who this is from (role, not name)" style="margin-bottom:6px">
-        </div>
-        <button class="impact-remove" onclick="removeImpactRow(this)">✕ Remove</button>
-      </div>
-      <textarea rows="3" placeholder="What they want the panel to know about how this affected them or the community…"></textarea>
+  <div class="card">
+    <div class="card-label">🧭 Stage 4 · Themes <span class="stage-min">3 min</span></div>
+    <div class="qlist" data-stage="Themes"></div>
+    <div class="field">
+      <label>The pattern: when it happens, with whom, what helped</label>
+      <textarea id="st-themes" rows="3" placeholder="Usually lunch, usually with the same two friends; a seat change helped for a week…"></textarea>
     </div>
   </div>
-  <button id="add-impact-btn" onclick="addImpactRow()">+ Add another perspective</button>
 
-  <div class="card" style="margin-top:16px">
-    <div class="card-label">💬 Note for the Record</div>
-    <div class="card-sub">Any additional context about the broader community impact that wasn't captured above.</div>
-    <textarea id="impact-notes" rows="2" placeholder="Optional community impact notes…"></textarea>
+  <div class="card">
+    <div class="card-label">🤝 Stage 5 · Making it right <span class="stage-min">3 min</span></div>
+    <div class="qlist" data-stage="Making it right"></div>
+    <div class="field">
+      <label>Their ideas: what would make it right, and what they need</label>
+      <textarea id="r-needs" rows="3" placeholder="Say sorry to him; help the lunch staff; a different seat…"></textarea>
+    </div>
+    <div class="field">
+      <label>What they want true in 30 school days, and how confident they are (1 to 10)</label>
+      <textarea id="st-right" rows="2" placeholder="Optional"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🌟 Close: each panelist names one strength they heard today</div>
+    <div class="card-sub">Thank the student for talking with us. These go on the student's plan page.</div>
+    <div id="close-strengths"></div>
+  </div>
+
+  <div class="callout callout-red" style="margin-bottom:12px">
+    🚪 <strong>The student steps out now</strong> for the panel's private deliberation.
   </div>
 
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(3)">← Back</button>
-    <button class="btn-primary" onclick="goTo(5)">Proceed to Deliberation →</button>
+    <button class="btn-primary" onclick="goTo(5)">Student out: deliberate →</button>
   </div>
 </div>
 
@@ -880,33 +938,46 @@ body.is-preview main { padding-bottom: 110px; }
   <div class="screen-hero">
     <span class="sh-step">06</span>
     <span class="sh-badge">Deliberation</span>
-    <h2>Panel Discussion</h2>
-    <p>The student steps out. The panel deliberates privately using three guiding questions. The AI will then draft a recommendation based on everything shared today.</p>
+    <h2>Steps 1 and 2: the harm and the need</h2>
+    <p>The student is out. Answer three questions, then say the theme of this student's year in one sentence and pick the need underneath it.</p>
   </div>
 
   <div class="callout callout-red" style="margin-bottom:16px">
-    🔒 <strong>Private deliberation.</strong> The student is not present. Everything discussed here is confidential panel deliberation.
+    🔒 <strong>Private deliberation.</strong> Everything discussed here is confidential. A few minutes.
   </div>
 
   <div class="delib-grid">
     <div class="delib-card">
-      <div class="delib-head">⚡ What harm was done?</div>
-      <textarea id="d-harm" rows="4" placeholder="What specifically was harmed — relationships, trust, space, the community?"></textarea>
+      <div class="delib-head">⚡ 1. What harm was done, and to whom, inside and outside the building?</div>
+      <textarea id="d-harm" rows="4" placeholder="Relationships, trust, space, time, people at home…"></textarea>
     </div>
     <div class="delib-card">
-      <div class="delib-head">🎯 What does the student need?</div>
-      <textarea id="d-student-needs" rows="4" placeholder="What support, skill, or understanding would help this student succeed?"></textarea>
+      <div class="delib-head">🎯 2. What does the student need to succeed?</div>
+      <textarea id="d-student-needs" rows="4" placeholder="Support, skill, belonging…"></textarea>
     </div>
     <div class="delib-card">
-      <div class="delib-head">🤝 What do others need to feel restored?</div>
-      <textarea id="d-community-needs" rows="3" placeholder="What does the harmed party or the community need to feel the harm was addressed?"></textarea>
+      <div class="delib-head">🤝 3. What do others need to feel restored?</div>
+      <textarea id="d-community-needs" rows="3" placeholder="The harmed person, the staff, the class…"></textarea>
     </div>
   </div>
 
-  <!-- AI Draft Recommendation -->
   <div class="card">
-    <div class="card-label">🤖 AI — Draft Recommendation</div>
-    <div class="card-sub">Generate an AI draft recommendation based on the student's reflection, the panel inquiry, impact statements, and deliberation notes. Use as a starting point — the panel has final say.</div>
+    <div class="card-label">🧭 Step 2 · The theme and the need</div>
+    <div class="field">
+      <label>The theme of this student's year, in one sentence</label>
+      <input type="text" id="d-theme" maxlength="200" placeholder="He looks for a laugh from friends when lunch gets loud.">
+    </div>
+    <div class="bucket-grid" id="need-bucket">
+      <label class="bucket"><input type="radio" name="need" value="Connection"><b>Connection</b><span>Needs people and a place to belong.</span><em>Start in Reconnect</em></label>
+      <label class="bucket"><input type="radio" name="need" value="Awareness"><b>Awareness</b><span>Does not yet see the impact or the pattern.</span><em>Start in Reflect</em></label>
+      <label class="bucket"><input type="radio" name="need" value="Skills"><b>Skills</b><span>Does not yet know how to do it differently.</span><em>Start in Reflect</em></label>
+      <label class="bucket"><input type="radio" name="need" value="Regulation"><b>Regulation</b><span>Knows how, but cannot yet manage it in the moment.</span><em>Start in Re-engage</em></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🤖 AI: Draft Recommendation</div>
+    <div class="card-sub">A starting point built from the stages and the deliberation. The panel has final say.</div>
     <button class="btn-secondary" onclick="runDelibAI()" id="delib-ai-btn" style="margin-bottom:12px">Generate Draft Recommendation</button>
     <div id="delib-ai-block" class="ai-block hidden">
       <div class="ai-thinking" id="delib-ai-thinking"><div class="spin"></div>Synthesizing everything and drafting recommendation…</div>
@@ -916,81 +987,72 @@ body.is-preview main { padding-bottom: 110px; }
 
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(4)">← Back</button>
-    <button class="btn-primary" onclick="goTo(6)">Build Final Recommendation →</button>
+    <button class="btn-primary" onclick="goTo(6)">Choose the actions →</button>
   </div>
 </div>
 
-<!-- ═══ SCREEN 6: RECOMMENDATION ═══ -->
+<!-- ═══ SCREEN 6: ACTIONS + LOCK THE PLAN ═══ -->
 <div class="screen" id="screen-6">
   <div class="screen-hero">
     <span class="sh-step">07</span>
-    <span class="sh-badge">Recommendation</span>
-    <h2>Restorative Recommendation</h2>
-    <p>Select actions from the menu below. These are what the panel recommends to the AP. The AP approves the plan on the next screen, and then the student comes back in to hear it.</p>
+    <span class="sh-badge">Steps 3 to 5</span>
+    <h2>Choose one to three actions, check them, lock the plan</h2>
+    <p>Pick from the menu (start in the one the need points to), then give every action a way to know it is done, a due date and a check-in adult.</p>
   </div>
 
   <div class="card">
-    <div class="card-label">🗂️ Restorative Recommendations Menu</div>
-    <div class="card-sub">Select as many as apply. The panel's recommendation is based on what will repair harm, build skill, and reconnect the student to the community.</div>
-
-    <div class="rec-category">
-      <div class="rec-cat-head"><span class="tag tag-repair">Repair</span> Fix, restore, replace</div>
+    <div class="card-label">🗂️ Step 3 · The menu <span class="stage-min" id="bucket-hint"></span></div>
+    <div class="card-sub">Tap an example to add it, then edit the words. Give the student a real choice between two workable options when you can.</div>
+    <div class="rec-category" data-menu="Repair">
+      <div class="rec-cat-head"><span class="tag tag-repair">Repair</span> Make right the harm that was named · <em>You Break It, You Fix It · Altruistic · Logical</em></div>
       <div class="rec-chips">
-        <div class="rec-chip" onclick="toggleRec(this,'Repair','Clean up or restore the physical space affected')">Clean/Restore Space</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Repair','Replace or reimburse damaged property')">Replace Property</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Repair','Written apology to affected party')">Written Apology</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Repair','Verbal apology facilitated by a trusted adult')">Verbal Apology</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Repair','Act of service directly connected to the harm')">Service Act</div>
+        <div class="rec-chip" onclick="addPlanAction('Repair','Apology the person confirms')">Apology the person confirms</div>
+        <div class="rec-chip" onclick="addPlanAction('Repair','Clean, fix or replace what was damaged')">Clean, fix or replace</div>
+        <div class="rec-chip" onclick="addPlanAction('Repair','Do something positive for the person harmed')">Something positive for the person harmed</div>
       </div>
     </div>
-
-    <div class="rec-category">
-      <div class="rec-cat-head"><span class="tag tag-reconnect">Reconnect</span> Restore relationships</div>
+    <div class="rec-category" data-menu="Reconnect">
+      <div class="rec-cat-head"><span class="tag tag-reconnect">Reconnect</span> Build the belonging that was missing · <em>Community · Inspire</em></div>
       <div class="rec-chips">
-        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Facilitated conversation between student and affected party')">Facilitated Conversation</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Restorative circle with those affected')">Restorative Circle</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Written letter of accountability to the community')">Community Letter</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Collaborative Problem Solving meeting with adult support')">CPS Meeting</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reconnect','Peer mentoring — student receives mentoring from a trained peer')">Peer Mentoring</div>
+        <div class="rec-chip" onclick="addPlanAction('Reconnect','Lunch group with positive peers')">Lunch group with positive peers</div>
+        <div class="rec-chip" onclick="addPlanAction('Reconnect','Coach or mentor meeting')">Coach or mentor meeting</div>
+        <div class="rec-chip" onclick="addPlanAction('Reconnect','Try out for a team or club')">Try out for a team or club</div>
       </div>
     </div>
-
-    <div class="rec-category">
-      <div class="rec-cat-head"><span class="tag tag-reflect">Reflect</span> Deepen understanding</div>
+    <div class="rec-category" data-menu="Reflect">
+      <div class="rec-cat-head"><span class="tag tag-reflect">Reflect</span> Understand the impact and the pattern · <em>Teach Skills · Plan</em></div>
       <div class="rec-chips">
-        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Trail Journal extended reflection (Camp Mountaineer)')">Camp Mountaineer</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Reflection project — art, presentation, or written work')">Reflection Project</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Detention reflection using structured sheet')">Detention Reflection</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reflect','PASS Group focused on the relevant LRG trait')">PASS Group</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Reflect','Behavior and safety contract')">Behavior Contract</div>
+        <div class="rec-chip" onclick="addPlanAction('Reflect','Poster, PSA or slideshow that teaches others')">Poster, PSA or slideshow</div>
+        <div class="rec-chip" onclick="addPlanAction('Reflect','A Camp Mountaineer pathway')">A Camp Mountaineer pathway</div>
+        <div class="rec-chip" onclick="addPlanAction('Reflect','A written if-then plan for next time')">A written if-then plan</div>
       </div>
     </div>
-
-    <div class="rec-category">
-      <div class="rec-cat-head"><span class="tag tag-reengage">Re-engage</span> Build responsibility</div>
+    <div class="rec-category" data-menu="Re-engage">
+      <div class="rec-cat-head"><span class="tag tag-reengage">Re-engage</span> Get back into school life with a way to succeed · <em>Choice · Transform · Loss of Privilege with a path back · Space and Time</em></div>
       <div class="rec-chips">
-        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','School job or community responsibility connected to the harm')">School Job</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Lunchbassadors program')">Lunchbassadors</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Extracurricular responsibility assigned')">Extracurricular</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Skill-building sessions — social-emotional or regulation')">Skill-Building Sessions</div>
-        <div class="rec-chip" onclick="toggleRec(this,'Re-engage','Behavior Intervention Center coaching plan')">BIC Coaching Plan</div>
+        <div class="rec-chip" onclick="addPlanAction('Re-engage','Service project for the school')">Service project for the school</div>
+        <div class="rec-chip" onclick="addPlanAction('Re-engage','A job in the building')">A job in the building</div>
+        <div class="rec-chip" onclick="addPlanAction('Re-engage','Re-entry meeting with the teacher')">Re-entry meeting with the teacher</div>
       </div>
     </div>
+    <button class="btn-secondary" style="font-size:.8rem;margin-top:6px" onclick="addPlanAction('','')">+ Write our own action</button>
+  </div>
 
-    <div class="selected-recs" id="selected-recs">
-      <div style="font-size:.8rem;color:var(--ink-lt);font-style:italic" id="no-recs-msg">No recommendations selected yet.</div>
-    </div>
+  <div class="card">
+    <div class="card-label">🔒 Steps 4 and 5 · Check each action and lock the plan</div>
+    <div class="card-sub">Each one: <b>related</b> (follows from what happened), <b>respectful</b> (keeps the student's dignity), <b>reasonable</b> (fits this student, can be done). Done within 10 school days. <b>No detentions</b>: the detention is what is being held.</div>
+    <datalist id="adult-list"></datalist>
+    <div id="plan-rows"><div class="plan-empty">No actions yet. Pick one to three from the menu.</div></div>
   </div>
 
   <div class="card">
     <div class="card-label">📝 Panel Recommendation Narrative</div>
-    <div class="card-sub">Write the full recommendation in your own words — this goes to the AP and becomes the official panel record.</div>
-    <textarea id="rec-narrative" rows="5" placeholder="The Trailback Panel recommends…"></textarea>
+    <div class="card-sub">The plan in a few sentences, in your own words. This goes to the AP and becomes the official record.</div>
+    <textarea id="rec-narrative" rows="4" placeholder="The Trailback Panel recommends…"></textarea>
   </div>
 
   <div class="card">
     <div class="card-label">📐 LRG Trait for Growth Plan</div>
-    <div class="card-sub">Which LRG trait does this student most need to develop based on what the panel heard today?</div>
     <select id="rec-trait">
       <option value="">Select trait…</option>
       <option>Communication & Empathy</option>
@@ -1166,11 +1228,11 @@ body.is-preview main { padding-bottom: 110px; }
       <button onclick="goTo('queue'); loadQueue();">Queue</button>
       <button onclick="previewGo(0)">Setup</button>
       <button onclick="previewGo(1)">Norms</button>
-      <button onclick="previewGo(2)">Student</button>
-      <button onclick="previewGo(3)">Inquiry</button>
-      <button onclick="previewGo(4)">Impact</button>
+      <button onclick="previewGo(2)">Strengths</button>
+      <button onclick="previewGo(3)">Impact</button>
+      <button onclick="previewGo(4)">Themes</button>
       <button onclick="previewGo(5)">Deliberate</button>
-      <button onclick="previewGo(6)">Recommend</button>
+      <button onclick="previewGo(6)">Plan</button>
       <button onclick="previewGo(7)">Approve</button>
       <button onclick="previewGo(8)">Follow-Up</button>
       <button onclick="previewGo(9)">Record</button>
@@ -1345,6 +1407,10 @@ const P = {
   impactStatements: [],
   deliberation: { harm: null, studentNeeds: null, communityNeeds: null },
   selectedRecs: [],
+  plan: [],          // the plan actions (Lock the plan screen): { menu, action, test, due, adult, rrr: {related, respectful, reasonable} }
+  defaultDue: '',    // 10 school days after the panel (followupDates)
+  questions: null,   // panelQuestions: { stages: { Strengths: [{when, q}] ... } }
+  timer: { started: 0, stageStart: 0, screen: null, minutes: {} },
   recNarrative: null, lrgTrait: null,
   followupPerson: null,
   followupDates: {},
@@ -1376,11 +1442,18 @@ function goTo(n) {
     if (i === n) el.classList.add('active');
   });
   if (n === 'queue') document.getElementById('prog-fill').style.width = '0%';
+  stageTimerOn(n);
+  if (n === 2 || n === 3 || n === 4) renderQuestions();
+  if (n === 4) renderCloseStrengths();
+  if (n === 6) preparePlanScreen();
   if (n === 7) renderApproval();
   // Refresh follow-up scheduler strip (and fill the dates) when landing on the follow-up screen
   if (n === 8) {
     setTimeout(refreshFuStrip, 60);
     if (!document.getElementById('fu-3').value) autoFillDates();
+    const firstAdult = (P.plan.find(a => a.adult) || {}).adult;
+    if (firstAdult && !document.getElementById('fu-person').value) document.getElementById('fu-person').value = firstAdult;
+    if (!document.getElementById('fu-criteria').value) document.getElementById('fu-criteria').value = P.plan.map(a => a.action + ': ' + (a.test || '')).join('\n');
   }
 }
 
@@ -1410,6 +1483,7 @@ function startSession() {
   if (P.squad) document.getElementById('hdr-badge').textContent = P.squad + ' Squad';
   applySquadTheme(P.squad);
   buildPanelistRows();
+  loadPanelQuestions();
   goTo(1);
 }
 
@@ -1477,6 +1551,7 @@ function removePanelist(i) {
 
 function buildInquiryRows() {
   const container = document.getElementById('inquiry-rows');
+  if (!container) return; // the v2 stages replaced the per-panelist question rows
   const panelists = P.panelists.filter(p => p.name.trim());
   if (!panelists.length) {
     container.innerHTML = '<div class="callout callout-gold">Enter panelist names in the Norms screen first.</div>';
@@ -1664,6 +1739,8 @@ async function runDelibAI() {
       thoughtSince: document.getElementById('r-thought')?.value,
       whatNeeds: document.getElementById('r-needs')?.value,
     },
+    stages: { strengths: val('r-strengths'), role: val('r-role'), impact: val('st-impact'), afterStatement: val('impact-notes'), themes: val('st-themes'), makingRight: val('st-right') },
+    theme: val('d-theme'), need: needBucket(),
     deliberation: {
       harm: document.getElementById('d-harm')?.value,
       studentNeeds: document.getElementById('d-student-needs')?.value,
@@ -1801,13 +1878,16 @@ function buildRecord() {
     student_who_affected: document.getElementById('r-who').value,
     student_thought_since: document.getElementById('r-thought').value,
     student_what_needs: document.getElementById('r-needs').value,
-    panel_questions: inquiryNotes,
+    panel_questions: stageNotes(),
+    strengths_notes: val('r-strengths'), story_notes: val('r-role'), impact_notes: val('st-impact'),
+    themes_notes: val('st-themes'), making_right_notes: val('st-right'), panel_strengths: closeStrengths(),
+    theme_sentence: val('d-theme'), need_bucket: needBucket(), plan_actions: P.plan.map(planOut), stage_minutes: stageMinutes(),
     impact_statements: impacts,
     impact_shared_in_person: document.getElementById('impact-in-person').checked,
     deliberation_harm: document.getElementById('d-harm').value,
     deliberation_student_needs: document.getElementById('d-student-needs').value,
     deliberation_community_needs: document.getElementById('d-community-needs').value,
-    recommendation_categories: P.selectedRecs,
+    recommendation_categories: P.plan.map(a => ({ category: a.menu || 'Our own', action: a.action })),
     recommendation_narrative: document.getElementById('rec-narrative').value,
     lrg_trait: document.getElementById('rec-trait').value,
     followup_person: document.getElementById('fu-person').value,
@@ -1825,10 +1905,12 @@ function buildRecord() {
 
 // ── AP APPROVAL (Screen 8) ────────────────────────────────────────────────
 function renderApproval() {
-  const recs = P.selectedRecs.map(r => `<div class="summary-item"><strong>${r.category}:</strong> ${r.action}</div>`).join('');
+  const recs = P.plan.length ? '<table class="plan-table"><tr><th>Action</th><th>How we know it is done</th><th>Due</th><th>Check-in adult</th></tr>' +
+    P.plan.map(a => `<tr><td><strong>${esc(a.menu || 'Our own')}:</strong> ${esc(a.action)}</td><td>${esc(a.test || '—')}</td><td>${esc(a.due || '—')}</td><td>${esc(a.adult || '—')}</td></tr>`).join('') + '</table>' : '';
+  const theme = val('d-theme') ? `<div class="summary-item"><strong>Theme:</strong> ${esc(val('d-theme'))}${needBucket() ? ' · <strong>Need:</strong> ' + esc(needBucket()) : ''}</div>` : '';
   document.getElementById('approve-summary').innerHTML = `
     <div class="summary-item"><strong>Student:</strong> ${P.studentName || '—'}${P.grade ? ' (Grade ' + P.grade + ')' : ''}</div>
-    ${recs || '<div class="summary-item">No specific actions selected.</div>'}
+    ${theme}${recs || '<div class="summary-item">No actions yet. Go back and lock the plan.</div>'}
     <div class="summary-item" style="margin-top:8px">${document.getElementById('rec-narrative').value || '<em>No narrative written yet.</em>'}</div>
     <div class="summary-item"><strong>LRG trait:</strong> ${document.getElementById('rec-trait').value || '—'}</div>`;
   const who = TJ_BOOT.staff || '';
@@ -1848,6 +1930,8 @@ function renderApproval() {
 }
 
 async function approvePlan() {
+  const problem = planProblem();
+  if (problem) { toast(problem); return; }
   if (!document.getElementById('rec-narrative').value.trim()) { toast('Write the recommendation narrative before approving.'); return; }
   const btn = document.getElementById('approve-btn');
   const status = document.getElementById('approve-status');
@@ -1869,6 +1953,7 @@ function showApproved() {
   const btn = document.getElementById('approve-btn');
   btn.classList.add('hidden');
   document.getElementById('approve-next').classList.remove('hidden');
+  document.getElementById('approve-next').innerHTML = '🚪 <strong>Bring the student back in.</strong><ol class="return-steps"><li>Share the strengths we heard.</li><li>Explain the plan and why each action follows.</li><li>Say what happens if it is finished (the detention is cleared) and if it is not (it is served).</li><li>The student agrees and meets the check-in adult.</li></ol>';
   const sub = document.getElementById('submit-record-btn');
   sub.disabled = false; sub.style.opacity = '1'; sub.style.cursor = 'pointer'; sub.title = '';
 }
@@ -2037,6 +2122,7 @@ function startFromCase(caseId) {
   if (!c) return;
   const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
   P.caseId = c.case_id;
+  P.behaviorType = c.behavior_type || ''; // picks the Panel Questions for this behavior
   set('s-name', c.student_name);
   set('s-id', c.student_id);
   set('s-grade', String(c.grade || '').replace(/\D/g, ''));
@@ -2107,6 +2193,7 @@ function fillSampleCase(jumpTo) {
   renderPanelists();
 
   set('r-what', 'I was messing around and pushed the tray. I thought it would be funny.');
+  set('r-strengths', 'Good at drawing; feels at home in the art room. Ms. Example: he sets up labs without being asked.');
   set('r-who', 'The kid whose lunch it was, and the lunch ladies who had to clean it.');
   set('r-thought', 'That he didn\'t get to eat. I didn\'t think about that then.');
   set('r-needs', 'A different seat, maybe. And to say sorry.');
@@ -2125,14 +2212,20 @@ function fillSampleCase(jumpTo) {
   document.getElementById('impact-in-person').checked = true;
   updateImpactMode();
 
+  set('st-themes', 'Third time at lunch, always at the same table with the same two friends.');
+  set('d-theme', 'He goes for a laugh from friends when lunch gets loud.');
+  const bucket = document.querySelector('#need-bucket input[value="Connection"]'); if (bucket) bucket.checked = true;
   set('d-harm', 'A classmate lost his lunch and was embarrassed; lunch staff lost time; the line was held up.');
   set('d-student-needs', 'To see the other student\'s side, and a plan for lunch that keeps him out of the same spot.');
   set('d-community-needs', 'An apology to the classmate and some help for the lunch staff.');
 
-  if (!P.selectedRecs.length) {
-    document.querySelectorAll('.rec-chip').forEach(chip => {
-      if (/Verbal Apology|Service Act|Lunchbassadors/.test(chip.textContent)) chip.click();
-    });
+  if (!P.plan.length) {
+    const due = P.defaultDue || '';
+    P.plan = [
+      { menu: 'Repair', action: 'Apology to the classmate, with a trusted adult there', test: 'The classmate says it happened', due, adult: TJ_BOOT.staff || '', rrr: { related: true, respectful: true, reasonable: true } },
+      { menu: 'Reconnect', action: 'Lunch group with positive peers for two weeks', test: 'Lunch staff sign off on 8 of 10 days', due, adult: TJ_BOOT.staff || '', rrr: { related: true, respectful: true, reasonable: true } },
+    ];
+    renderPlan();
   }
   set('rec-narrative', 'The panel recommends that the student apologize to his classmate with a trusted adult present, help the lunch staff after lunch for three days, and join Lunchbassadors for two weeks.');
   set('rec-trait', 'Communication & Empathy');
@@ -2142,6 +2235,134 @@ function fillSampleCase(jumpTo) {
   goTo(jumpTo || 1);
   toast('Made-up case filled. Nothing is saved in preview.');
 }
+
+// ── V2 STAGES: QUESTIONS (Panel Questions tab, by behavior type) ──────────
+function val(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function needBucket() { const r = document.querySelector('#need-bucket input:checked'); return r ? r.value : ''; }
+async function loadPanelQuestions() {
+  try { P.questions = await callBackend({ action: 'panelQuestions', payload: { behavior: P.behaviorType || P.pattern || '' } }, true); }
+  catch (e) { P.questions = null; }
+  renderQuestions();
+}
+function renderQuestions() {
+  const st = (P.questions && P.questions.stages) || {};
+  document.querySelectorAll('.qlist[data-stage]').forEach(box => {
+    const key = box.getAttribute('data-stage');
+    const after = key === 'Impact:after';
+    const list = (st[after ? 'Impact' : key] || []).filter(q => after ? /after/i.test(q.when) : !/after/i.test(q.when));
+    if (!list.length) { box.innerHTML = P.questions ? '' : '<div class="q-none">Questions load from the Panel Questions tab once the session starts.</div>'; return; }
+    const first = list.filter(q => /ask first/i.test(q.when)), more = list.filter(q => !/ask first/i.test(q.when));
+    box.innerHTML = (after ? '<div class="q-when">After the impact statement is read</div>' : '') +
+      (first.length ? '<div class="q-when">Ask first</div><ul class="q-first">' + first.map(q => '<li>' + esc(q.q) + (q.behavior ? ' <span class="q-tag">' + esc(q.behavior) + '</span>' : '') + '</li>').join('') + '</ul>' : '') +
+      (more.length ? '<details class="q-more"><summary>If there is time (' + more.length + ')</summary><ul>' + more.map(q => '<li>' + esc(q.q) + (q.behavior ? ' <span class="q-tag">' + esc(q.behavior) + '</span>' : '') + '</li>').join('') + '</ul></details>' : '');
+  });
+  const pocket = document.getElementById('pocket-list');
+  if (pocket) pocket.innerHTML = (st['Back pocket'] || []).map(q => '<li><span class="q-tag">' + esc(q.when) + '</span> ' + esc(q.q) + '</li>').join('') || '<li>No back pocket questions on the tab.</li>';
+}
+function togglePocket() { document.getElementById('pocket').classList.toggle('open'); }
+function stageNotes() {
+  return [['Strengths', 'r-strengths'], ['Story', 'r-what'], ['Story: thinking', 'r-thought'], ['Story: role', 'r-role'], ['Impact', 'r-who'], ['Impact: cost and trust', 'st-impact'],
+    ['After the impact statement', 'impact-notes'], ['Themes', 'st-themes'], ['Making it right', 'r-needs'], ['In 30 school days', 'st-right']]
+    .map(([stage, id]) => ({ stage, notes: val(id) })).filter(x => x.notes);
+}
+
+// ── CLOSE: one strength from each panelist ────────────────────────────────
+function renderCloseStrengths() {
+  const box = document.getElementById('close-strengths'); if (!box) return;
+  const keep = {}; box.querySelectorAll('input[data-who]').forEach(i => { keep[i.getAttribute('data-who')] = i.value; });
+  const names = P.panelists.map(p => p.name.trim() || p.role).filter(Boolean);
+  box.innerHTML = (names.length ? names : ['Panelist']).map(n => '<div class="field" style="margin-bottom:8px"><label>' + esc(n) + '</label><input type="text" data-who="' + esc(n) + '" maxlength="200" value="' + esc(keep[n] || '') + '" placeholder="One strength I heard today…"></div>').join('');
+}
+function closeStrengths() {
+  return Array.from(document.querySelectorAll('#close-strengths input[data-who]')).map(i => ({ panelist: i.getAttribute('data-who'), strength: i.value.trim() })).filter(x => x.strength);
+}
+
+// ── THE PLAN: one to three actions, each checked and locked ───────────────
+const BUCKET_MENU = { Connection: 'Reconnect', Awareness: 'Reflect', Skills: 'Reflect', Regulation: 'Re-engage' };
+async function preparePlanScreen() {
+  const need = needBucket(), menu = BUCKET_MENU[need] || '';
+  document.querySelectorAll('.rec-category[data-menu]').forEach(c => c.classList.toggle('suggest', c.getAttribute('data-menu') === menu));
+  document.getElementById('bucket-hint').textContent = need ? 'Need: ' + need + ' · start in ' + menu : '';
+  if (!P.defaultDue) {
+    try { const d = await callBackend({ action: 'followupDates', payload: { from: val('s-date') || new Date().toISOString().split('T')[0] } }, true); P.defaultDue = d.checkin_10 || ''; }
+    catch (e) { P.defaultDue = ''; }
+    if (!P.defaultDue) P.defaultDue = weekdaysAfter(val('s-date') || new Date().toISOString().split('T')[0], 10); // no server count: weekdays only
+    P.plan.forEach(a => { if (!a.due) a.due = P.defaultDue; });
+  }
+  const dl = document.getElementById('adult-list');
+  const known = [TJ_BOOT.staff].concat(P.plan.map(a => a.adult)).filter(x => x && /@/.test(x));
+  dl.innerHTML = Array.from(new Set(known)).map(e => '<option value="' + esc(e) + '">').join('');
+  renderPlan();
+}
+function addPlanAction(menu, text) {
+  if (P.plan.length >= 3) { toast('One to three actions. Remove one to add another.'); return; }
+  P.plan.push({ menu: menu, action: text, test: '', due: P.defaultDue || '', adult: '', rrr: { related: false, respectful: false, reasonable: false } });
+  renderPlan();
+  const rows = document.querySelectorAll('#plan-rows .plan-row'); const last = rows[rows.length - 1];
+  if (last) last.querySelector(text ? 'input[data-k="test"]' : 'input[data-k="action"]').focus();
+}
+function removePlanAction(i) { P.plan.splice(i, 1); renderPlan(); }
+function setPlan(i, k, v) { if (!P.plan[i]) return; if (k.indexOf('rrr.') === 0) P.plan[i].rrr[k.slice(4)] = v; else P.plan[i][k] = v; syncRecs(); }
+function syncRecs() { P.selectedRecs = P.plan.map(a => ({ category: a.menu || 'Our own', action: a.action })); }
+function renderPlan() {
+  syncRecs();
+  const box = document.getElementById('plan-rows'); if (!box) return;
+  if (!P.plan.length) { box.innerHTML = '<div class="plan-empty">No actions yet. Pick one to three from the menu.</div>'; return; }
+  box.innerHTML = P.plan.map((a, i) => `
+    <div class="plan-row">
+      <div class="plan-head"><span class="tag ${a.menu ? 'tag-' + a.menu.toLowerCase().replace(/[^a-z]/g, '') : ''}">${esc(a.menu || 'Our own')}</span> <b>Action ${i + 1}</b><button class="sel-rec-remove" onclick="removePlanAction(${i})" title="Remove">✕</button></div>
+      <div class="field"><label>The action, tied to the harm</label><input type="text" data-k="action" maxlength="300" value="${esc(a.action)}" oninput="setPlan(${i},'action',this.value)"></div>
+      <div class="field"><label>How we know it is done (a written test)</label><input type="text" data-k="test" maxlength="300" value="${esc(a.test)}" placeholder="The classmate says it happened; lunch staff sign off…" oninput="setPlan(${i},'test',this.value)"></div>
+      <div class="plan-two">
+        <div class="field"><label>Due (10 school days unless you change it)</label><input type="date" data-k="due" value="${esc(a.due)}" onchange="setPlan(${i},'due',this.value)"></div>
+        <div class="field"><label>Check-in adult (school email, for the check-in link)</label><input type="text" inputmode="email" autocomplete="email" data-k="adult" list="adult-list" value="${esc(a.adult)}" placeholder="name@easdpa.org" oninput="setPlan(${i},'adult',this.value)"></div>
+      </div>
+      <div class="rrr">${['related', 'respectful', 'reasonable'].map(k => '<label><input type="checkbox" ' + (a.rrr[k] ? 'checked' : '') + ' onchange="setPlan(' + i + ',\'rrr.' + k + '\',this.checked)"> ' + k.charAt(0).toUpperCase() + k.slice(1) + '</label>').join('')}</div>
+    </div>`).join('');
+}
+function planProblem() {
+  if (!P.plan.length) return 'Lock the plan first: one to three actions on the previous screen.';
+  for (let i = 0; i < P.plan.length; i++) {
+    const a = P.plan[i], n = 'Action ' + (i + 1);
+    if (!String(a.action).trim()) return n + ' needs words.';
+    if (!String(a.test).trim()) return n + ' needs a way to know it is done.';
+    if (!a.due) return n + ' needs a due date.';
+    if (!/@/.test(a.adult || '')) return n + ' needs a check-in adult\'s school email.';
+    if (!(a.rrr.related && a.rrr.respectful && a.rrr.reasonable)) return n + ': check related, respectful and reasonable.';
+  }
+  return '';
+}
+function weekdaysAfter(ymd, n) {
+  const d = new Date(ymd + 'T12:00:00'); let k = 0;
+  while (k < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) k++; }
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function planOut(a) { return { menu: a.menu, action: a.action, test: a.test, due: a.due, adult: a.adult, rrr: a.rrr }; }
+
+// ── 25-MINUTE AGENDA TIMER ────────────────────────────────────────────────
+// Strengths + story 7, impact 7, themes + making it right 6, deliberation 5 (screens 2 to 6).
+const STAGE_TARGET = { 2: 7, 3: 7, 4: 6, 5: 3, 6: 2 };
+const STAGE_NAME = { 2: 'Strengths + story', 3: 'Impact', 4: 'Themes + making it right', 5: 'Deliberation', 6: 'Deliberation: the plan' };
+function stageTimerOn(n) {
+  const t = P.timer, now = Date.now();
+  if (t.screen != null && STAGE_TARGET[t.screen] && t.stageStart) t.minutes[t.screen] = (t.minutes[t.screen] || 0) + (now - t.stageStart) / 60000;
+  if (STAGE_TARGET[n]) { if (!t.started) t.started = now; t.stageStart = now; t.screen = n; } else { t.screen = null; t.stageStart = 0; }
+  drawTimer();
+}
+function stageMinutes() { const out = {}; Object.keys(P.timer.minutes).forEach(k => { out[STAGE_NAME[k]] = Math.round(P.timer.minutes[k] * 10) / 10; }); return out; }
+function fmtMin(ms) { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function drawTimer() {
+  const bar = document.getElementById('agenda'); if (!bar) return;
+  const t = P.timer;
+  if (!t.started || t.screen == null) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  const now = Date.now(), inStage = now - t.stageStart, target = STAGE_TARGET[t.screen] * 60000, total = now - t.started;
+  const over = inStage > target;
+  bar.className = 'agenda' + (over ? ' over' : '') + (total > 25 * 60000 ? ' late' : '');
+  bar.innerHTML = '<span><b>' + STAGE_NAME[t.screen] + '</b> ' + fmtMin(inStage) + ' of ' + STAGE_TARGET[t.screen] + ':00</span>' +
+    '<span class="agenda-track"><i style="width:' + Math.min(100, Math.round(100 * total / (25 * 60000))) + '%"></i></span><span>' + fmtMin(total) + ' / 25:00</span>';
+}
+setInterval(drawTimer, 1000);
 
 // ── INIT ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
