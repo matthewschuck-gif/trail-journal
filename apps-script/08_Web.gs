@@ -3,7 +3,7 @@
  * File 8: the pages themselves, served by this project (the GitHub site becomes thin frames).
  *
  * Pages (?page=): journal (default), respond (Your Side of the Trail), admin, panel (Trailback
- * Panel), followup (panel follow-up scheduler). Each page talks to tjCall() with
+ * Panel), followup (panel follow-up scheduler), signup (panelists take a seat on a case). Each page talks to tjCall() with
  * google.script.run instead of the public APP_TOKEN.
  *
  * Two deployments of this one project:
@@ -24,9 +24,11 @@ const WEB_DEFAULTS_ = [
   ['STAFF_DOMAIN', 'easdpa.org', 'Google accounts at this domain count as staff on the staff link.'],
   ['STAFF_EMAILS', '', 'Optional: only these staff emails (comma separated) get staff access. Blank = anyone at STAFF_DOMAIN.'],
   ['STUDENT_EXEC_URL', '', 'The student deployment\'s /exec link (Deploy › Manage deployments). The journal\'s exit auto-save goes there. Blank = this deployment.'],
+  ['PANEL_ADMINS', '', 'Trailback Panel leads (comma separated emails): they add cases and send briefs on the sign-up page. Blank = only the account that owns this script.'],
+  ['PANEL_QUESTION_SHEET_URL', 'https://docs.google.com/document/d/15XwkkH-JA5m5jgz4UsZ0A0Obs3SoGkrUhCz3sSCrkTU/edit', 'The panelist question sheet, linked in the panel invite and the case brief. Blank = no link.'],
   ['LEGACY_API', 'ON', 'ON while the old GitHub pages are still in use. Set OFF after the switch: the old token route then only takes the exit auto-save.'],
 ];
-const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup' };
+const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup' };
 
 function webSetting_(key) {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WEB_SETTINGS_TAB_);
@@ -76,7 +78,7 @@ function serveTrailPage_(e) {
   });
   return t.evaluate()
     .setTitle({ journal: 'Trail Journal — Camp Mountaineer', respond: 'Your Side of the Trail — Camp Mountaineer', admin: 'Trail Journal Admin',
-      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up' }[page])
+      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up' }[page])
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // trailjournal.org shows it in a frame
 }
@@ -101,6 +103,7 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('Trail Journal')
     .addItem('Run setup (Settings tab + new columns)', 'setupTrailWeb')
     .addItem('Scramble gate passwords', 'scrambleGatePasswords')
+    .addItem('Turn on Trailback case briefs (3:00 the day before)', 'setupPanelBriefTrigger') // 11_PanelSignup.gs
     .addSeparator()
     .addItem('Turn on the record safety net', 'setupRecordSafetyNet') // 10_Records.gs
     .addItem('Email all journal records once…', 'emailAllRecordsOnce')

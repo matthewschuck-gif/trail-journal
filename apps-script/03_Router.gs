@@ -116,6 +116,22 @@ function dispatch_(body) {
       case 'awardClashPoint':
         result = awardClashPoint_(body.payload);
         break;
+      // Trailback Panel sign-up (11_PanelSignup.gs). Each checks the signed-in staff account itself.
+      case 'panelBoard':
+        result = panelBoard_(body);
+        break;
+      case 'panelSaveCase':
+        result = panelSaveCase_(body);
+        break;
+      case 'panelSignUp':
+        result = panelSignUp_(body);
+        break;
+      case 'panelWithdraw':
+        result = panelWithdraw_(body);
+        break;
+      case 'panelSendBrief':
+        result = panelSendBrief_(body);
+        break;
       case 'overrideInsightLevelHigh':
         result = overrideInsightLevelHigh_(body.payload);
         break;
