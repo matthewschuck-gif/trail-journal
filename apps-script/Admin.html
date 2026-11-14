@@ -2934,7 +2934,7 @@ function tbButtons(c) {
   const b = (op, label, primary) => `<button class="${primary ? 'save-btn' : 'flt-btn'}" onclick="tbAction('${tbEsc(c.case_id)}','${op}')">${label}</button>`;
   switch (c.status) {
     case 'suggested': return b('offer', 'Mark offered', 1) + b('consent', 'Consent received') + b('decline', 'Declined') + b('edit', 'Edit');
-    case 'offered': return b('consent', 'Consent received', 1) + b('decline', 'Declined') + b('edit', 'Edit');
+    case 'offered': return b('consent', 'Consent received', 1) + b('send_consent', 'Send consent link') + b('decline', 'Declined') + b('edit', 'Edit');
     case 'consented': return b('schedule', 'Schedule', 1) + b('link_tj', 'Link Trail Journal') + b('decline', 'Declined') + b('edit', 'Edit');
     case 'tj_done': return b('schedule', 'Schedule', 1) + b('decline', 'Declined') + b('edit', 'Edit');
     case 'scheduled': return b('schedule', 'Reschedule') + b('decline', 'Declined') + b('edit', 'Edit');
@@ -3017,7 +3017,19 @@ function tbAction(caseId, op) {
   const ml = c.master_log_row ? `Master Log row <strong>${tbEsc(c.master_log_row)}</strong>` : 'No Master Log Entry ID on this case, so the Master Log won\'t change';
   const note = (id, ph) => `<label class="ed-lbl" for="${id}">${ph}</label><textarea class="ed-inp" id="${id}" rows="3"></textarea>`;
   switch (op) {
-    case 'offer': return tbStep(caseId, 'offer').catch(e => alert(e.message));
+    case 'offer':
+    case 'send_consent': {
+      // The family gets a one-time Yes / No link at this email (typed here; nothing is looked up).
+      const resend = op === 'send_consent';
+      return openTbModal((resend ? 'Send the consent link: ' : 'Offer the Trailback Panel: ') + c.student_name,
+        `<label class="ed-lbl" for="tb-f-family">Family email</label><input class="ed-inp" id="tb-f-family" type="text" inputmode="email" value="${tbEsc(c.family_email || '')}" placeholder="parent@example.com">
+        <p class="tb-meta">The family gets a one-time page to say yes or no. Yes records consent and holds the detention. Leave it blank to call the family instead, then use Consent received.</p>`,
+        resend ? 'Send link' : 'Offer', async () => {
+          const email = tbVal('tb-f-family').trim();
+          if (email !== (c.family_email || '')) await tbStep(caseId, 'edit', { fields: { family_email: email } });
+          return tbStep(caseId, resend ? 'send_consent' : 'offer');
+        });
+    }
     case 'consent':
       return openTbModal('Consent received: ' + c.student_name, `<p class="tb-meta">The family agreed to the Trailback Panel. ${ml}${c.master_log_row ? ' becomes <strong>Held (Trailback)</strong>: the detention is on hold.' : '.'}</p>`,
         'Consent received', () => tbStep(caseId, 'consent'));
@@ -3057,6 +3069,7 @@ const TB_FIELDS = [
   ['student_name', 'Student name'], ['student_id', 'Student 800#'], ['grade', 'Grade'], ['squad', 'Squad (Black, Gold, Grey, Purple)'],
   ['behavior_type', 'Behavior type'], ['referring_staff', 'Referring staff'], ['consequence_type', 'Consequence held (ASD, Admin LD, Saturday)'],
   ['consequence_original_date', 'Original consequence date', 'date'], ['master_log_row', 'Master Log Entry ID (EMS-…)'], ['checkin_person', 'Check-in person'],
+  ['family_email', 'Family email (for the consent link)'],
 ];
 function tbCaseFields(c) {
   c = c || {};
