@@ -124,7 +124,7 @@
       '<div><span class="n" style="color:var(--after)">' + o.perMonthAfter + '</span><small>per month since the panel</small></div></div>' : '<p class="na">Too soon after the first panels to compare.</p>';
     $('root').innerHTML =
       '<h2 style="margin-top:18px">Results</h2><div class="tiles">' + tile(o.students, 'students through a panel') + tile(p.completed, 'finished the plan') + tile(p.detentionsCleared, 'detentions cleared') + tile(p.reverted, 'reverted') +
-        tile(D.daysToFinish == null ? null : D.daysToFinish + ' d', 'panel to finished plan') + tile(D.checkinsOnTime == null ? null : D.checkinsOnTime + '%', 'check-ins on time') + tile(p.summits, 'Summits held') + '</div>' +
+        tile(D.daysToFinish == null ? null : D.daysToFinish + ' d', 'panel to finished plan') + tile(D.checkinsOnTime == null ? null : D.checkinsOnTime + '%', 'check-ins on time') + tile(p.summits, 'Summits held') + tile(p.redemptionPoints, 'Redemption points to squads') + tile(p.guides, 'Trail Guides eligible') + '</div>' +
       '<h2>In the pipeline now</h2><div class="tiles">' + tile(p.suggested, 'suggested') + tile(p.offered, 'offered, waiting on family') + tile(p.waiting, 'consented, not yet heard') + tile(p.inRepair, 'working the plan now') + tile(p.declined, 'declined') + '</div>' +
       '<div class="card"><h2>The rest of the year</h2>' + change + '</div>' +
       climberCard(o.climber) +

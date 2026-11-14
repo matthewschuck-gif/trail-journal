@@ -30,6 +30,8 @@ const WEB_DEFAULTS_ = [
   ['PANEL_MINUTES', '25', 'Trailback Panel: how long a panel runs (minutes), for the calendar invite.'],
   ['PANEL_ROOM', '', 'Trailback Panel: the usual room. A lead can change it per case.'],
   ['PANEL_SEATS', '6', 'Trailback Panel: staff seats per case on the sign-up page.'],
+  ['TRAILBACK_REDEMPTION_POINTS', '75', 'Redemption: Clash points for the student\'s squad when their Trailback Summit is recorded (posted straight away, no approval). The student chooses whether their first name and last initial show. 0 = the old 1-point request when the case closes.'],
+  ['TRAILBACK_GUIDE_DAYS', '60', 'Trail Guide: this many school days after the Summit with no new Master Log entry = eligible to sit on a panel as a student panelist (the coordinator is told).'],
   ['TRAILBACK_AUTOMATION', 'ON', 'Trailback autopilot (17_Pipeline.gs): ON = suggest cases from repeat patterns and Trail Journals, send the family consent link and the student\'s Trail Journal link, schedule when the journal is done, and call for panel seats. OFF = all by hand.'],
   ['TRAILBACK_PATTERN_COUNT', '3', 'Autopilot: this many Master Log rows with the same Behavior Type ...'],
   ['TRAILBACK_PATTERN_DAYS', '30', '... within this many days suggests a Trailback case.'],

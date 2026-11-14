@@ -238,7 +238,9 @@ const SCHEMA = {
     // student's Trail Journal link and reminder went out.
     'family_email', 'consent_token', 'consent_sent_at', 'journal_sent_at', 'journal_reminded_at',
     // How the student is doing since the panel, written once a day by Climb-er (Trailback.gs there).
-    'climber_outcome', 'climber_outcome_at'],
+    'climber_outcome', 'climber_outcome_at',
+    // Redemption at the Summit (16_Summit.gs): the Clash points, the note home, Trail Guide eligibility.
+    'redemption_at', 'redemption_points', 'family_summit_sent_at', 'guide_eligible_at'],
 };
 
 /**

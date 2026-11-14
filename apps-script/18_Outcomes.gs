@@ -121,6 +121,7 @@ function trailbackOutcomes_(body) {
       inRepair: count(function (c) { return c.status === 'repair_in_progress' || c.status === 'heard_approved'; }),
       completed: count(function (c) { return c.status === 'closed_completed'; }), reverted: count(function (c) { return c.status === 'closed_reverted'; }),
       declined: count(function (c) { return c.status === 'declined'; }), summits: count(function (c) { return !!c.summit_at; }),
+      guides: count(function (c) { return !!c.guide_eligible_at; }), redemptionPoints: cases.reduce(function (a, c) { return a + (Number(c.redemption_points) || 0); }, 0),
       detentionsCleared: count(function (c) { return c.status === 'closed_completed' && c.master_log_row; }) },
     checkinsOnTime: logged ? Math.round(100 * onTime / logged) : null,
     daysToFinish: finished.length ? Math.round(finished.reduce(function (a, o) { return a + o.daysToFinish; }, 0) / finished.length) : null,

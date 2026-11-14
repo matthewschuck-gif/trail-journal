@@ -271,6 +271,26 @@ function panelGlimpse_(c) {
   };
 }
 
+// ── TRAIL GUIDES: 60 school days after the Summit, no new Master Log entry ──
+function trailGuides_() {
+  const days = numSetting_('TRAILBACK_GUIDE_DAYS', 60), today = todayYmd_();
+  const due = allCases_().filter(function (c) { return c.status === 'closed_completed' && c.summit_at && !c.guide_eligible_at && c.student_id &&
+    schoolDaysBetween_(String(c.summit_at).slice(0, 10), today) >= days; });
+  if (!due.length) return [];
+  const log = masterLogByStudent_(), out = [];
+  due.forEach(function (c) {
+    const since = String(c.summit_at).slice(0, 10);
+    if ((log[c.student_id] || []).some(function (r) { return r.day > since; })) return; // not yet: check again tomorrow
+    genericUpdate_(TABS.PANEL_CASES, { case_id: c.case_id }, { guide_eligible_at: nowIso_() });
+    out.push(c);
+  });
+  if (out.length) sendTrailbackMail_(coordinatorEmails_(), 'Trail Guide: ' + out.length + ' student' + (out.length === 1 ? '' : 's') + ' eligible',
+    emailShell_('&#129517;', 'Ready to be a Trail Guide', days + ' school days since the Summit, no new entries',
+      out.map(function (c) { return emailInfoRow_(escHtml_(c.student_name || c.student_id), escHtml_((c.grade ? 'Grade ' + c.grade + ' · ' : '') + titleSquad2_(c.squad)), squadTheme_(c.squad)); }).join('') +
+      emailCallout_('Invite them', 'They can sit on a future panel as a student panelist: add them to the Panel Members tab with Role "Student".')), false);
+  return out.map(function (c) { return c.case_id; });
+}
+
 // ── THE DAILY RUN (from trailbackDailyCheck, 12_TrailbackCases.gs) ───
 function pipelineDaily_() {
   if (!pipelineOn_()) return { off: true };
@@ -285,6 +305,7 @@ function pipelineDaily_() {
   } catch (e) { console.warn('Journal reminders: ' + e.message); }
   try { out.scheduled = autoSchedule_(); } catch (e) { console.warn('Auto-schedule: ' + e.message); }
   try { out.seatCalls = lowSeatCalls_(); } catch (e) { console.warn('Seat calls: ' + e.message); }
+  try { out.guides = trailGuides_(); } catch (e) { console.warn('Trail Guides: ' + e.message); }
   return out;
 }
 

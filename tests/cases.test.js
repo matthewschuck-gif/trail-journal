@@ -114,7 +114,7 @@ test('case actions are staff-only', () => {
 
 // ── the whole path ──
 test('full path: offer, consent (Master Log Held), Trail Journal auto-links, schedule, approve at the panel, submit, check-in, close completed (Resolved + anonymous Clash request)', () => {
-  const w = world();
+  const w = world({ settings: [['TRAILBACK_REDEMPTION_POINTS', '0', '']] }); // the old path: a 1-point request at closing (Redemption off)
   const c = w.call({ action: 'createTrailbackCase', payload: Object.assign({}, offeredCase, { status: 'suggested' }) }).data;
   assert.strictEqual(c.status, 'suggested');
   assert.strictEqual(w.step(c.case_id, 'offer').data.case.status, 'offered');

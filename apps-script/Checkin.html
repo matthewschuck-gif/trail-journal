@@ -151,12 +151,22 @@
     qs.forEach(function (q) { art.appendChild(el('label', '', q.q)); var t = el('textarea'); t.rows = 2; t.maxLength = 800; art.appendChild(t); inputs[q.key] = t; });
     art.appendChild(el('label', '', 'What the adults noticed (each of you, one thing)')); var nt = el('textarea'); nt.rows = 2; art.appendChild(nt);
     art.appendChild(el('label', '', 'Who was there')); var pr = el('input', 'note'); pr.maxLength = 300; art.appendChild(pr);
+    // Redemption on Clash: the student decides how public it is.
+    art.appendChild(el('label', '', '🏔️ Redemption: ' + (v.points || 75) + ' points to the ' + (v.squad || 'student\'s') + ' squad. Ask the student: can Clash show your first name and last initial?'));
+    var share = false, seg2 = el('div', 'seg');
+    [['no', 'No, keep it "a ' + (v.squad || '') + ' climber"'], ['yes', 'Yes, show my name']].forEach(function (o) {
+      var b2 = el('button', o[0] === 'no' ? 'on on_track' : 'on_track', o[1]); b2.type = 'button';
+      b2.addEventListener('click', function () { share = o[0] === 'yes'; Array.prototype.forEach.call(seg2.children, function (x) { x.classList.remove('on'); }); b2.classList.add('on'); });
+      seg2.appendChild(b2);
+    });
+    art.appendChild(seg2);
+    if (v.family) art.appendChild(el('div', 'k', 'The family gets the Summit card by email when you save.'));
     var b = el('button', 'save', 'Save the Summit'); b.type = 'button';
     b.addEventListener('click', function () {
       var ans = {}; Object.keys(inputs).forEach(function (k) { ans[k] = inputs[k].value; });
       b.disabled = true;
-      call('summitSave', { case_id: v.case_id, answers: ans, noticed: nt.value, present: pr.value }).then(function (saved) {
-        say('🏔️ Saved. Print the Summit card for ' + (v.student_name || 'the student') + ' below.'); summitCard(saved); return loadSummits();
+      call('summitSave', { case_id: v.case_id, answers: ans, noticed: nt.value, present: pr.value, share_name: share }).then(function (saved) {
+        say('🏔️ Saved. ' + (saved.redemption ? saved.redemption + ' Redemption points went to the squad on Clash. ' : '') + (saved.warnings && saved.warnings.length ? '(' + saved.warnings.join(' ') + ') ' : '') + 'Print the Summit card below.'); summitCard(saved); return loadSummits();
       }).catch(function (e) { b.disabled = false; say(e.message, true); });
     });
     art.appendChild(b);

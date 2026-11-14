@@ -164,7 +164,7 @@ test('one-tap check-in: only the case\'s adults (or leads) can; it logs the due 
   c = w.call({ action: 'trailbackCase', payload: { case_id: id } }).data;
   assert.strictEqual(c.status, 'closed_completed');
   assert.strictEqual(w.masterLog.rows[1][15], 'Resolved (Trailback)');
-  assert.ok(c.clash_request_id, 'the anonymous Clash point request, like closing by hand');
+  assert.ok(!c.clash_request_id, 'no request at closing: the Redemption points come at the Summit');
   // With TRAILBACK_AUTO_CLOSE OFF, it stays open for staff to close.
   const w2 = world({ settings: [['TRAILBACK_AUTO_CLOSE', 'OFF', '']] });
   const id2 = heardWithPlan(w2, [PLAN[0]]);
@@ -234,6 +234,58 @@ test('Summit: finishing the plan invites the student back; the adults record wha
   assert.deepStrictEqual([l.toHold.length, l.held.length], [0, 1]);
   w.user.email = 'stranger@easdpa.org';
   assert.strictEqual(w.call({ action: 'summitList', payload: {} }).data.toHold.length + w.call({ action: 'summitList', payload: {} }).data.held.length, 0, 'only the case\'s adults see it');
+});
+
+test('Redemption at the Summit: 75 points to the squad on Clash (name only if the student says yes), a private Redemptions row, the Summit card home; once', () => {
+  const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', '']] });
+  const tabs = { events: w.clashEvents };
+  const clash = { getSheetByName: n => tabs[n] || null, insertSheet: n => (tabs[n] = makeSheet([])) };
+  const real = w.SpreadsheetApp.openById;
+  w.SpreadsheetApp.openById = id => id === '1wF01Limr7uO36DRGC6qh3XfYA7dBdXEfGRWuasmEf0w' ? clash : real(id);
+  const id = heardWithPlan(w, [PLAN[0]]);
+  w.genericUpdate_('panel_cases', { case_id: id }, { family_email: 'pq@example.org' });
+  w.user.email = 'dean@easdpa.org';
+  w.call({ action: 'repairCheckin', payload: { case_id: id, actions: { a1: 'done' }, overall: 'on_track' } });
+  assert.strictEqual(w.clashEvents.rows.length, 1, 'nothing at closing');
+  w.sent.length = 0;
+  const r = w.call({ action: 'summitSave', payload: { case_id: id, answers: { accomplished: 'Took it down', proud: 'I owned it' }, share_name: true } });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(r.data.redemption, 75);
+  const row = w.clashEvents.rows[1];
+  assert.deepStrictEqual(J([row[1], row[2], row[7]]), ['Redemption: Pat Q. (Gold) reached the Summit', 'redemption', 75]);
+  assert.deepStrictEqual(J(tabs.Redemptions.rows.map(x => x.slice(0, 2))), [['800#', 'Squad'], ['8012345', 'GOLD']]);
+  const home = w.sent.find(m => m.to === 'pq@example.org');
+  assert.ok(home && /reached the Summit/.test(home.subject) && /I owned it/.test(home.htmlBody), 'the family hears it');
+  // Saving the Summit again posts nothing new.
+  assert.ok(/Summit/.test(w.call({ action: 'summitList', payload: {} }).data.held[0].student_name ? 'Summit' : ''));
+  w.postRedemption_(w.getCase_(id), true);
+  assert.strictEqual(w.clashEvents.rows.length, 2, 'once');
+  // Anonymous by default.
+  const w2 = world({ settings: [['TRAILBACK_EMAILS', 'ON', '']] });
+  const tabs2 = { events: w2.clashEvents };
+  w2.SpreadsheetApp.openById = idd => idd === '1wF01Limr7uO36DRGC6qh3XfYA7dBdXEfGRWuasmEf0w' ? { getSheetByName: n => tabs2[n] || null, insertSheet: n => (tabs2[n] = makeSheet([])) } : null;
+  const id2 = heardWithPlan(w2, [PLAN[0]]);
+  w2.genericUpdate_('panel_cases', { case_id: id2 }, { status: 'closed_completed' });
+  w2.user.email = 'dean@easdpa.org';
+  w2.call({ action: 'summitSave', payload: { case_id: id2, answers: { proud: 'Yes' } } });
+  assert.strictEqual(w2.clashEvents.rows[1][1], 'Redemption: a Gold climber reached the Summit');
+});
+
+test('Trail Guide: 60 school days after the Summit with no new Master Log entry = eligible, the coordinator is told; a new entry means not yet', () => {
+  const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', ''], ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', '']] });
+  const old = new Date(); old.setDate(old.getDate() - 120); const longAgo = w.ymdOf_(old);
+  const mk = (sid, mlr) => { const c = w.call({ action: 'createTrailbackCase', payload: { student_id: sid, student_name: 'Pat Quill', squad: 'Gold', master_log_row: mlr } }).data;
+    w.genericUpdate_('panel_cases', { case_id: c.case_id }, { status: 'closed_completed', summit_at: longAgo + 'T12:00:00Z' }); return c.case_id; };
+  const a = mk('8012345', 'EMS-20261201-0042'), b = mk('8099999', 'EMS-20261201-0043');
+  const h = ['Entry ID', 'Entry Date', 'Consequence Date', 'Consequence Type', 'Status', 'Student 800#', 'Behavior Type'];
+  w.masterLog.rows = [h, ['E9', '', w.todayYmd_(), 'Teacher Lunch Detention (LD)', 'Scheduled', '8099999', 'Disruption']];
+  w.sent.length = 0;
+  const out = J(w.trailGuides_());
+  assert.deepStrictEqual(out, [a], 'b had a new entry');
+  assert.ok(w.call({ action: 'trailbackCase', payload: { case_id: a } }).data.guide_eligible_at);
+  assert.ok(w.sent.some(m => /Trail Guide/.test(m.subject) && m.to === 'kelly@easdpa.org'));
+  assert.strictEqual(w.trailGuides_().length, 0, 'once');
+  void b;
 });
 
 console.log('\n' + passed + ' tests passed');
