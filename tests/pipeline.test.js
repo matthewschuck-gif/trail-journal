@@ -200,7 +200,8 @@ test('the glimpse shows only to those signed up for the case', () => {
 test('outcomes: before vs after the panel from the Master Log, the same days before and after, by behavior; leads and the coordinator only', () => {
   const w = world({ settings: settings.concat([['PANEL_ADMINS', 'lead@easdpa.org', '']]) });
   const c = w.call({ action: 'createTrailbackCase', payload: { student_id: '8012345', student_name: 'Pat Quill', behavior_type: 'Disruption', master_log_row: 'E3' } }).data;
-  w.genericUpdate_('panel_cases', { case_id: c.case_id }, { status: 'closed_completed', scheduled_date: ago(100), closed_at: ago(92) + 'T12:00:00Z', summit_at: ago(80) });
+  w.genericUpdate_('panel_cases', { case_id: c.case_id }, { status: 'closed_completed', scheduled_date: ago(100), closed_at: ago(92) + 'T12:00:00Z', summit_at: ago(80),
+    climber_outcome: JSON.stringify({ behavior: { perMonthBefore: 2.4, perMonthAfter: 0.6 }, positives: { perMonthBefore: 0.2, perMonthAfter: 1.5 }, attendance: { before: 90, after: 96 }, coreF: { atPanel: 2, now: 0 } }) });
   w.masterLog.rows = [ML_HEADERS.slice(),
     ml('E1', '8012345', 'Quill, Pat', 'Disruption', ago(150)), ml('E2', '8012345', 'Quill, Pat', 'Disruption', ago(120)), ml('E3', '8012345', 'Quill, Pat', 'Disruption', ago(101), 'Admin Lunch Detention (LD)'),
     ml('E4', '8012345', 'Quill, Pat', 'Technology', ago(40))];
@@ -221,6 +222,9 @@ test('outcomes: before vs after the panel from the Master Log, the same days bef
   assert.deepStrictEqual(J(o.windows[30]), { before: 2, after: 0, sameBefore: 2, sameAfter: 0 }, 'E2 and E3 fall in the 30 days before');
   assert.strictEqual(d.overall.windows[90].noRepeat, 100);
   assert.strictEqual(d.byBehavior[0].label, 'Disruption');
+  // From Climb-er.
+  assert.deepStrictEqual(J(d.overall.climber), { students: 1, behaviorBefore: 2.4, behaviorAfter: 0.6, positivesBefore: 0.2, positivesAfter: 1.5, attendanceBefore: 90, attendanceAfter: 96, coreFAtPanel: 2, coreFNow: 0 });
+  assert.strictEqual(o.climber.attendance.after, 96);
 });
 
 console.log('\n' + passed + ' tests passed');

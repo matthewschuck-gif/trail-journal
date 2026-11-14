@@ -236,7 +236,9 @@ const SCHEMA = {
     'summit_at', 'summit_json',
     // The autopilot (17_Pipeline.gs): the family's email and one-time consent link, and when the
     // student's Trail Journal link and reminder went out.
-    'family_email', 'consent_token', 'consent_sent_at', 'journal_sent_at', 'journal_reminded_at'],
+    'family_email', 'consent_token', 'consent_sent_at', 'journal_sent_at', 'journal_reminded_at',
+    // How the student is doing since the panel, written once a day by Climb-er (Trailback.gs there).
+    'climber_outcome', 'climber_outcome_at'],
 };
 
 /**

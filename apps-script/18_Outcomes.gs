@@ -10,7 +10,11 @@
  *     in the 30, 60 and 90 days after vs. the same days before; detentions after.
  *   - All of that by behavior type and by the panel's need (Connection, Awareness, Skills,
  *     Regulation), and a row per student for staff.
- * Counts come from the Master Log only (consequences); the months are school-year months.
+ *   - From Climb-er (climber_outcome on the case, written once a day by Climb-er's Trailback.gs):
+ *     behavior records from every Climb-er source and positives (shout-outs, Trait Dough...) per
+ *     month before vs. since, attendance before vs. since (PowerSchool uploads), core F's at the
+ *     panel vs. now.
+ * The Master Log numbers are consequences only; the months are school-year months.
  */
 
 const OUTCOME_WINDOWS_ = [30, 60, 90];
@@ -59,6 +63,9 @@ function outcomeFor_(c, rows, today) {
     const post = rows.filter(function (r) { return r.day > panel && r.day <= ymdOf_(new Date(new Date(panel + 'T12:00:00').getTime() + n * 86400000)); });
     windows[n] = { before: pre.length, after: post.length, sameBefore: same(pre), sameAfter: same(post) };
   });
+  let cl = null;
+  try { cl = c.climber_outcome ? JSON.parse(c.climber_outcome) : null; } catch (e) { cl = null; }
+  if (cl && cl.error) cl = null;
   let need = '';
   try { const s = c.panel_session_id ? panelRow_(c.panel_session_id) : null; need = s ? String(s.need_bucket || '') : ''; } catch (e) { need = ''; }
   return {
@@ -69,6 +76,7 @@ function outcomeFor_(c, rows, today) {
     after: after.length, detentionsAfter: after.filter(function (r) { return /detention/i.test(r.cons); }).length,
     sameAfter: same(after), windows: windows,
     daysToFinish: c.status === 'closed_completed' && c.closed_at ? Math.max(0, daysBetween_(panel, String(c.closed_at).slice(0, 10))) : null,
+    climber: cl ? { behavior: cl.behavior || null, positives: cl.positives || null, attendance: cl.attendance || null, coreF: cl.coreF || null } : null,
   };
 }
 
@@ -81,8 +89,14 @@ function sumUp_(list) {
       noRepeat: Math.round(100 * have.filter(function (o) { return (o.windows[w].sameAfter || 0) === 0; }).length / have.length),
       before: have.reduce(function (a, o) { return a + o.windows[w].before; }, 0), after: have.reduce(function (a, o) { return a + o.windows[w].after; }, 0) } : null;
   });
+  const cl = list.filter(function (o) { return o.climber; }), cavg = function (f) { const v = cl.map(f).filter(function (x) { return x != null; }); return v.length ? Math.round(10 * v.reduce(function (a, b) { return a + b; }, 0) / v.length) / 10 : null; };
+  const climber = cl.length ? { students: cl.length,
+    behaviorBefore: cavg(function (o) { return o.climber.behavior && o.climber.behavior.perMonthBefore; }), behaviorAfter: cavg(function (o) { return o.climber.behavior && o.climber.behavior.perMonthAfter; }),
+    positivesBefore: cavg(function (o) { return o.climber.positives && o.climber.positives.perMonthBefore; }), positivesAfter: cavg(function (o) { return o.climber.positives && o.climber.positives.perMonthAfter; }),
+    attendanceBefore: cavg(function (o) { return o.climber.attendance && o.climber.attendance.before; }), attendanceAfter: cavg(function (o) { return o.climber.attendance && o.climber.attendance.after; }),
+    coreFAtPanel: cavg(function (o) { return o.climber.coreF && o.climber.coreF.atPanel; }), coreFNow: cavg(function (o) { return o.climber.coreF && o.climber.coreF.now; }) } : null;
   return { students: n, perMonthBefore: avg(function (o) { return o.perMonthBefore; }), perMonthAfter: avg(function (o) { return o.perMonthAfter; }),
-    finished: list.filter(function (o) { return o.status === 'closed_completed'; }).length, windows: windows };
+    finished: list.filter(function (o) { return o.status === 'closed_completed'; }).length, windows: windows, climber: climber };
 }
 
 /** The dashboard's numbers. */

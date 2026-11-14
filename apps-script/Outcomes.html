@@ -65,7 +65,7 @@
   function fmt(n) { return n == null ? '–' : String(n); }
   var legend = '<div class="legend"><span><i style="background:var(--before)"></i>Before the panel</span><span><i style="background:var(--after)"></i>After the panel</span></div>';
   function pair(label, before, after, max, unit, tipText) {
-    var w = function (v) { return max ? Math.max(1, Math.round(100 * v / max)) : 1; };
+    var w = function (v) { v = Number(v); return isNaN(v) ? 0 : max ? Math.max(1, Math.round(100 * v / max)) : 1; };
     return '<div class="pair"><div>' + esc(label) + '</div><div class="bars">' +
       '<div class="bar b" data-tip="' + esc(label + ' · before: ' + before + ' ' + unit + (tipText ? ' · ' + tipText : '')) + '"><i style="width:' + w(before) + '%"></i><span>' + esc(before) + '</span></div>' +
       '<div class="bar a" data-tip="' + esc(label + ' · after: ' + after + ' ' + unit + (tipText ? ' · ' + tipText : '')) + '"><i style="width:' + w(after) + '%"></i><span>' + esc(after) + '</span></div></div></div>';
@@ -78,6 +78,18 @@
       return pair(x[0] + ' days · ' + x[1].noRepeat + '% no repeat', x[1].before, x[1].after, max, 'Master Log entries', x[1].students + ' students; no repeat = none of the same behavior after');
     }).join('');
   }
+  // From Climb-er: every behavior source, positives, attendance and core F's, before vs since.
+  function climberCard(c) {
+    if (!c) return '<div class="card"><h2>From Climb-er</h2><p class="na">Climb-er writes these once a day after the hourly squad sync is on (Settings TRAILBACK_OUTCOMES in Climb-er).</p></div>';
+    var rows = [['Behavior records per month', c.behaviorBefore, c.behaviorAfter, 'every Climb-er behavior source', false], ['Positives per month', c.positivesBefore, c.positivesAfter, 'shout-outs, Trait Dough and the other strengths', true],
+      ['Attendance %', c.attendanceBefore, c.attendanceAfter, 'PowerSchool uploads: before the panel vs since', true], ['Core F\'s', c.coreFAtPanel, c.coreFNow, 'at the panel vs the newest upload', false]];
+    return '<div class="card"><h2>From Climb-er</h2><p class="sub">Averages for ' + c.students + ' student' + (c.students === 1 ? '' : 's') + ', before the panel vs since. Up is better for positives and attendance; down is better for behavior and F\'s.</p>' + legend +
+      rows.map(function (r) {
+        if (r[1] == null && r[2] == null) return '<div class="pair"><div>' + esc(r[0]) + '</div><div class="na">Not enough data yet.</div></div>';
+        var max = r[0] === 'Attendance %' ? 100 : Math.max(r[1] || 0, r[2] || 0, 1);
+        return pair(r[0], r[1] == null ? '–' : r[1], r[2] == null ? '–' : r[2], max, '', r[3]);
+      }).join('') + '</div>';
+  }
   function groupTable(rows, title) {
     if (!rows.length) return '';
     return '<div class="card scroll"><h2>' + esc(title) + '</h2><table><tr><th>' + esc(title.replace('By ', '')) + '</th><th>Students</th><th>Finished plan</th><th>Per month before</th><th>Per month after</th><th>No repeat, 90 days</th></tr>' +
@@ -87,17 +99,22 @@
           '</td><td class="num ' + d + '">' + fmt(g.perMonthAfter) + '</td><td class="num">' + (g.windows[90] ? g.windows[90].noRepeat + '%' : '–') + '</td></tr>';
       }).join('') + '</table></div>';
   }
+  function climberCell(c) {
+    if (!c) return '<span class="na">–</span>';
+    var ba = function (x, k1, k2) { return x ? fmt(x[k1]) + ' → ' + fmt(x[k2]) : '–'; };
+    return esc(ba(c.behavior, 'perMonthBefore', 'perMonthAfter') + ' / ' + ba(c.positives, 'perMonthBefore', 'perMonthAfter') + ' · ' + ba(c.attendance, 'before', 'after') + '% · ' + ba(c.coreF, 'atPanel', 'now'));
+  }
   var sortKey = 'panel', sortDir = -1, D = null;
   function studentTable() {
     var list = D.students.slice().sort(function (a, b) { var x = a[sortKey], y = b[sortKey]; if (x == null) return 1; if (y == null) return -1; return (x < y ? -1 : x > y ? 1 : 0) * sortDir; });
     var th = function (k, l) { return '<th data-k="' + k + '">' + l + (sortKey === k ? (sortDir < 0 ? ' ▼' : ' ▲') : '') + '</th>'; };
     return '<div class="card scroll"><h2>Each student</h2><p class="sub">Staff only. Click a column to sort.</p><table id="st"><tr>' + th('student_name', 'Student') + th('panel', 'Panel') + th('behavior_type', 'Behavior') + th('need', 'Need') +
-      th('status_label', 'Outcome') + th('perMonthBefore', 'Per month before') + th('perMonthAfter', 'Per month after') + th('sameAfter', 'Same behavior after') + th('detentionsAfter', 'Detentions after') + '</tr>' +
+      th('status_label', 'Outcome') + th('perMonthBefore', 'Per month before') + th('perMonthAfter', 'Per month after') + th('sameAfter', 'Same behavior after') + th('detentionsAfter', 'Detentions after') + '<th>Climb-er: behavior / positives per month · attendance · F\'s</th></tr>' +
       list.map(function (o) {
         var d = o.perMonthAfter != null ? (o.perMonthAfter < o.perMonthBefore ? 'down' : o.perMonthAfter > o.perMonthBefore ? 'up' : '') : '';
         return '<tr><td>' + esc(o.student_name || o.student_id) + (o.summit ? ' 🏔️' : '') + '</td><td>' + esc(o.panel) + '</td><td>' + esc(o.behavior_type || '–') + '</td><td>' + esc(o.need || '–') +
           '</td><td><span class="chip' + (o.status === 'closed_completed' ? ' done' : '') + '">' + esc(o.status_label) + '</span></td><td class="num">' + fmt(o.perMonthBefore) + '</td><td class="num ' + d + '">' + fmt(o.perMonthAfter) +
-          '</td><td class="num">' + fmt(o.sameAfter) + '</td><td class="num">' + fmt(o.detentionsAfter) + '</td></tr>';
+          '</td><td class="num">' + fmt(o.sameAfter) + '</td><td class="num">' + fmt(o.detentionsAfter) + '</td><td>' + climberCell(o.climber) + '</td></tr>';
       }).join('') + '</table></div>';
   }
   function render() {
@@ -110,6 +127,7 @@
         tile(D.daysToFinish == null ? null : D.daysToFinish + ' d', 'panel to finished plan') + tile(D.checkinsOnTime == null ? null : D.checkinsOnTime + '%', 'check-ins on time') + tile(p.summits, 'Summits held') + '</div>' +
       '<h2>In the pipeline now</h2><div class="tiles">' + tile(p.suggested, 'suggested') + tile(p.offered, 'offered, waiting on family') + tile(p.waiting, 'consented, not yet heard') + tile(p.inRepair, 'working the plan now') + tile(p.declined, 'declined') + '</div>' +
       '<div class="card"><h2>The rest of the year</h2>' + change + '</div>' +
+      climberCard(o.climber) +
       '<div class="card"><h2>The same days before and after</h2><p class="sub">Master Log entries for every student who has had that long since their panel. "No repeat" = no record of the same behavior type after.</p>' + legend + windowsCard(o) + '</div>' +
       '<div class="two">' + groupTable(D.byBehavior, 'By behavior type') + groupTable(D.byNeed, 'By need') + '</div>' +
       (D.students.length ? studentTable() : '<div class="card na">No students have been through a panel yet.</div>');
