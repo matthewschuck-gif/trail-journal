@@ -8,7 +8,7 @@ const path = require('path');
 const http = require('http');
 const dir = path.join(__dirname, '..', 'apps-script');
 const read = f => fs.readFileSync(path.join(dir, f), 'utf8');
-const PAGES = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet' };
+const PAGES = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet', consent: 'Consent', outcomes: 'Outcomes' };
 
 http.createServer((req, res) => {
   const q = new URL(req.url, 'http://x').searchParams;
