@@ -216,6 +216,7 @@ function updateTrailbackCase_(body) {
         need(['repair_in_progress'], 'close');
         patch = { status: 'closed_completed', closed_at: now, closed_reason: p.reason || 'Plan completed' };
         warnings.push.apply(warnings, masterLogSet_(c, 'Resolved (Trailback)', 'Trailback plan completed ' + todayYmd_() + ': detention cleared'));
+        warnings.push.apply(warnings, summitInvite_(c)); // 16_Summit.gs: invite the student back to celebrate
         if (c.squad) {
           try { patch.clash_request_id = requestClashPoint_({ squad: c.squad, caseId: c.case_id, requestedBy: by }).id; }
           catch (e) { warnings.push('No Clash point request: ' + e.message); }

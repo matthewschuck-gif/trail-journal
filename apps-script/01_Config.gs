@@ -231,7 +231,9 @@ const SCHEMA = {
     'panel_start_time', 'panel_minutes', 'panel_room', 'panel_seats', 'signups', 'panel_notes',
     'climber_brief', 'climber_brief_at', 'brief_sent_at',
     // The approved plan, one entry per action, tracked at each check-in (14_RepairPlan.gs).
-    'repair_actions'],
+    'repair_actions',
+    // The Summit celebration when the plan is finished (16_Summit.gs).
+    'summit_at', 'summit_json'],
 };
 
 /**

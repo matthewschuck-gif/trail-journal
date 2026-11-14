@@ -157,6 +157,22 @@ function dispatch_(body) {
         result = clashStandings_();
         break;
       // The panel's questions and the repair plan check-ins (14_RepairPlan.gs). Staff sign-in only.
+      // Action ideas, the Give / Get board (15_GiveGet.gs) and Summit celebrations (16_Summit.gs).
+      case 'actionIdeas':
+        result = actionIdeas_(body);
+        break;
+      case 'giveGetBoard':
+        result = giveGetBoard_(body);
+        break;
+      case 'giveGetSave':
+        result = giveGetSave_(body);
+        break;
+      case 'summitList':
+        result = summitList_(body);
+        break;
+      case 'summitSave':
+        result = summitSave_(body);
+        break;
       case 'panelQuestions':
         result = panelQuestions_(body);
         break;

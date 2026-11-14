@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>window.TJ_BOOT = <?!= boot ?>; // page, staff, siteUrl, beaconUrl, beaconToken, params (08_Web.gs)</script>
+<?!= include('TjBridge'); ?>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Give / Get</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --trail: #243d2d; --trail-mid: #365c44; --trail-lt: #d6e8db; --gold: #b8821e; --gold-lt: #f6e7c6; --ink: #1e190f; --ink-lt: #6f6250;
+    --paper: #f6efe1; --paper-dkr: #cbbfa5; --cream: #faf5eb; --error: #9e2a2a; --error-lt: #fceeee; --radius: 14px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: var(--paper); color: var(--ink); line-height: 1.5; }
+  main { max-width: 900px; margin: 0 auto; padding: 22px 16px 80px; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 30px; color: var(--trail); }
+  h2 { font-family: 'Fraunces', Georgia, serif; font-size: 20px; color: var(--trail); margin: 26px 0 8px; }
+  .lead { color: var(--ink-lt); margin-top: 4px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .box { background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: var(--radius); padding: 14px 16px; }
+  .box h3 { font-family: 'Fraunces', Georgia, serif; font-size: 18px; }
+  .box p { font-size: 14px; color: var(--ink-lt); }
+  form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: var(--radius); padding: 14px 16px; }
+  label { font-size: 13px; color: var(--ink-lt); display: block; }
+  input, select, textarea { display: block; width: 100%; margin-top: 4px; font: 15px 'Lora', Georgia, serif; padding: 8px 10px; border: 1px solid var(--paper-dkr); border-radius: 8px; background: #fff; color: var(--ink); }
+  .wide { grid-column: 1 / -1; }
+  .kind { display: flex; gap: 8px; }
+  .kind button { flex: 1; }
+  button { font: 600 15px 'Lora', Georgia, serif; padding: 10px 16px; border-radius: 10px; border: 1.5px solid var(--trail); background: var(--trail); color: #fff; cursor: pointer; }
+  button.quiet { background: transparent; color: var(--trail); }
+  button.small { font-size: 13px; padding: 5px 11px; }
+  .kind button.off { background: #fff; color: var(--trail); }
+  .row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px dashed var(--paper-dkr); }
+  .row:last-child { border-bottom: 0; }
+  .tag { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .tag.Give { background: var(--trail-lt); color: var(--trail); } .tag.Get { background: var(--gold-lt); color: #7a5510; }
+  .row .w { flex: 1; } .row .m { font-size: 13px; color: var(--ink-lt); }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .filters button { font-size: 13px; padding: 5px 12px; }
+  .msg { margin: 12px 0; padding: 10px 14px; border-radius: 10px; background: var(--trail-lt); color: var(--trail); }
+  .msg.err { background: var(--error-lt); color: var(--error); }
+  .hidden { display: none; }
+  .empty { padding: 18px; text-align: center; color: var(--ink-lt); }
+  @media (max-width: 640px) { .two, form { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Give / Get</h1>
+  <p class="lead">What can you offer students, and what could students do for you? The whole building can see this list. The Trailback Panel uses it to give students a real way to reconnect and re-engage, with you as the adult.</p>
+  <div class="two">
+    <div class="box"><h3>🎁 Give</h3><p>Something you can offer a student: a lunch group, a mentor check-in, a club seat, tutoring, a quiet spot, a chance to try something.</p></div>
+    <div class="box"><h3>🙌 Get</h3><p>Something a student can do for or with you: set up the lab, help in the library, run the morning cart, read to a younger class, help at an event.</p></div>
+  </div>
+  <div id="msg" class="msg hidden" role="status"></div>
+
+  <h2 id="form-title">Add yours</h2>
+  <form id="f">
+    <input type="hidden" id="f-id">
+    <div class="wide kind"><button type="button" id="k-give">🎁 I can give</button><button type="button" id="k-get" class="off">🙌 Students can help me</button></div>
+    <label class="wide">What<input id="f-what" maxlength="200" required placeholder="Lunch bunch in Room 64 on Tuesdays"></label>
+    <label>When<input id="f-when" maxlength="100" placeholder="Tuesdays at lunch; any PASS"></label>
+    <label>Spots<input id="f-spots" maxlength="20" placeholder="2 students"></label>
+    <label>Fits the menu<select id="f-menu"><option value="">Any</option><option>Repair</option><option>Reconnect</option><option>Reflect</option><option>Re-engage</option></select></label>
+    <label>Your name as students know it<input id="f-name" maxlength="60"></label>
+    <label class="wide"><input type="checkbox" id="f-active" checked style="display:inline;width:auto;margin-right:6px">Open now (untick to pause it)</label>
+    <div class="wide" style="display:flex;gap:10px;flex-wrap:wrap"><button type="submit" id="f-save">Save</button><button type="button" class="quiet hidden" id="f-cancel">Cancel edit</button></div>
+  </form>
+
+  <h2>Yours</h2>
+  <div id="mine" class="box"><div class="empty">Loading…</div></div>
+
+  <h2>Across the building</h2>
+  <div class="filters" id="filters"></div>
+  <div id="board" class="box"><div class="empty">Loading…</div></div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var kind = 'Give', filter = 'All', D = null;
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function say(t, err) { var m = $('msg'); m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); }
+  function call(a, p) { return window.tjCall_({ action: a, payload: p || {} }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r.data; }); }
+  function setKind(k) { kind = k; $('k-give').className = k === 'Give' ? '' : 'off'; $('k-get').className = k === 'Get' ? '' : 'off'; }
+  $('k-give').onclick = function () { setKind('Give'); }; $('k-get').onclick = function () { setKind('Get'); };
+  function row(g, mine) {
+    var r = el('div', 'row');
+    r.appendChild(el('span', 'tag ' + g.kind, g.kind === 'Give' ? '🎁 Give' : '🙌 Get'));
+    var w = el('div', 'w'); w.appendChild(el('div', '', g.what));
+    w.appendChild(el('div', 'm', [mine ? '' : g.name, g.when, g.spots ? g.spots + ' spots' : '', g.menu, mine && !g.active ? 'paused' : ''].filter(Boolean).join(' · ')));
+    r.appendChild(w);
+    if (mine) {
+      var e = el('button', 'quiet small', 'Edit'); e.onclick = function () { fill(g); };
+      var x = el('button', 'quiet small', 'Remove'); x.onclick = function () { if (!confirm('Remove this?')) return; call('giveGetSave', { id: g.id, remove: true }).then(load).catch(function (er) { say(er.message, true); }); };
+      r.appendChild(e); r.appendChild(x);
+    } else if (g.email) {
+      var a = el('a', 'm', 'Email'); a.href = 'mailto:' + g.email; r.appendChild(a);
+    }
+    return r;
+  }
+  function render() {
+    var mine = $('mine'); mine.textContent = '';
+    if (!D.mine.length) mine.appendChild(el('div', 'empty', 'Nothing yet. Add one above.'));
+    D.mine.forEach(function (g) { mine.appendChild(row(g, true)); });
+    var f = $('filters'); f.textContent = '';
+    ['All', 'Give', 'Get'].concat(D.menus).forEach(function (k) {
+      var b = el('button', k === filter ? '' : 'quiet', k === 'Give' ? '🎁 Gives' : k === 'Get' ? '🙌 Gets' : k);
+      b.onclick = function () { filter = k; render(); }; f.appendChild(b);
+    });
+    var board = $('board'); board.textContent = '';
+    var list = D.board.filter(function (g) { return filter === 'All' || g.kind === filter || g.menu === filter; });
+    if (!list.length) board.appendChild(el('div', 'empty', 'Nothing here yet.'));
+    list.forEach(function (g) { board.appendChild(row(g, false)); });
+  }
+  function fill(g) {
+    $('f-id').value = g ? g.id : ''; $('f-what').value = g ? g.what : ''; $('f-when').value = g ? g.when : ''; $('f-spots').value = g ? g.spots : '';
+    $('f-menu').value = g ? g.menu : ''; $('f-active').checked = g ? g.active : true; setKind(g ? g.kind : 'Give');
+    $('form-title').textContent = g ? 'Edit yours' : 'Add yours'; $('f-cancel').classList.toggle('hidden', !g);
+    if (g) $('f').scrollIntoView({ behavior: 'smooth' });
+  }
+  $('f-cancel').onclick = function () { fill(null); };
+  $('f').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    $('f-save').disabled = true;
+    call('giveGetSave', { id: $('f-id').value, kind: kind, what: $('f-what').value, when: $('f-when').value, spots: $('f-spots').value,
+      menu: $('f-menu').value, name: $('f-name').value, active: $('f-active').checked })
+      .then(function () { say('Saved. Thank you!'); fill(null); return load(); })
+      .catch(function (e) { say(e.message, true); }).then(function () { $('f-save').disabled = false; });
+  });
+  function load() { return call('giveGetBoard').then(function (d) { D = d; if (!$('f-name').value) $('f-name').value = d.myName; render(); }); }
+  if (!TJ_BOOT.staff) { $('mine').textContent = 'Sign in with your school Google account.'; $('board').textContent = ''; }
+  else load().catch(function (e) { say(e.message, true); });
+})();
+</script>
+</body>
+</html>

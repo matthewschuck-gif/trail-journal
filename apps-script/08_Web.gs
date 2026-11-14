@@ -40,7 +40,7 @@ const WEB_DEFAULTS_ = [
   ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', 'Trailback Panel: the Accountability & Intervention Log Sheet. Its Master Log Status changes when a case is held, resolved or reverted.'],
   ['TRAILBACK_REFERRAL_FORM_ID', '19qZF3mndYFktrkrwHZz-lr5IGSJUAoU46w99rUTShvc', 'Trailback Panel: the "Trailback Panel Staff Referral" Google Form. Connect it from the menu.'],
 ];
-const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin' };
+const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet' };
 
 function webSetting_(key) {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WEB_SETTINGS_TAB_);
@@ -90,7 +90,7 @@ function serveTrailPage_(e) {
   });
   return t.evaluate()
     .setTitle({ journal: 'Trail Journal — Camp Mountaineer', respond: 'Your Side of the Trail — Camp Mountaineer', admin: 'Trail Journal Admin',
-      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In' }[page])
+      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In', givget: 'Give / Get · EMS' }[page])
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // trailjournal.org shows it in a frame
 }
@@ -125,6 +125,7 @@ function onOpen() {
       .addItem('Preview the next case briefs (nothing sent)', 'previewPanelBriefs')
       .addItem('Open the panel sign-up page', 'showPanelSignupLink')
       .addItem('Open the one-tap check-in page', 'showCheckinLink')
+      .addItem('Open Give / Get for staff', 'showGiveGetLink')
       .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
       .addItem('Add missing questions to the staff referral form', 'addReferralQuestions')
       .addItem('Connect the staff referral form', 'connectReferralForm')
@@ -141,6 +142,7 @@ function setupTrailWeb() {
   addMissingColumns_(TABS.RESPONDER_REFLECTIONS, ['student_name', 'student_id', 'share_name_with_other']);
   [TABS.PANEL_SESSIONS, TABS.FOLLOWUP_RECORDS, TABS.CLASH_REQUESTS, TABS.PANEL_CASES].forEach(ensureSchemaTab_); // 11_Trailback.gs
   ensurePanelQuestionsTab_(); // 14_RepairPlan.gs: the v2 question sheet, editable
+  ensureGiveGetTabs_(); // 15_GiveGet.gs: the Action Ideas bank and the Give / Get board
   ensureNoSchoolTab_();
   ensurePanelMembersTab_(); // 12_TrailbackCases.gs
   safeAlert_('Trail Journal is set up: Settings tab (with PANEL_APPROVERS and TRAILBACK_CLASH_POINTS), the 800# columns, the new panel_sessions and followup_records columns, the clash_requests tab, and a No School Dates tab. Add the school\'s days off to No School Dates.');

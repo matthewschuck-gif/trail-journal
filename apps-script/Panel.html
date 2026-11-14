@@ -460,6 +460,13 @@ textarea { min-height: 90px; }
 .pocket-body { display: none; position: absolute; right: 0; bottom: 48px; width: 300px; background: #fff; border-radius: 12px; padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.2); font-size: .82rem; }
 .pocket.open .pocket-body { display: block; } .pocket-body ul { margin: 6px 0 0 16px; } .pocket-body li { margin: 4px 0; }
 @media (max-width: 640px) { .plan-two { grid-template-columns: 1fr; } }
+.idea-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.idea-f { font-size: .74rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border, #d8cdb6); background: #fff; cursor: pointer; }
+.idea-f.on { background: var(--forest, #2c4a35); color: #fff; border-color: var(--forest, #2c4a35); }
+.idea-list { max-height: 320px; overflow: auto; }
+.idea { padding: 8px 10px; border: 1px solid var(--border, #d8cdb6); border-radius: 9px; margin: 6px 0; cursor: pointer; font-size: .84rem; background: #fff; }
+.idea:hover { border-color: var(--forest, #2c4a35); } .idea.offer { border-left: 4px solid var(--gold, #b8821e); }
+.idea-m { display: block; font-size: .74rem; color: var(--ink-lt); margin-top: 2px; }
 .delib-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(10,20,12,.92); z-index: 200;
@@ -765,6 +772,7 @@ body.is-preview main { padding-bottom: 110px; }
     <button onclick="addPanelist()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:9px;width:100%;cursor:pointer;font-size:.8rem;color:var(--ink-lt);font-family:'Lora',Georgia,serif;margin-top:4px" id="add-panelist-btn">+ Add panelist</button>
   </div>
 
+  <div class="card"><div class="card-label">🖨️ Paper copies for the panel</div><div class="card-sub">One scribe runs this screen; everyone else works from paper. Each packet has the questions for the case behavior type, notes space, the deliberation menu and the plan table. Initials only on paper. Collect them at the end.</div><button class="btn-secondary" onclick="printPackets()">🖨️ Print panelist packets</button></div>
   <div class="btn-row">
     <button class="btn-secondary" onclick="goTo(0)">← Back</button>
     <button class="btn-primary" id="norms-next-btn" disabled onclick="goTo(2)" style="opacity:.4;cursor:default">Panel Ready →</button>
@@ -1036,6 +1044,13 @@ body.is-preview main { padding-bottom: 110px; }
       </div>
     </div>
     <button class="btn-secondary" style="font-size:.8rem;margin-top:6px" onclick="addPlanAction('','')">+ Write our own action</button>
+  </div>
+
+  <div class="card">
+    <div class="card-label">💡 More ideas: the Action Ideas bank and staff Give / Get</div>
+    <div class="card-sub">Ideas that fit the need come first. A Give / Get offer adds the action with that staff member as the check-in adult.</div>
+    <div class="idea-filters" id="idea-filters"></div>
+    <div id="idea-list" class="idea-list"><div class="q-none">Loading ideas…</div></div>
   </div>
 
   <div class="card">
@@ -2242,6 +2257,7 @@ function needBucket() { const r = document.querySelector('#need-bucket input:che
 async function loadPanelQuestions() {
   try { P.questions = await callBackend({ action: 'panelQuestions', payload: { behavior: P.behaviorType || P.pattern || '' } }, true); }
   catch (e) { P.questions = null; }
+  if (!P.questions || !P.questions.stages) P.questions = null;
   renderQuestions();
 }
 function renderQuestions() {
@@ -2289,17 +2305,19 @@ async function preparePlanScreen() {
     if (!P.defaultDue) P.defaultDue = weekdaysAfter(val('s-date') || new Date().toISOString().split('T')[0], 10); // no server count: weekdays only
     P.plan.forEach(a => { if (!a.due) a.due = P.defaultDue; });
   }
+  loadIdeas();
   const dl = document.getElementById('adult-list');
   const known = [TJ_BOOT.staff].concat(P.plan.map(a => a.adult)).filter(x => x && /@/.test(x));
   dl.innerHTML = Array.from(new Set(known)).map(e => '<option value="' + esc(e) + '">').join('');
   renderPlan();
 }
-function addPlanAction(menu, text) {
+function addPlanAction(menu, text, test, adult) {
   if (P.plan.length >= 3) { toast('One to three actions. Remove one to add another.'); return; }
-  P.plan.push({ menu: menu, action: text, test: '', due: P.defaultDue || '', adult: '', rrr: { related: false, respectful: false, reasonable: false } });
+  P.plan.push({ menu: menu, action: text, test: test || '', due: P.defaultDue || '', adult: adult || '', rrr: { related: false, respectful: false, reasonable: false } });
+  if (adult) { const dl = document.getElementById('adult-list'); if (dl && !dl.querySelector('option[value="' + adult + '"]')) dl.insertAdjacentHTML('beforeend', '<option value="' + esc(adult) + '">'); }
   renderPlan();
   const rows = document.querySelectorAll('#plan-rows .plan-row'); const last = rows[rows.length - 1];
-  if (last) last.querySelector(text ? 'input[data-k="test"]' : 'input[data-k="action"]').focus();
+  if (last) last.querySelector(!text ? 'input[data-k="action"]' : !test ? 'input[data-k="test"]' : adult ? 'input[data-k="action"]' : 'input[data-k="adult"]').focus();
 }
 function removePlanAction(i) { P.plan.splice(i, 1); renderPlan(); }
 function setPlan(i, k, v) { if (!P.plan[i]) return; if (k.indexOf('rrr.') === 0) P.plan[i].rrr[k.slice(4)] = v; else P.plan[i][k] = v; syncRecs(); }
@@ -2332,6 +2350,77 @@ function planProblem() {
   }
   return '';
 }
+// ── IDEAS BANK + GIVE / GET (15_GiveGet.gs) ───────────────────────────────
+let IDEA_FILTER = '';
+async function loadIdeas() {
+  if (!P.ideas) {
+    try { P.ideas = await callBackend({ action: 'actionIdeas', payload: {} }, true); } catch (e) { P.ideas = null; }
+    if (!P.ideas || !P.ideas.ideas) P.ideas = null;
+  }
+  renderIdeas();
+}
+function renderIdeas() {
+  const box = document.getElementById('idea-list'), fl = document.getElementById('idea-filters'); if (!box) return;
+  const d = P.ideas || {}, need = needBucket();
+  const menu = IDEA_FILTER || BUCKET_MENU[need] || '';
+  fl.innerHTML = ['', 'Repair', 'Reconnect', 'Reflect', 'Re-engage'].map(m => '<button class="idea-f' + (m === menu ? ' on' : '') + '" onclick="IDEA_FILTER=\'' + m + '\';renderIdeas()">' + (m || 'All') + '</button>').join('');
+  const ideas = (d.ideas || []).filter(i => !menu || i.menu === menu).sort((a, b) => (b.need === need) - (a.need === need));
+  const offers = (d.offers || []).filter(o => !menu || !o.menu || o.menu === menu);
+  if (!ideas.length && !offers.length) { box.innerHTML = '<div class="q-none">' + (P.ideas ? 'Nothing for this menu yet. Add ideas on the Action Ideas tab, or ask staff to use Give / Get.' : 'Ideas load from the Action Ideas tab.') + '</div>'; return; }
+  box.innerHTML = offers.map((o, i) => '<div class="idea offer" onclick="pickOffer(' + (d.offers.indexOf(o)) + ')"><span class="q-tag">' + (o.kind === 'Give' ? '🎁 Give' : '🙌 Get') + '</span> <b>' + esc(o.what) + '</b><span class="idea-m">' + esc([o.name, o.when, o.spots ? o.spots + ' spots' : ''].filter(Boolean).join(' · ')) + '</span></div>').join('') +
+    ideas.map(i => '<div class="idea" onclick="pickIdea(' + (d.ideas.indexOf(i)) + ')"><span class="q-tag">' + esc(i.menu) + (i.need && i.need === need ? ' · fits ' + esc(need) : '') + '</span> ' + esc(i.idea) + (i.test ? '<span class="idea-m">Done when: ' + esc(i.test) + '</span>' : '') + '</div>').join('');
+}
+function pickIdea(n) { const i = P.ideas.ideas[n]; if (i) addPlanAction(i.menu, i.idea, i.test, ''); }
+function pickOffer(n) {
+  const o = P.ideas.offers[n]; if (!o) return;
+  const menu = o.menu || (o.kind === 'Give' ? 'Reconnect' : 'Re-engage');
+  addPlanAction(menu, (o.kind === 'Give' ? '' : 'Help ') + o.what + (o.name ? ' (' + o.name + ')' : ''), o.name ? o.name + ' signs off' : '', o.email || '');
+}
+
+// ── PAPER PACKETS FOR THE PANEL ───────────────────────────────────────────
+async function printPackets() {
+  if (!P.questions) await loadPanelQuestions();
+  const names = P.panelists.map(p => p.name.trim()).filter(Boolean);
+  const n = Number(prompt('How many paper packets? (one per panelist; the scribe uses this screen)', String(Math.max(1, names.length - 1 || 4))));
+  if (!n || n < 1) return;
+  const st = (P.questions && P.questions.stages) || {};
+  const stages = [['💪', 'Strengths', 'Open warm. Panelists add one they have seen.'], ['📖', 'Story', 'Their words. No interruptions.'], ['🌊', 'Impact', 'Most of our time goes here.'],
+    ['🧭', 'Themes', 'Find the pattern across the year.'], ['🤝', 'Making it right', 'Their ideas first.']];
+  const qs = (list, re) => list.filter(q => re.test(q.when)).map(q => '<li>' + esc(q.q) + (q.behavior ? ' <i>(' + esc(q.behavior) + ')</i>' : '') + '</li>').join('');
+  const head = '<div class="hd"><b>Trailback Panel</b> · ' + esc(val('s-date') || '') + ' · Student ' + esc(P.initials || '') + (P.behaviorType ? ' · ' + esc(P.behaviorType) : '') + '<span>Confidential: leave this with the panel lead</span></div>';
+  const packet = head +
+    '<div class="dd"><div><b>DO</b> Ask one question, then wait. Let silence do some of the work.</div><div><b>DON\'T</b> No judgments. No verdicts. No lectures. No forced apology.</div></div>' +
+    stages.map((x, i) => { const list = st[x[1]] || []; return '<div class="st"><h3>' + (i + 1) + ' ' + x[0] + ' ' + x[1] + ' <small>' + x[2] + '</small></h3><div class="cols"><div><h4>Ask first</h4><ul>' + qs(list, /ask first/i) + '</ul>' +
+      (x[1] === 'Impact' && list.some(q => /after/i.test(q.when)) ? '<h4>After the impact statement is read</h4><ul>' + qs(list, /after/i) + '</ul>' : '') +
+      '</div><div><h4>If there is time</h4><ul>' + qs(list, /time/i) + '</ul></div><div class="notes"><h4>Notes</h4></div></div></div>'; }).join('') +
+    '<div class="st"><h3>🎒 Stuck? Back pocket</h3><ul class="row">' + (st['Back pocket'] || []).map(q => '<li><i>' + esc(q.when) + ':</i> ' + esc(q.q) + '</li>').join('') + '</ul></div>' +
+    '<div class="st"><h3>Close</h3><p>Thank the student. Each panelist names one strength they heard today: ______________________________________________</p></div>' +
+    '<div class="pb"></div>' + head +
+    '<h2>Deliberation menu</h2><p>The student steps out. Five steps, a few minutes. The chair approves the plan before following up with the student.</p>' +
+    '<div class="st"><h3>Step 1. Answer three questions</h3><ol><li>What harm was done, and to whom, inside and outside the building?</li><li>What does the student need to succeed?</li><li>What do others need to feel restored?</li></ol><div class="notes tall"></div></div>' +
+    '<div class="st"><h3>Step 2. Name the theme and the need</h3><p>The theme in one sentence: __________________________________________________</p><table><tr><td><b>Connection</b><br>Needs people and a place to belong. Start in Reconnect.</td><td><b>Awareness</b><br>Does not yet see the impact or the pattern. Start in Reflect.</td><td><b>Skills</b><br>Does not yet know how to do it differently. Start in Reflect.</td><td><b>Regulation</b><br>Knows how, can\'t yet manage it in the moment. Start in Re-engage.</td></tr></table></div>' +
+    '<div class="st"><h3>Step 3. Choose one to three actions</h3><table><tr><th>Menu</th><th>Type</th><th>Examples</th></tr>' +
+      '<tr><td><b>Repair</b> make right the harm</td><td>You Break It, You Fix It · Altruistic · Logical</td><td>Apology the person confirms · clean, fix or replace · something positive for the person harmed</td></tr>' +
+      '<tr><td><b>Reconnect</b> build belonging</td><td>Community · Inspire</td><td>Lunch group with positive peers · coach or mentor · a team or club</td></tr>' +
+      '<tr><td><b>Reflect</b> the impact and the pattern</td><td>Teach Skills · Plan</td><td>Poster, PSA or slideshow · Camp Mountaineer pathway · a written if-then plan</td></tr>' +
+      '<tr><td><b>Re-engage</b> a way to succeed</td><td>Choice · Transform · Loss of Privilege with a path back · Space and Time</td><td>Service project · a job in the building · re-entry meeting with the teacher</td></tr></table><p>Give the student a real choice between two workable options when you can.</p></div>' +
+    '<div class="st"><h3>Step 4. Check each action</h3><p><b>Related</b> follows from what happened · <b>Respectful</b> preserves dignity · <b>Reasonable</b> fits this student and can be done</p></div>' +
+    '<div class="st"><h3>Step 5. Lock the plan</h3><p>One to three actions, each tied to the harm · done within 10 school days · a written test · no detentions · a check-in adult for days 3, 10 and 30</p>' +
+      '<table class="plan"><tr><th>Action</th><th>How we know it is done</th><th>Due</th><th>Check-in adult</th></tr><tr><td>1.</td><td></td><td></td><td></td></tr><tr><td>2.</td><td></td><td></td><td></td></tr><tr><td>3.</td><td></td><td></td><td></td></tr></table></div>' +
+    '<div class="st"><h3>When the student returns</h3><ol><li>Share the strengths we heard.</li><li>Explain the plan and why each action follows.</li><li>Say what happens if it is finished and if it is not.</li><li>The student agrees and meets the check-in adult.</li></ol></div>';
+  const css = 'body{font:11pt Georgia,serif;color:#1e190f;margin:0}.pk{padding:0 4mm}.hd{display:flex;justify-content:space-between;border-bottom:2px solid #2c4a35;padding:2mm 0;margin-bottom:3mm;font-size:10pt}.hd span{font-style:italic;color:#666}' +
+    'h2{font-size:15pt;margin:2mm 0}h3{font-size:12pt;margin:0 0 1mm;color:#2c4a35}h3 small{font-weight:400;color:#666;font-size:9pt}h4{font-size:8.5pt;text-transform:uppercase;letter-spacing:.06em;color:#7a5510;margin:1mm 0}' +
+    'ul,ol{margin:0 0 1mm 5mm;padding:0}li{margin:.6mm 0;font-size:9.5pt}.st{border:1px solid #cbbfa5;border-radius:3mm;padding:2mm 3mm;margin:0 0 2.5mm;break-inside:avoid}.cols{display:grid;grid-template-columns:1.1fr 1.1fr .9fr;gap:3mm}' +
+    '.notes{border-left:1px dashed #cbbfa5;padding-left:2mm;min-height:22mm}.notes.tall{border:0;border-top:1px dashed #cbbfa5;min-height:24mm;margin-top:2mm}.dd{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:2.5mm;font-size:9.5pt}' +
+    'ul.row{columns:2}table{width:100%;border-collapse:collapse;font-size:9pt}td,th{border:1px solid #cbbfa5;padding:1.5mm;vertical-align:top;text-align:left}table.plan td{height:11mm}p{font-size:9.5pt;margin:1mm 0}.pb,.copy{break-after:page}@page{size:letter;margin:10mm}';
+  const w = window.open('', '_blank');
+  if (!w) { toast('Allow pop-ups to print the packets.'); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Trailback Panel packets</title><style>' + css + '</style></head><body>' +
+    Array.from({ length: n }, (_, i) => '<div class="pk' + (i < n - 1 ? ' copy' : '') + '">' + packet + '</div>').join('') + '</body></html>');
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 400);
+}
+
 function weekdaysAfter(ymd, n) {
   const d = new Date(ymd + 'T12:00:00'); let k = 0;
   while (k < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) k++; }

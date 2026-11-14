@@ -191,4 +191,49 @@ test('reminders: the check-in link the morning it is due, a heads-up 2 school da
   assert.strictEqual(w.call({ action: 'trailbackCase', payload: { case_id: id } }).data.status, 'repair_in_progress', 'nothing reverts by itself');
 });
 
+test('Give / Get: staff keep their own rows, the building sees them, the plan builder gets them with the ideas bank', () => {
+  const w = world();
+  w.user.email = 'ms_art@easdpa.org';
+  const a = w.call({ action: 'giveGetSave', payload: { kind: 'Give', what: 'Lunch bunch in the art room', when: 'Tuesdays', spots: '3', menu: 'Reconnect' } });
+  assert.ok(a.ok, a.error);
+  w.call({ action: 'giveGetSave', payload: { kind: 'Get', what: 'Set up the kiln shelves', menu: 'Re-engage', active: false } });
+  let b = w.call({ action: 'giveGetBoard', payload: {} }).data;
+  assert.strictEqual(b.mine.length, 2);
+  assert.strictEqual(b.board.length, 1, 'a paused row is not on the board');
+  w.user.email = 'mr_gym@easdpa.org';
+  assert.ok(/own rows/.test(w.call({ action: 'giveGetSave', payload: { id: a.data.id, what: 'Mine now' } }).error));
+  assert.strictEqual(w.call({ action: 'giveGetBoard', payload: {} }).data.board[0].name, 'Ms Art');
+  const ideas = w.call({ action: 'actionIdeas', payload: {} }).data;
+  assert.ok(ideas.ideas.length >= 30 && ideas.ideas.every(i => ['Repair', 'Reconnect', 'Reflect', 'Re-engage'].includes(i.menu)));
+  assert.ok(ideas.ideas.some(i => /Apology the person confirms/.test(i.idea) && i.test));
+  assert.deepStrictEqual(ideas.offers.map(o => [o.what, o.email]), [['Lunch bunch in the art room', 'ms_art@easdpa.org']]);
+  w.user.email = 'ms_art@easdpa.org';
+  w.call({ action: 'giveGetSave', payload: { id: a.data.id, remove: true } });
+  assert.strictEqual(w.call({ action: 'giveGetBoard', payload: {} }).data.mine.length, 1);
+  w.user.email = '';
+  assert.ok(/sign in/i.test(w.call({ action: 'giveGetBoard', payload: {} }).error));
+});
+
+test('Summit: finishing the plan invites the student back; the adults record what they shared; the card has it', () => {
+  const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', '']] });
+  const id = heardWithPlan(w, [PLAN[0]]);
+  w.user.email = 'dean@easdpa.org';
+  w.sent.length = 0;
+  assert.strictEqual(w.call({ action: 'repairCheckin', payload: { case_id: id, actions: { a1: 'done' }, overall: 'on_track' } }).data.closed, true);
+  const inv = w.sent.find(m => /Summit celebration/.test(m.subject));
+  assert.ok(inv && /dean@easdpa.org/.test(inv.to) && /kelly@easdpa.org/.test(inv.to), 'the adults and the coordinator are invited');
+  assert.ok(/What are you most proud of/.test(inv.htmlBody) && /Delete the post/.test(inv.htmlBody));
+  let l = w.call({ action: 'summitList', payload: {} }).data;
+  assert.strictEqual(l.toHold.length, 1);
+  assert.strictEqual(l.questions.length, 5);
+  assert.ok(/accomplished or what they are proud of/.test(w.call({ action: 'summitSave', payload: { case_id: id, answers: {} } }).error));
+  const saved = w.call({ action: 'summitSave', payload: { case_id: id, answers: { accomplished: 'Took it down and apologized', proud: 'I said it to his face', learned: 'People see more than I think' }, noticed: 'Calm and honest', present: 'Mr. Dean, Ms. AP' } });
+  assert.ok(saved.ok, saved.error);
+  assert.strictEqual(saved.data.summit.proud, 'I said it to his face');
+  l = w.call({ action: 'summitList', payload: {} }).data;
+  assert.deepStrictEqual([l.toHold.length, l.held.length], [0, 1]);
+  w.user.email = 'stranger@easdpa.org';
+  assert.strictEqual(w.call({ action: 'summitList', payload: {} }).data.toHold.length + w.call({ action: 'summitList', payload: {} }).data.held.length, 0, 'only the case\'s adults see it');
+});
+
 console.log('\n' + passed + ' tests passed');

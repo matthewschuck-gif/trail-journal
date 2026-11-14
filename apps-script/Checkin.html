@@ -42,6 +42,9 @@
   .msg.err { background: var(--error-lt); color: var(--error); }
   .empty { padding: 26px; text-align: center; color: var(--ink-lt); border: 1px dashed var(--paper-dkr); border-radius: var(--radius); margin-top: 14px; }
   .hidden { display: none; }
+  .summit { border-color: var(--gold); background: linear-gradient(180deg, #fff8e8, var(--cream)); }
+  .summit label { display: block; font-size: 14px; font-weight: 600; margin-top: 12px; }
+  .done-list { margin: 8px 0 0 18px; font-size: 14px; }
   button:focus-visible, input:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
 </style>
 </head>
@@ -51,6 +54,9 @@
   <p class="lead">Mark each action, say how it's going, save. That logs the check-in. When every action is done, the case closes as completed and the detention is cleared.</p>
   <div id="msg" class="msg hidden" role="status"></div>
   <div id="cases"><div class="empty">Loading your cases…</div></div>
+  <h1 style="margin-top:34px;font-size:24px">🏔️ Summit celebrations</h1>
+  <p class="lead">When a student finishes every part of the plan, bring them back for ten minutes to share, humbly, what they did. Record it here and print them a Summit card.</p>
+  <div id="summits"><div class="empty">Loading…</div></div>
 </main>
 <script>
 (function () {
@@ -105,7 +111,8 @@
       if (!overall) { say('Pick On track, Needs help or Not done first.', true); return; }
       save.disabled = true; save.textContent = 'Saving…';
       call('repairCheckin', { case_id: c.case_id, actions: marks, notes: notes, overall: overall, note: note.value }).then(function (r) {
-        if (r.closed) say('🎉 Every action is done: the case is closed as completed and the detention is cleared.' + (r.warnings && r.warnings.length ? ' (' + r.warnings.join(' ') + ')' : ''));
+        if (r.closed) { loadSummits(); }
+        if (r.closed) say('🎉 Every action is done: the case is closed as completed and the detention is cleared. Celebrate it: the Summit is below.' + (r.warnings && r.warnings.length ? ' (' + r.warnings.join(' ') + ')' : ''));
         else say('Saved' + (r.logged ? ': the ' + r.logged + '-school-day check-in is logged.' : '.') + (overall !== 'on_track' ? ' The coordinator was told.' : ''));
         return load();
       }).catch(function (e) { save.disabled = false; save.textContent = 'Save check-in'; say(e.message, true); });
@@ -120,8 +127,60 @@
       d.cases.sort(function (a, b) { return (a.case_id === focusId ? -1 : 0) - (b.case_id === focusId ? -1 : 0); }).forEach(function (c) { box.appendChild(card(c)); });
     });
   }
+  // ── Summit celebrations (16_Summit.gs) ──
+  function summitCard(v) {
+    var w = window.open('', '_blank'); if (!w) { say('Allow pop-ups to print the Summit card.', true); return; }
+    var e = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var a = v.summit || {};
+    var sec = function (h, t) { return t ? '<h3>' + h + '</h3><p>' + e(t) + '</p>' : ''; };
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Summit card</title><style>body{font:12pt Georgia,serif;margin:0;color:#1e190f}' +
+      '.c{border:3mm double #b8821e;border-radius:6mm;margin:10mm;padding:10mm 12mm;text-align:center}h1{font-size:30pt;margin:2mm 0;color:#243d2d}h2{font-size:16pt;margin:0 0 6mm;color:#7a5510;font-weight:400}' +
+      'h3{font-size:11pt;text-transform:uppercase;letter-spacing:.08em;color:#243d2d;margin:5mm 0 1mm}p{margin:0 auto;max-width:150mm}ul{list-style:none;padding:0;margin:2mm 0}li{margin:1mm 0}li:before{content:"✓ ";color:#243d2d}.f{margin-top:8mm;font-size:10pt;color:#666}@page{size:letter;margin:8mm}</style></head><body><div class="c">' +
+      '<div style="font-size:40pt">🏔️</div><h1>' + e(v.student_name || '') + '</h1><h2>reached the Summit of a Trailback plan</h2>' +
+      '<h3>What I did</h3><ul>' + (v.actions || []).map(function (x) { return '<li>' + e(x) + '</li>'; }).join('') + '</ul>' +
+      sec('What I accomplished', a.accomplished) + sec('What I learned', a.learned) + sec('What I am proud of', a.proud) + sec('Who helped me', a.helped) + sec('What is next', a.next) +
+      sec('What the adults noticed', a.noticed) + '<div class="f">Ephrata Middle School · Camp Mountaineer · ' + e(String(v.summit_at || '').slice(0, 10)) + '</div></div></body></html>');
+    w.document.close(); setTimeout(function () { w.focus(); w.print(); }, 400);
+  }
+  function summitForm(v, qs) {
+    var art = el('article', 'case summit');
+    art.appendChild(el('div', 'who', '🏔️ ' + (v.student_name || 'A student')));
+    art.appendChild(el('div', 'sub', 'Finished ' + (v.closed_at || '') + (v.squad ? ' · ' + v.squad + ' squad' : '')));
+    if (v.actions.length) { var ul = el('ul', 'done-list'); v.actions.forEach(function (a) { ul.appendChild(el('li', '', '✓ ' + a)); }); art.appendChild(ul); }
+    var inputs = {};
+    qs.forEach(function (q) { art.appendChild(el('label', '', q.q)); var t = el('textarea'); t.rows = 2; t.maxLength = 800; art.appendChild(t); inputs[q.key] = t; });
+    art.appendChild(el('label', '', 'What the adults noticed (each of you, one thing)')); var nt = el('textarea'); nt.rows = 2; art.appendChild(nt);
+    art.appendChild(el('label', '', 'Who was there')); var pr = el('input', 'note'); pr.maxLength = 300; art.appendChild(pr);
+    var b = el('button', 'save', 'Save the Summit'); b.type = 'button';
+    b.addEventListener('click', function () {
+      var ans = {}; Object.keys(inputs).forEach(function (k) { ans[k] = inputs[k].value; });
+      b.disabled = true;
+      call('summitSave', { case_id: v.case_id, answers: ans, noticed: nt.value, present: pr.value }).then(function (saved) {
+        say('🏔️ Saved. Print the Summit card for ' + (v.student_name || 'the student') + ' below.'); summitCard(saved); return loadSummits();
+      }).catch(function (e) { b.disabled = false; say(e.message, true); });
+    });
+    art.appendChild(b);
+    return art;
+  }
+  function loadSummits() {
+    return call('summitList').then(function (d) {
+      var box = $('summits'); box.textContent = '';
+      if (!d.toHold.length && !d.held.length) { box.appendChild(el('div', 'empty', 'No finished plans yet.')); return; }
+      d.toHold.forEach(function (v) { box.appendChild(summitForm(v, d.questions)); });
+      d.held.forEach(function (v) {
+        var art = el('article', 'case'); art.appendChild(el('div', 'who', '✅ ' + (v.student_name || '')));
+        art.appendChild(el('div', 'sub', 'Summit held ' + String(v.summit_at).slice(0, 10)));
+        var p = el('button', 'save', '🖨️ Print the Summit card'); p.type = 'button'; p.style.background = '#b8821e';
+        p.addEventListener('click', function () { summitCard(v); }); art.appendChild(p); box.appendChild(art);
+      });
+    });
+  }
+
   if (!TJ_BOOT.staff) { $('cases').textContent = ''; $('cases').appendChild(el('div', 'empty', 'Sign in with your school Google account to check in.')); }
-  else load().catch(function (e) { $('cases').textContent = ''; say(e.message, true); });
+  else {
+    load().catch(function (e) { $('cases').textContent = ''; say(e.message, true); });
+    loadSummits().catch(function () { $('summits').textContent = ''; });
+  }
 })();
 </script>
 </body>
