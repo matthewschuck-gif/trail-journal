@@ -54,6 +54,9 @@
   form .wide { grid-column: 1 / -1; }
   input:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   .hidden { display: none; }
+  .glimpse { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px dashed var(--trail-mid); font-size: 14px; }
+  .glimpse div { margin: 3px 0; } .glimpse b { color: var(--trail); }
+  .g-h { font-weight: 700; color: var(--trail); } .g-f { font-size: 12px; color: var(--ink-lt); margin-top: 6px !important; }
   @media (max-width: 640px) { form { grid-template-columns: 1fr; } .seats { text-align: left; } }
 </style>
 </head>
@@ -176,6 +179,19 @@
     card.appendChild(chips);
 
     card.appendChild(el('div', 'panelists', c.panelists.length ? 'On this panel: ' + c.panelists.join(', ') : 'Nobody has signed up yet.'));
+
+    // The glimpse: only for those signed up on this case (the full brief comes the school day before).
+    if (c.glimpse) {
+      var g = c.glimpse, gl = el('div', 'glimpse');
+      gl.appendChild(el('div', 'g-h', '👀 A glimpse, for the panel only'));
+      var line = function (label, text) { if (!text) return; var d = el('div'); d.appendChild(el('b', '', label + ': ')); d.appendChild(document.createTextNode(text)); gl.appendChild(d); };
+      line('Incident', g.incident); line('Pattern', g.pattern); line('Team', g.team);
+      line('Strengths on file', (g.strengths || []).join(' · ') || 'none on file yet: the Strengths stage matters more');
+      line('This year', (g.yearPattern || []).join(' · '));
+      line('Trail Journal', g.journal);
+      gl.appendChild(el('div', 'g-f', 'Please keep this to the panel. The full brief arrives at 3:00 the school day before.'));
+      card.appendChild(gl);
+    }
 
     if (state.isAdmin) {
       var row = el('div', 'admin-row');

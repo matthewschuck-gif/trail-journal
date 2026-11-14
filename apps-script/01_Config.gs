@@ -233,7 +233,10 @@ const SCHEMA = {
     // The approved plan, one entry per action, tracked at each check-in (14_RepairPlan.gs).
     'repair_actions',
     // The Summit celebration when the plan is finished (16_Summit.gs).
-    'summit_at', 'summit_json'],
+    'summit_at', 'summit_json',
+    // The autopilot (17_Pipeline.gs): the family's email and one-time consent link, and when the
+    // student's Trail Journal link and reminder went out.
+    'family_email', 'consent_token', 'consent_sent_at', 'journal_sent_at', 'journal_reminded_at'],
 };
 
 /**

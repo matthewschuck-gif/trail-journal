@@ -36,7 +36,7 @@ const CASE_LABELS_ = {
   closed_completed: 'Closed: completed', closed_reverted: 'Closed: reverted', declined: 'Declined',
 };
 const PRE_PANEL_ = ['suggested', 'offered', 'consented', 'tj_done', 'scheduled'];
-const CASE_SOURCES_ = ['admin_conference', 'teacher_referral', 'climber'];
+const CASE_SOURCES_ = ['admin_conference', 'teacher_referral', 'climber', 'pattern', 'trail_journal'];
 const CASE_DATE_FIELDS_ = ['consequence_original_date', 'scheduled_date', 'checkin_3', 'checkin_10', 'checkin_30'];
 const CASE_TIME_FIELDS_ = ['created_at', 'offered_at', 'consent_at', 'fixit_meeting_at', 'closed_at', 'updated_at'];
 const ML_TAB_ = 'Master Log';
@@ -134,11 +134,16 @@ function createCase_(fields, by) {
 
 /** Staff page or another tool: body.payload = the case fields. */
 function createTrailbackCase_(body) {
-  return createCase_(body.payload || {}, whoIs_(body));
+  const p = body.payload || {};
+  const c = createCase_(p, whoIs_(body));
+  if (!c.existing && emailOf_(p.family_email)) genericUpdate_(TABS.PANEL_CASES, { case_id: c.case_id }, { family_email: emailOf_(p.family_email) });
+  // Offered straight from the consequence form: the family gets the consent link now (17_Pipeline.gs).
+  if (!c.existing && c.status === 'offered' && pipelineOn_()) { try { sendConsentLink_(getCase_(c.case_id)); } catch (e) { console.warn(e); } }
+  return c.existing ? c : getCase_(c.case_id);
 }
 
 // ── MOVING A CASE ───────────────────────────────────────────────────
-const EDITABLE_CASE_FIELDS_ = ['student_id', 'student_name', 'grade', 'squad', 'behavior_type', 'referring_staff',
+const EDITABLE_CASE_FIELDS_ = ['student_id', 'student_name', 'grade', 'squad', 'behavior_type', 'referring_staff', 'family_email',
   'consequence_type', 'consequence_original_date', 'master_log_row', 'checkin_person', 'completion_criteria',
   'incident_summary', 'behavior_pattern'];
 
@@ -249,6 +254,10 @@ function updateTrailbackCase_(body) {
         note = 'Edited: ' + Object.keys(patch).join(', ');
         break;
       }
+      case 'send_consent':
+        need(['suggested', 'offered'], 'send a consent link for');
+        note = 'Consent link sent again';
+        break;
       case 'clear_flag':
         patch = { admin_flag: '' };
         note = 'Flag cleared';
@@ -256,7 +265,14 @@ function updateTrailbackCase_(body) {
       default:
         throw new Error('Unknown case step: ' + p.op);
     }
-    return { case: saveCase_(c, patch, by, c.status, note), warnings: warnings };
+    const saved = saveCase_(c, patch, by, c.status, note);
+    // The autopilot (17_Pipeline.gs): the consent link, the Trail Journal link, the seat call.
+    if (pipelineOn_()) {
+      if (p.op === 'offer' || p.op === 'send_consent') warnings.push.apply(warnings, quietOff_(sendConsentLink_(saved)));
+      if (p.op === 'consent') warnings.push.apply(warnings, quietOff_(sendJournalLink_(saved, false)));
+      if (p.op === 'schedule' && c.status !== 'scheduled') { warnings.push.apply(warnings, quietOff_(seatCall_(saved, false))); try { scheduledNotice_(saved); } catch (e) { warnings.push('Schedule notices: ' + e.message); } }
+    }
+    return { case: saved, warnings: warnings };
   } finally {
     lock.releaseLock();
   }
@@ -524,6 +540,7 @@ function trailbackDailyCheck() {
   const dow = new Date().getDay();
   if (dow === 0 || dow === 6 || noSchoolDates_()[todayYmd_()]) return;
   try { autoLinkTrailJournals_(); } catch (e) { console.error(e); }
+  try { pipelineDaily_(); } catch (e) { console.error(e); } // 17_Pipeline.gs: spot, remind, schedule, fill seats
   trailbackOverdueEmail_(false);
   try { repairReminders_(false); } catch (e) { console.error(e); } // 14_RepairPlan.gs: check-in links, due-soon and past-due notes
 }

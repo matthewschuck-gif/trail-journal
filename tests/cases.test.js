@@ -204,9 +204,10 @@ test('close reverted: needs a reason, Master Log back to Scheduled with a note, 
     assert.strictEqual(w.masterLog.rows[1][15], 'Scheduled');
     assert.ok(/reverted .*pick a new date/.test(w.masterLog.rows[1][16]));
     assert.strictEqual(String(w.masterLog.rows[1][2] || ''), '', 'no date booked');
-    assert.strictEqual(w.sent.length, on ? 1 : 0);
+    const rev = w.sent.filter(m => /reverted/i.test(m.subject)); // the autopilot's consent + journal emails go out too when ON
+    assert.strictEqual(rev.length, on ? 1 : 0);
     if (!on) assert.ok(r.warnings.some(x => /OFF/.test(x)));
-    else assert.strictEqual(w.sent[0].to, 'kelly@easdpa.org');
+    else assert.strictEqual(rev[0].to, 'kelly@easdpa.org');
     assert.strictEqual(w.step(c.case_id, 'clear_flag').data.case.admin_flag, '');
   }
 });
@@ -289,8 +290,9 @@ test('overdue check-ins: only past-due ones not logged yet; goes to the coordina
   assert.deepStrictEqual(list.map(o => o.n), [10]);
   const r = J(w.trailbackOverdueEmail_(false));
   assert.strictEqual(r.sent, true);
-  assert.strictEqual(w.sent[0].to, 'kelly@easdpa.org');
-  assert.ok(/10-school-day check-in was due 2020-01-15/.test(w.sent[0].htmlBody));
+  const od = w.sent.find(m => /overdue/i.test(m.subject)); // the offered case also asked for a family call
+  assert.strictEqual(od.to, 'kelly@easdpa.org');
+  assert.ok(/10-school-day check-in was due 2020-01-15/.test(od.htmlBody));
 });
 
 test('turning the timers on makes the daily case brief (the school day before each panel) and the daily check', () => {

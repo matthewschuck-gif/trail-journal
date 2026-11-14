@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>window.TJ_BOOT = <?!= boot ?>; // page, staff, siteUrl, beaconUrl, beaconToken, params (08_Web.gs)</script>
+<?!= include('TjBridge'); ?>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailback Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --trail: #243d2d; --trail-lt: #d6e8db; --gold: #b8821e; --ink: #1e190f; --ink-lt: #6f6250; --paper: #f6efe1; --paper-dkr: #cbbfa5; --cream: #faf5eb; --error: #9e2a2a; --error-lt: #fceeee; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: var(--paper); color: var(--ink); line-height: 1.6; }
+  main { max-width: 620px; margin: 0 auto; padding: 30px 18px 60px; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 30px; color: var(--trail); line-height: 1.15; }
+  p { margin-top: 12px; font-size: 17px; }
+  ul { margin: 10px 0 0 22px; font-size: 16px; } li { margin: 4px 0; }
+  .card { background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: 14px; padding: 18px 20px; margin-top: 18px; }
+  label { display: block; font-size: 14px; color: var(--ink-lt); margin-top: 14px; }
+  input { display: block; width: 100%; margin-top: 4px; font: 16px 'Lora', Georgia, serif; padding: 10px; border: 1px solid var(--paper-dkr); border-radius: 8px; background: #fff; }
+  .btns { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  button { flex: 1 1 200px; font: 700 17px 'Lora', Georgia, serif; padding: 14px; border-radius: 12px; border: 2px solid var(--trail); background: var(--trail); color: #fff; cursor: pointer; }
+  button.no { background: #fff; color: var(--trail); }
+  button:disabled { opacity: .5; }
+  .msg { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--trail-lt); color: var(--trail); font-size: 17px; }
+  .msg.err { background: var(--error-lt); color: var(--error); }
+  .small { font-size: 14px; color: var(--ink-lt); }
+</style>
+</head>
+<body>
+<main>
+  <div style="font-size:38px">⛺</div>
+  <h1 id="title">The Trailback Panel</h1>
+  <div id="body"><p>Loading…</p></div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var t = (TJ_BOOT.params && TJ_BOOT.params.t) || '';
+  function call(a, p) { return window.tjCall_({ action: a, payload: p || {} }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r.data; }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function msg(text, err) { $('body').innerHTML = '<div class="msg' + (err ? ' err' : '') + '">' + esc(text) + '</div>'; }
+  call('consentLookup', { t: t }).then(function (d) {
+    $('title').textContent = 'An invitation for ' + d.first;
+    if (!d.open) { msg('This has already been answered. Thank you!'); return; }
+    $('body').innerHTML =
+      '<p>Instead of serving ' + (d.consequence ? 'the ' + esc(d.consequence.toLowerCase()) : 'the detention') + ', ' + esc(d.first) + ' can meet with a small panel of staff at school to:</p>' +
+      '<ul><li>talk through what happened, in their own words,</li><li>hear how it affected other people,</li><li>and make a short plan to make it right, with an adult to check in.</li></ul>' +
+      '<p>If ' + esc(d.first) + ' finishes the plan, the detention is cleared. If not, it is served as planned. Nothing is added to their record by saying yes.</p>' +
+      '<div class="card"><label>Your name<input id="nm" maxlength="60" autocomplete="name"></label>' +
+      '<div class="btns"><button id="yes">Yes, they can do the Trailback Panel</button><button id="no" class="no">No, they will serve the detention</button></div>' +
+      '<p class="small">Questions? Reply to the email this link came in, or call the main office.</p></div>';
+    function answer(a) {
+      $('yes').disabled = $('no').disabled = true;
+      call('consentAnswer', { t: t, answer: a, name: $('nm').value }).then(function () {
+        msg(a === 'yes' ? 'Thank you! ' + d.first + ' will get a short Trail Journal to do first, and then the panel date. We\'ll share the plan with you after the panel.' : 'Thank you for letting us know. The detention stays as planned.');
+      }).catch(function (e) { msg(e.message, true); });
+    }
+    $('yes').onclick = function () { answer('yes'); };
+    $('no').onclick = function () { answer('no'); };
+  }).catch(function (e) { msg(e.message, true); });
+})();
+</script>
+</body>
+</html>

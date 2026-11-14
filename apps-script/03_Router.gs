@@ -158,6 +158,13 @@ function dispatch_(body) {
         break;
       // The panel's questions and the repair plan check-ins (14_RepairPlan.gs). Staff sign-in only.
       // Action ideas, the Give / Get board (15_GiveGet.gs) and Summit celebrations (16_Summit.gs).
+      // The family consent page (17_Pipeline.gs): public, by its one-time link.
+      case 'consentLookup':
+        result = consentLookup_(body);
+        break;
+      case 'consentAnswer':
+        result = consentAnswer_(body);
+        break;
       case 'actionIdeas':
         result = actionIdeas_(body);
         break;

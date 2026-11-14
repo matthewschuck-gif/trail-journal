@@ -30,6 +30,15 @@ const WEB_DEFAULTS_ = [
   ['PANEL_MINUTES', '25', 'Trailback Panel: how long a panel runs (minutes), for the calendar invite.'],
   ['PANEL_ROOM', '', 'Trailback Panel: the usual room. A lead can change it per case.'],
   ['PANEL_SEATS', '6', 'Trailback Panel: staff seats per case on the sign-up page.'],
+  ['TRAILBACK_AUTOMATION', 'ON', 'Trailback autopilot (17_Pipeline.gs): ON = suggest cases from repeat patterns and Trail Journals, send the family consent link and the student\'s Trail Journal link, schedule when the journal is done, and call for panel seats. OFF = all by hand.'],
+  ['TRAILBACK_PATTERN_COUNT', '3', 'Autopilot: this many Master Log rows with the same Behavior Type ...'],
+  ['TRAILBACK_PATTERN_DAYS', '30', '... within this many days suggests a Trailback case.'],
+  ['TRAILBACK_PATTERN_SKIP', 'bully, threat, weapon, safety, harass, drug, vape, fight', 'Autopilot: Behavior Types with any of these words are never suggested (they go to an administrator).'],
+  ['TRAILBACK_TJ_PRIOR', '2', 'Autopilot: a Trail Journal with this many earlier journals (or a Low insight one with any before it) suggests a case.'],
+  ['STUDENT_EMAIL_PATTERN', '{id}@gomounts.org', 'The student\'s school email, built from the 800# ({id}), for the Trail Journal link and panel date.'],
+  ['TRAILBACK_AUTO_SCHEDULE', 'ON', 'Autopilot: ON = a case whose Trail Journal is done goes on the next Wednesday with room. OFF = staff schedule.'],
+  ['PANEL_MAX_CASES', '2', 'Autopilot: the most cases on one Wednesday panel.'],
+  ['PANEL_MIN_SEATS', '3', 'Autopilot: fewer staff than this signed up 2 school days before = a second seat call.'],
   ['TRAILBACK_AUTO_CLOSE', 'ON', 'Trailback: ON = when the check-in adult marks every action Done, the case closes as completed by itself (Master Log Resolved + the Clash point). OFF = staff close it. Nothing ever reverts by itself.'],
   ['LEGACY_API', 'ON', 'ON while the old GitHub pages are still in use. Set OFF after the switch: the old token route then only takes the exit auto-save.'],
   ['PANEL_APPROVERS', '', 'Trailback Panel: emails (comma separated) allowed to approve a plan. Blank = anyone signed in on the staff link.'],
@@ -40,7 +49,7 @@ const WEB_DEFAULTS_ = [
   ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', 'Trailback Panel: the Accountability & Intervention Log Sheet. Its Master Log Status changes when a case is held, resolved or reverted.'],
   ['TRAILBACK_REFERRAL_FORM_ID', '19qZF3mndYFktrkrwHZz-lr5IGSJUAoU46w99rUTShvc', 'Trailback Panel: the "Trailback Panel Staff Referral" Google Form. Connect it from the menu.'],
 ];
-const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet' };
+const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet', consent: 'Consent' };
 
 function webSetting_(key) {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WEB_SETTINGS_TAB_);
@@ -90,7 +99,7 @@ function serveTrailPage_(e) {
   });
   return t.evaluate()
     .setTitle({ journal: 'Trail Journal — Camp Mountaineer', respond: 'Your Side of the Trail — Camp Mountaineer', admin: 'Trail Journal Admin',
-      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In', givget: 'Give / Get · EMS' }[page])
+      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In', givget: 'Give / Get · EMS', consent: 'Trailback Panel · Ephrata Middle School' }[page])
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // trailjournal.org shows it in a frame
 }
@@ -126,6 +135,7 @@ function onOpen() {
       .addItem('Open the panel sign-up page', 'showPanelSignupLink')
       .addItem('Open the one-tap check-in page', 'showCheckinLink')
       .addItem('Open Give / Get for staff', 'showGiveGetLink')
+      .addItem('Run the autopilot now (suggest, remind, schedule, seats)', 'menuRunPipeline_')
       .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
       .addItem('Add missing questions to the staff referral form', 'addReferralQuestions')
       .addItem('Connect the staff referral form', 'connectReferralForm')

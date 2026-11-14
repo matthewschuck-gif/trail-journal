@@ -165,6 +165,8 @@ function panelBoard_(body) {
       c.mine = on.some(function (s) { return String(s.staff_email).toLowerCase() === me; });
       const j = panelJournalFor_({ student_id: c.studentId, student_name: c.studentName });
       c.journal = j ? { status: j.status, date: j.date } : null;
+      // The glimpse (17_Pipeline.gs): only for those signed up on this case.
+      if (c.mine) { try { c.glimpse = panelGlimpse_(getCase_(c.id)); } catch (e) { c.glimpse = null; } }
       return c;
     });
   let queueUrl = '';
