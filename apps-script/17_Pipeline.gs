@@ -187,15 +187,18 @@ function sendJournalLink_(c, reminder) {
   } catch (e) { return ['Trail Journal link not sent: ' + e.message]; }
 }
 
-// ── 4. SCHEDULE: the next Wednesday with room ───────────────────────
-function nextOpenWednesday_() {
-  const max = numSetting_('PANEL_MAX_CASES', 2), off = noSchoolDates_(), today = todayYmd_();
+// ── 4. SCHEDULE: the next panel day with room (any school day; PANEL_DAYS narrows it) ──
+function nextOpenWednesday_() { return nextOpenPanelDay_(); } // old name
+function nextOpenPanelDay_() {
+  const max = numSetting_('PANEL_MAX_CASES', 2), off = noSchoolDates_(), today = todayYmd_(), days = panelDaysAllowed_();
   const taken = {};
-  allCases_().forEach(function (c) { if (c.status === 'scheduled' && c.scheduled_date) taken[c.scheduled_date] = (taken[c.scheduled_date] || 0) + 1; });
-  let d = nextWednesday_(today);
-  for (let i = 0; i < 12; i++) {
-    if (!off[d] && schoolDaysBetween_(today, d) >= 2 && (taken[d] || 0) < max) return d;
-    const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + 7); d = ymdOf_(x);
+  allCases_().forEach(function (c) { const d = ymdOf_(c.scheduled_date); if (d && ['declined', 'closed_reverted'].indexOf(c.status) === -1) taken[d] = (taken[d] || 0) + 1; });
+  const x = new Date(today + 'T12:00:00');
+  for (let i = 0; i < 90; i++) {
+    x.setDate(x.getDate() + 1);
+    const d = ymdOf_(x);
+    if (days.indexOf(dowOf_(d)) === -1 || off[d]) continue;
+    if (schoolDaysBetween_(today, d) >= 2 && (taken[d] || 0) < max) return d;
   }
   return '';
 }
@@ -221,7 +224,7 @@ function autoSchedule_() {
   if (String(webSetting_('TRAILBACK_AUTO_SCHEDULE') || 'ON').toUpperCase() === 'OFF') return [];
   const out = [];
   allCases_().filter(function (c) { return c.status === 'tj_done' && !c.scheduled_date; }).forEach(function (c) {
-    const wed = nextOpenWednesday_();
+    const wed = nextOpenPanelDay_();
     if (!wed) return;
     try { updateTrailbackCase_({ _staffEmail: 'Auto-schedule', payload: { case_id: c.case_id, op: 'schedule', date: wed, note: 'Scheduled automatically: Trail Journal done' } }); out.push(c.case_id); }
     catch (e) { console.warn('Auto-schedule ' + c.case_id + ': ' + e.message); }

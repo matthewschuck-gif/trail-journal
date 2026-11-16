@@ -152,10 +152,28 @@ function isWednesday_(ymd) {
   return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).getUTCDay() === 3;
 }
 
+// Panels can be on any school day. Settings PANEL_DAYS (e.g. "Mon,Wed,Fri") narrows the days the
+// autopilot picks; staff can still schedule any school day by hand.
+const PANEL_DAY_NAMES_ = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+function dowOf_(ymd) { const p = ymd.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).getUTCDay(); }
+function isSchoolWeekday_(ymd) { const w = dowOf_(ymd); return w > 0 && w < 6; }
+function panelDaysAllowed_() {
+  const raw = String(webSetting_('PANEL_DAYS') || '').toLowerCase();
+  const days = PANEL_DAY_NAMES_.map(function (n, i) { return raw.indexOf(n) > -1 ? i : -1; }).filter(function (i) { return i > 0 && i < 6; });
+  return days.length ? days : [1, 2, 3, 4, 5];
+}
+/** The soonest date (today or later) with a scheduled case, else today. */
+function nextPanelDay_(cases) {
+  const today = todayYmd_();
+  const dates = (cases || allCases_()).filter(function (c) { return c.status === 'scheduled' && ymdOf_(c.scheduled_date) >= today; })
+    .map(function (c) { return ymdOf_(c.scheduled_date); }).sort();
+  return dates[0] || today;
+}
+
 /**
  * body.payload: { case_id, op, ... }. ops and where they may start:
  *   offer (suggested) · consent (suggested, offered) · link_tj {trail_journal_id} (consented; sets tj_done)
- *   schedule {date: a Wednesday} (consented, tj_done, scheduled) · checkin {n: 3|10|30, note}
+ *   schedule {date: any school day} (consented, tj_done, scheduled) · checkin {n: 3|10|30, note}
  *   fixit {date?, note} · close_completed {reason?} · close_reverted {reason}
  *   (repair_in_progress, or heard_approved for reverted) · decline {reason} (before the panel)
  *   edit {fields} (any open case) · clear_flag (any)
@@ -194,12 +212,12 @@ function updateTrailbackCase_(body) {
       case 'schedule': {
         need(['consented', 'tj_done', 'scheduled'], 'schedule');
         const d = ymdOf_(p.date);
-        if (!d || !isWednesday_(d)) throw new Error('Panels are on Wednesdays. Pick a Wednesday.');
-        if (d < todayYmd_()) throw new Error('That Wednesday has already passed.');
+        if (!d || !isSchoolWeekday_(d)) throw new Error('Pick a school day (Monday to Friday).');
+        if (d < todayYmd_()) throw new Error('That day has already passed.');
         if (noSchoolDates_()[d]) throw new Error(d + ' is on the No School Dates tab.');
         const maxDay = numSetting_('PANEL_MAX_CASES', 2);
         const onDay = allCases_().filter(function (o) { return String(o.case_id) !== String(c.case_id) && ymdOf_(o.scheduled_date) === d && ['declined', 'closed_reverted'].indexOf(o.status) === -1; }).length;
-        if (onDay >= maxDay) throw new Error(d + ' already has ' + onDay + ' case' + (onDay === 1 ? '' : 's') + ' (the most is ' + maxDay + ' a day). Pick another Wednesday.');
+        if (onDay >= maxDay) throw new Error(d + ' already has ' + onDay + ' case' + (onDay === 1 ? '' : 's') + ' (the most is ' + maxDay + ' a day). Pick another day.');
         patch = { status: 'scheduled', scheduled_date: d };
         note = note || ('Panel ' + d);
         break;
@@ -384,9 +402,9 @@ function trailbackCases_(body) {
   try { linked = autoLinkTrailJournals_(); } catch (e) { console.error('autoLinkTrailJournals_: ' + e); }
   const cases = allCases_();
   const today = todayYmd_();
-  const wed = nextWednesday_(today);
+  const wed = nextPanelDay_(cases); // the next day with a panel (any school day); the key keeps its old name
   return {
-    today: today, wednesday: wed, linked: linked,
+    today: today, wednesday: wed, nextPanel: wed, linked: linked,
     cases: cases.sort(function (a, b) { return String(b.updated_at) < String(a.updated_at) ? -1 : 1; }),
     docket: cases.filter(function (c) { return c.status === 'scheduled' && c.scheduled_date === wed; }),
     counts: weeklyCounts_(cases, ymdOf_((body.payload && body.payload.week) || today) || today),

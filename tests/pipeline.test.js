@@ -160,7 +160,7 @@ test('ask: offering sends the family a one-time consent link; Yes records consen
   assert.strictEqual(w.call({ action: 'trailbackCase', payload: { case_id: c2.case_id } }).data.status, 'declined');
 });
 
-test('schedule + seats: Trail Journal done puts the case on the next open Wednesday; seat call and notices go out; a second seat call 2 school days before if short', () => {
+test('schedule + seats: Trail Journal done puts the case on the next open school day; seat call and notices go out; a second seat call 2 school days before if short', () => {
   const w = world({ settings: settings.concat([['PANEL_MAX_CASES', '1', '']]) });
   w.tabs['Panel Members'] = makeSheet([['Name', 'Email', 'Role', 'Active'], ['Kelly', 'kelly@easdpa.org', 'Lead', 'TRUE'], ['Mr. Dean', 'dean@easdpa.org', 'Staff', 'TRUE']]);
   const mk = (sid, ml) => { const c = w.call({ action: 'createTrailbackCase', payload: { student_id: sid, student_name: 'Pat Quill', master_log_row: ml } }).data; w.step(c.case_id, 'consent'); w.step(c.case_id, 'link_tj', { trail_journal_id: 'tj-' + sid }); return c.case_id; };
@@ -169,9 +169,10 @@ test('schedule + seats: Trail Journal done puts the case on the next open Wednes
   const done = J(w.autoSchedule_());
   assert.deepStrictEqual(done, [a, b]);
   const ca = w.call({ action: 'trailbackCase', payload: { case_id: a } }).data, cb = w.call({ action: 'trailbackCase', payload: { case_id: b } }).data;
-  assert.strictEqual(new Date(ca.scheduled_date + 'T12:00:00').getDay(), 3, 'a Wednesday');
+  const dow = new Date(ca.scheduled_date + 'T12:00:00').getDay();
+  assert.ok(dow > 0 && dow < 6, 'a school day');
   assert.ok(w.schoolDaysBetween_(w.todayYmd_(), ca.scheduled_date) >= 2, 'at least 2 school days out');
-  assert.ok(cb.scheduled_date > ca.scheduled_date, 'one case per Wednesday (PANEL_MAX_CASES 1): the next one goes a week later');
+  assert.ok(cb.scheduled_date > ca.scheduled_date, 'one case per day (PANEL_MAX_CASES 1): the next one goes on a later day');
   assert.ok(w.sent.some(m => /Seats open/.test(m.subject) && /dean@easdpa.org/.test(m.to)), 'seat call to the Panel Members');
   assert.ok(!w.sent.find(m => /Seats open/.test(m.subject)).htmlBody.includes('Quill'), 'last initial only in the seat call');
   assert.ok(w.sent.some(m => m.to === '8012345@gomounts.org' && /Your Trailback Panel/.test(m.subject)), 'the student is told');

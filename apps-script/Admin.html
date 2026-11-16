@@ -1102,7 +1102,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div id="tb-flags"></div>
 
       <div class="tb-section">
-        <h3 id="tb-docket-title">This Wednesday</h3>
+        <h3 id="tb-docket-title">Next panel</h3>
         <div id="tb-docket"><div class="empty"><p>Loading…</p></div></div>
       </div>
 
@@ -2876,10 +2876,10 @@ function renderTrailbackBoard() {
     `<div class="tb-flag"><span>⚠️ <strong>${tbEsc(c.student_name || c.student_id)}</strong>: ${tbEsc(c.admin_flag)}${c.master_log_row ? ' (Entry ID ' + tbEsc(c.master_log_row) + ')' : ''}</span>
       <button class="flt-btn" onclick="tbStep('${tbEsc(c.case_id)}','clear_flag')">Done</button></div>`).join('');
 
-  document.getElementById('tb-docket-title').textContent = 'This Wednesday · ' + tbDay(TB.wednesday);
+  document.getElementById('tb-docket-title').textContent = 'Next panel · ' + tbDay(TB.nextPanel || TB.wednesday);
   document.getElementById('tb-docket').innerHTML = (TB.docket || []).length
     ? TB.docket.map(tbCard).join('') + `<a class="flt-btn" style="display:inline-block;text-decoration:none" href="https:\/\/trailjournal.org/panel/" target="_blank">⛺ Open the panel →</a>`
-    : '<div class="empty"><p>No cases scheduled for this Wednesday. Use <strong>Schedule</strong> on a consented case.</p></div>';
+    : '<div class="empty"><p>No panel scheduled yet. Use <strong>Schedule</strong> on a consented case.</p></div>';
 
   const groups = [['open', 'All open']].concat(TB_OPEN.map(s => [s, (TB.statuses || []).find(x => x.key === s)?.label || s]), [['closed', 'Closed']]);
   document.getElementById('tb-filters').innerHTML = groups.map(([key, label]) => {
@@ -3005,9 +3005,10 @@ async function tbStep(caseId, op, extra) {
   return r;
 }
 
+// Any school day (Monday to Friday) for the next six weeks; the server skips No School Dates.
 function tbWednesdays() {
   const d = new Date(); const out = [];
-  while (out.length < 8) { if (d.getDay() === 3) out.push(tbLocalYmd(d)); d.setDate(d.getDate() + 1); }
+  while (out.length < 30) { if (d.getDay() > 0 && d.getDay() < 6) out.push(tbLocalYmd(d)); d.setDate(d.getDate() + 1); }
   return out;
 }
 
@@ -3034,7 +3035,7 @@ function tbAction(caseId, op) {
       return openTbModal('Consent received: ' + c.student_name, `<p class="tb-meta">The family agreed to the Trailback Panel. ${ml}${c.master_log_row ? ' becomes <strong>Held (Trailback)</strong>: the detention is on hold.' : '.'}</p>`,
         'Consent received', () => tbStep(caseId, 'consent'));
     case 'schedule':
-      return openTbModal('Schedule the panel: ' + c.student_name, `<label class="ed-lbl" for="tb-f-date">Wednesday</label>
+      return openTbModal('Schedule the panel: ' + c.student_name, `<label class="ed-lbl" for="tb-f-date">Panel day (any school day, 2 cases a day at most)</label>
         <select class="ed-inp" id="tb-f-date">${tbWednesdays().map(w => `<option value="${w}"${w === c.scheduled_date ? ' selected' : ''}>${tbDay(w)}</option>`).join('')}</select>
         <p class="tb-meta">Days on the No School Dates tab are refused.</p>`, 'Schedule', () => tbStep(caseId, 'schedule', { date: tbVal('tb-f-date') }));
     case 'link_tj':

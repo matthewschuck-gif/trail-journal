@@ -621,7 +621,7 @@ body.is-preview main { padding-bottom: 110px; }
 
   <div class="card">
     <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <span>📅 <span id="queue-wed-label">This Wednesday</span></span>
+      <span>📅 <span id="queue-wed-label">Next panel</span></span>
       <button class="btn-secondary" style="padding:6px 12px;font-size:.76rem" onclick="loadQueue()">↻ Refresh</button>
     </div>
     <div id="queue-docket" style="font-size:.86rem;color:var(--ink-mid)">Loading…</div>
@@ -2122,9 +2122,9 @@ async function loadQueue() {
   catch (e) { docket.textContent = '⚠️ Could not load cases: ' + e.message; other.innerHTML = ''; return; }
   data = Object.assign({ cases: [], docket: [] }, Array.isArray(data) ? {} : data); // an older backend answers []
   QUEUE = data;
-  document.getElementById('queue-wed-label').textContent = data.wednesday ? 'Wednesday ' + fmtDay(data.wednesday) : 'This Wednesday';
+  document.getElementById('queue-wed-label').textContent = (data.nextPanel || data.wednesday) ? 'Next panel · ' + fmtDay(data.nextPanel || data.wednesday) : 'Next panel';
   docket.innerHTML = data.docket.length ? data.docket.map(c => queueRow(c, true)).join('')
-    : '<div style="padding:6px 0">No cases scheduled for this Wednesday. Schedule one in Admin › Trailback Cases, or start without a queued case.</div>';
+    : '<div style="padding:6px 0">No panel scheduled yet. Schedule one in Admin › Trailback Cases, or start without a queued case.</div>';
   const order = ['scheduled', 'tj_done', 'consented', 'offered', 'suggested', 'heard_approved', 'repair_in_progress'];
   const rest = data.cases.filter(c => order.includes(c.status) && !data.docket.some(d => d.case_id === c.case_id))
     .sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status));

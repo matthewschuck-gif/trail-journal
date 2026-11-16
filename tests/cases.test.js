@@ -177,8 +177,10 @@ test('steps out of order are refused', () => {
   assert.ok(/Can't close/.test(w.step(c.case_id, 'close_completed').error));
   assert.ok(/Can't log a check-in/.test(w.step(c.case_id, 'checkin', { n: 3 }).error));
   w.step(c.case_id, 'consent');
-  const thu = wednesdayAfter(7).replace(/\d\d$/, d => String(Number(d) + 1).padStart(2, '0'));
-  assert.ok(/Wednesdays/.test(w.step(c.case_id, 'schedule', { date: thu }).error));
+  const plus = (ymd, n) => { const d = new Date(ymd + 'T12:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const thu = plus(wednesdayAfter(7), 1), sat = plus(wednesdayAfter(7), 3);
+  assert.ok(/school day/.test(w.step(c.case_id, 'schedule', { date: sat }).error), 'not a Saturday');
+  assert.ok(w.step(c.case_id, 'schedule', { date: thu }).ok, 'any school day works (a Thursday)');
   assert.ok(/already passed/.test(w.step(c.case_id, 'schedule', { date: '2020-01-01' }).error));
 });
 
@@ -387,14 +389,14 @@ test('trailbackCasesByStudent: status, dates and outcome only (no names, notes, 
 });
 
 // ── board ──
-test('board: weekly counts and the coming Wednesday docket', () => {
+test('board: weekly counts and the next panel day docket', () => {
   const w = world();
   const c = w.call({ action: 'createTrailbackCase', payload: offeredCase }).data;
   w.step(c.case_id, 'consent');
   const board = w.call({ action: 'trailbackCases', payload: {} }).data;
   assert.strictEqual(board.counts.offered, 1);
   assert.strictEqual(board.counts.accepted, 1);
-  assert.strictEqual(new Date(board.wednesday + 'T12:00:00Z').getUTCDay(), 3);
+  assert.strictEqual(board.nextPanel, board.today, 'no panel yet: today');
   assert.ok(Array.isArray(board.docket));
 });
 
