@@ -191,6 +191,18 @@ test('schedule refuses a Wednesday on the No School Dates tab', () => {
   assert.ok(/No School Dates/.test(w.step(c.case_id, 'schedule', { date: wed }).error));
 });
 
+test('schedule: at most 2 cases on one panel day; a declined case frees its spot', () => {
+  const wed = wednesdayAfter(14);
+  const w = world();
+  const ids = [0, 1, 2].map(i => { const c = w.call({ action: 'createTrailbackCase', payload: Object.assign({}, offeredCase, { student_id: '801000' + i, master_log_row: 'EMS-20261201-005' + i }) }).data; w.step(c.case_id, 'consent'); return c.case_id; });
+  assert.ok(w.step(ids[0], 'schedule', { date: wed }).ok);
+  assert.ok(w.step(ids[1], 'schedule', { date: wed }).ok);
+  assert.ok(w.step(ids[0], 'schedule', { date: wed }).ok, 'moving a case to its own day is fine');
+  assert.ok(/already has 2 cases/.test(w.step(ids[2], 'schedule', { date: wed }).error));
+  w.step(ids[1], 'decline', { reason: 'Family said no' });
+  assert.ok(w.step(ids[2], 'schedule', { date: wed }).ok);
+});
+
 test('close reverted: needs a reason, Master Log back to Scheduled with a note, flags admin, never books a date; email only when ON', () => {
   for (const on of [false, true]) {
     const w = world({ settings: [['TRAILBACK_EMAILS', on ? 'ON' : 'OFF', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', '']] });

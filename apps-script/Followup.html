@@ -687,7 +687,7 @@ async function updatePreview() {
     document.getElementById('time-' + key).textContent = `${win.label} · Grade ${grade}`;
   });
   document.getElementById('snap-note').innerHTML =
-    `3, 10 and 30 school days after the ${triggerType === 'intervention' ? 'intervention' : 'panel'}, skipping weekends and the No School Dates tab. <strong>Grade ${grade}</strong> window: ${win.label}.`;
+    `The next school day, then 10 and 30 school days after the ${triggerType === 'intervention' ? 'intervention' : 'panel'}, skipping weekends and the No School Dates tab. <strong>Grade ${grade}</strong> window: ${win.label}.`;
 }
 
 // Pre-fill from URL params (from panel Screen 7 or admin dashboard)

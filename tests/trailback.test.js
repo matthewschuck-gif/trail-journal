@@ -86,7 +86,8 @@ test('school days: a Wednesday panel counts from Thursday and skips the weekend'
 test('school days: the No School Dates tab is skipped (winter break), in any date format', () => {
   const w = world({ noSchool: ['2026-12-24', '12/25/2026', new Date(2026, 11, 28), '2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01'] });
   const d = w.followupSchedule_({ from: '2026-12-09' });
-  assert.strictEqual(d.checkin_3, '2026-12-14');
+  assert.strictEqual(d.checkin_3, '2026-12-10'); // the first check-in is the next school day
+  assert.strictEqual(w.followupSchedule_({ from: '2026-12-23' }).checkin_3, '2027-01-04'); // over the break
   assert.strictEqual(d.checkin_10, '2026-12-23');
   // 30 school days: Dec 10-23 (10), break skipped, then Jan 4 onward (20 more) = Jan 29
   assert.strictEqual(d.checkin_30, '2027-01-29');
@@ -98,7 +99,7 @@ test('followupDates is staff-only and returns the three check-in dates', () => {
   const w = world({ email: '' });
   assert.ok(/staff password/i.test(w.call({ action: 'followupDates', payload: { from: '2026-12-09' } }).error));
   const ok = world().call({ action: 'followupDates', payload: { from: '2026-12-09' } });
-  assert.deepStrictEqual([ok.data.checkin_3, ok.data.checkin_10], ['2026-12-14', '2026-12-23']);
+  assert.deepStrictEqual([ok.data.checkin_3, ok.data.checkin_10], ['2026-12-10', '2026-12-23']);
 });
 
 test('old rows keep reading: two_days/one_week/... still come back with their old labels', () => {
@@ -106,7 +107,7 @@ test('old rows keep reading: two_days/one_week/... still come back with their ol
   assert.deepStrictEqual(J(w.panelCheckins_({ two_days: '2026-10-03', one_month: '2026-11-01' })).map(c => c.label + '=' + c.date),
     ['2 days=2026-10-03', '1 week=', '2 weeks=', '1 month=2026-11-01']);
   assert.deepStrictEqual(J(w.panelCheckins_({ checkin_3: 'a', checkin_10: 'b', checkin_30: 'c' })).map(c => c.label),
-    ['3 school days', '10 school days', '30 school days']);
+    ['next school day', '10 school days', '30 school days']);
 });
 
 // ── AI: no names ──

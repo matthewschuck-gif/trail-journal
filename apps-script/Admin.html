@@ -1239,7 +1239,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="page" id="page-followup">
       <div class="page-hd">
         <h2>Follow-Up Tracker</h2>
-        <p>Two separate follow-up workflows live here: Trailback Panel sessions (3, 10 and 30 school-day check-ins) and single-event Trail Journal follow-ups (scheduled from the student's own final screen). They're tracked in different tables, so they get their own tabs below.</p>
+        <p>Two separate follow-up workflows live here: Trailback Panel sessions (check-ins the next school day, then 10 and 30 school days) and single-event Trail Journal follow-ups (scheduled from the student's own final screen). They're tracked in different tables, so they get their own tabs below.</p>
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--border)">
@@ -1253,7 +1253,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(92,61,143,.1) 0%,rgba(201,168,76,.08) 100%);border:1.5px solid rgba(92,61,143,.3);border-radius:12px;padding:14px 18px;margin:16px 0 20px">
           <div style="flex:1;min-width:180px">
             <div style="font-weight:700;font-size:.9rem;color:var(--text)">📅 Outlook Check-In Scheduler</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule Outlook calendar events at 3, 10 &amp; 30 school days — weekends and days off skipped, grade-timed. Or click any row below to schedule from an existing session.</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Schedule Outlook calendar events the next school day, then at 10 &amp; 30 school days — weekends and days off skipped, grade-timed. Or click any row below to schedule from an existing session.</div>
           </div>
           <a href="https://trailjournal.org/panel/followup/" target="_blank" style="display:inline-block;padding:9px 18px;background:#5c3d8f;color:#fff;border-radius:8px;font-weight:700;font-size:.84rem;text-decoration:none;white-space:nowrap;box-shadow:0 2px 10px rgba(92,61,143,.3);transition:opacity .15s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Open Scheduler →</a>
         </div>
@@ -2389,7 +2389,7 @@ function panelInitials(s) {
 function panelCheckins(d) {
   d = d || {};
   if (d.checkin_3 || d.checkin_10 || d.checkin_30)
-    return [[3,'3 school days'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
+    return [[3,'Next school day'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
   return [['two_days','2 days'],['one_week','1 week'],['two_weeks','2 weeks'],['one_month','1 month']].map(([k,label]) => ({ label, date: d[k] || '' }));
 }
 
@@ -3043,7 +3043,7 @@ function tbAction(caseId, op) {
     case 'checkin': {
       const next = [3, 10, 30].find(n => !(c.checkin_notes || {})[n]) || 3;
       return openTbModal('Log a check-in: ' + c.student_name, `<label class="ed-lbl" for="tb-f-n">Which check-in</label>
-        <select class="ed-inp" id="tb-f-n">${[3, 10, 30].map(n => `<option value="${n}"${n === next ? ' selected' : ''}>${n} school days (due ${tbDay(c['checkin_' + n])})</option>`).join('')}</select>
+        <select class="ed-inp" id="tb-f-n">${[3, 10, 30].map(n => `<option value="${n}"${n === next ? ' selected' : ''}>${n === 3 ? 'next school day' : n + ' school days'} (due ${tbDay(c['checkin_' + n])})</option>`).join('')}</select>
         ${note('tb-f-note', 'How is the plan going?')}`, 'Log check-in', () => tbStep(caseId, 'checkin', { n: Number(tbVal('tb-f-n')), note: tbVal('tb-f-note') }));
     }
     case 'fixit':

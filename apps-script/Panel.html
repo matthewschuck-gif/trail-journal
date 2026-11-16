@@ -1126,7 +1126,7 @@ body.is-preview main { padding-bottom: 110px; }
     <span class="sh-step">09</span>
     <span class="sh-badge">Follow-Up</span>
     <h2>Follow-Up Plan</h2>
-    <p>Assign a check-in person and set the three follow-up dates. Every panel case gets checked in at 3, 10 and 30 school days after the panel (weekends and days off don't count).</p>
+    <p>Assign a check-in person and set the three follow-up dates. Every panel case gets checked in the next school day, then 10 and 30 school days after the panel (weekends and days off don't count).</p>
   </div>
 
   <div class="card">
@@ -1170,7 +1170,7 @@ body.is-preview main { padding-bottom: 110px; }
     <div class="card-label" style="color:var(--gold-dk);display:flex;align-items:center;gap:8px">
       <span>📅</span> Schedule Outlook Check-Ins
     </div>
-    <div class="card-sub">Send calendar events to your follow-up team at 3, 10 and 30 school days, timed to the student's grade period.</div>
+    <div class="card-sub">Send calendar events to your follow-up team the next school day, then at 10 and 30 school days, timed to the student's grade period.</div>
 
     <!-- Context strip: pulls live from Screen 1 fields -->
     <div style="display:flex;align-items:center;gap:12px;background:rgba(44,74,53,.06);border-radius:10px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap">
@@ -1212,7 +1212,7 @@ body.is-preview main { padding-bottom: 110px; }
     <div style="font-size:.86rem;color:var(--ink-mid);line-height:1.8">
       <div style="margin-bottom:8px">1. <strong>Plan approved</strong> by <span id="record-approved-by"></span>. The student has heard it.</div>
       <div style="margin-bottom:8px">2. <strong>Tell the check-in person today</strong> and send the Outlook check-ins if you haven't yet.</div>
-      <div style="margin-bottom:8px">3. <strong>First check-in: <span id="first-checkin"></span></strong> (3 school days).</div>
+      <div style="margin-bottom:8px">3. <strong>First check-in: <span id="first-checkin"></span></strong> (the next school day).</div>
       <div>4. <strong>Plan finished:</strong> the detention is cleared. <strong>Not finished:</strong> the detention is served.</div>
     </div>
   </div>
@@ -2017,7 +2017,7 @@ async function submitAndRecord() {
 function panelCheckins(d) {
   d = d || {};
   if (d.checkin_3 || d.checkin_10 || d.checkin_30)
-    return [[3,'3 school days'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
+    return [[3,'Next school day'],[10,'10 school days'],[30,'30 school days']].map(([n,label]) => ({ label, date: d['checkin_'+n] || '' }));
   return [['two_days','2 days'],['one_week','1 week'],['two_weeks','2 weeks'],['one_month','1 month']].map(([k,label]) => ({ label, date: d[k] || '' }));
 }
 

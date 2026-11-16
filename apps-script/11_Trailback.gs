@@ -17,6 +17,10 @@
 
 const NO_SCHOOL_TAB_ = 'No School Dates';
 const CHECKIN_SCHOOL_DAYS_ = [3, 10, 30];
+// How many school days after the panel each check-in falls. The first one is the NEXT school day
+// (it keeps the name checkin_3 so the case columns and saved rows don't change).
+const CHECKIN_OFFSET_ = { 3: 1, 10: 10, 30: 30 };
+function checkinLabel_(n) { return Number(n) === 3 ? 'next school day' : n + ' school days'; }
 // Set only by approvePanelPlan_; the generic insert/update actions drop them (03_Router.gs).
 const PANEL_PROTECTED_FIELDS_ = ['approved_by', 'approved_at'];
 
@@ -83,7 +87,7 @@ function followupSchedule_(payload) {
   const from = ymdOf_(payload && payload.from) || ymdOf_(new Date());
   const off = noSchoolDates_();
   const out = { from: from };
-  CHECKIN_SCHOOL_DAYS_.forEach(function (n) { out['checkin_' + n] = schoolDaysAfter_(from, n, off); });
+  CHECKIN_SCHOOL_DAYS_.forEach(function (n) { out['checkin_' + n] = schoolDaysAfter_(from, CHECKIN_OFFSET_[n], off); });
   return out;
 }
 
@@ -94,7 +98,7 @@ function followupSchedule_(payload) {
 function panelCheckins_(dates) {
   const d = dates || {};
   if (d.checkin_3 || d.checkin_10 || d.checkin_30) {
-    return CHECKIN_SCHOOL_DAYS_.map(function (n) { return { key: 'checkin_' + n, label: n + ' school days', date: d['checkin_' + n] || '' }; });
+    return CHECKIN_SCHOOL_DAYS_.map(function (n) { return { key: 'checkin_' + n, label: checkinLabel_(n), date: d['checkin_' + n] || '' }; });
   }
   return [['two_days', '2 days'], ['one_week', '1 week'], ['two_weeks', '2 weeks'], ['one_month', '1 month']]
     .map(function (x) { return { key: x[0], label: x[1], date: d[x[0]] || '' }; });

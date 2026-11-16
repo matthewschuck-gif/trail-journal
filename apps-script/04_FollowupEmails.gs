@@ -305,7 +305,7 @@ function sendFollowupEmails_(payload) {
   const trigLabel = triggerType === 'intervention' ? 'Intervention' : 'Trailback Panel';
   const win = GRADE_WINDOWS_[grade] || GRADE_WINDOWS_[8];
 
-  // One cadence for every panel case: 3, 10 and 30 school days (weekends and the No School
+  // One cadence for every panel case: the next school day, then 10 and 30 school days (weekends and the No School
   // Dates tab skipped -- followupSchedule_ in 11_Trailback.gs). Was 2 days / 2 weeks / 2 months.
   const GUIDES = {
     3: { title: 'Early Pulse', detail: 'Keep it brief and relational. Ask: How are you doing? Look for re-engagement and early follow-through on the repair plan. Duration: 5-10 minutes.' },

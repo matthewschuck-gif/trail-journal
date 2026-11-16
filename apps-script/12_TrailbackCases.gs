@@ -197,6 +197,9 @@ function updateTrailbackCase_(body) {
         if (!d || !isWednesday_(d)) throw new Error('Panels are on Wednesdays. Pick a Wednesday.');
         if (d < todayYmd_()) throw new Error('That Wednesday has already passed.');
         if (noSchoolDates_()[d]) throw new Error(d + ' is on the No School Dates tab.');
+        const maxDay = numSetting_('PANEL_MAX_CASES', 2);
+        const onDay = allCases_().filter(function (o) { return String(o.case_id) !== String(c.case_id) && ymdOf_(o.scheduled_date) === d && ['declined', 'closed_reverted'].indexOf(o.status) === -1; }).length;
+        if (onDay >= maxDay) throw new Error(d + ' already has ' + onDay + ' case' + (onDay === 1 ? '' : 's') + ' (the most is ' + maxDay + ' a day). Pick another Wednesday.');
         patch = { status: 'scheduled', scheduled_date: d };
         note = note || ('Panel ' + d);
         break;
