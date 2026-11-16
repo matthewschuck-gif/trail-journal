@@ -87,7 +87,13 @@
     art.id = 'case-' + c.case_id;
     art.appendChild(el('div', 'who', c.student_name || 'A student'));
     art.appendChild(el('div', 'sub', [c.grade ? 'Grade ' + c.grade : '', c.squad ? c.squad + ' squad' : '', c.behavior_type].filter(Boolean).join(' · ')));
-    if (c.next_checkin) art.appendChild(el('span', 'due', c.next_checkin.n + '-school-day check-in' + (c.next_checkin.date ? ' · ' + nice(c.next_checkin.date) : '')));
+    if (c.next_checkin) art.appendChild(el('span', 'due', (c.next_checkin.n === 3 ? 'Next-day' : c.next_checkin.n + '-school-day') + ' check-in' + (c.next_checkin.date ? ' · ' + nice(c.next_checkin.date) : '')));
+    if (c.student_checkin) {
+      var sc = c.student_checkin, said = { done: 'done', partly: 'partly', not_yet: 'not yet' };
+      art.appendChild(el('p', 'sub', '🧒 The student checked in ' + nice(String(sc.at).slice(0, 10)) + ': ' + c.actions.map(function (a) {
+        return sc.answers && sc.answers[a.id] ? a.action + ' (' + said[sc.answers[a.id]] + ')' : ''; }).filter(Boolean).join('; ') + (sc.note ? '. "' + sc.note + '"' : '')));
+    }
+    if (c.harm) art.appendChild(el('p', 'sub', '🤝 Affected staff: harm repaired? ' + ({ yes: 'Yes', partly: 'Partly', no: 'Not yet' })[c.harm.answer] + (c.harm.note ? ' ("' + c.harm.note + '")' : '')));
     var marks = {}, notes = {}, overall = '';
     if (!c.actions.length) art.appendChild(el('p', 'sub', 'No actions on this case (it was made before the plan tracker). Use the note below.'));
     c.actions.forEach(function (a) {

@@ -168,7 +168,9 @@ function checkinView_(c) {
   return { case_id: c.case_id, student_name: c.student_name, grade: c.grade, squad: c.squad, behavior_type: c.behavior_type,
     actions: repairActionsOf_(c), checkin_person: c.checkin_person, completion_criteria: c.completion_criteria,
     next_checkin: n ? { n: n, date: c['checkin_' + n] || '' } : null, logged: Object.keys(c.checkin_notes || {}),
-    checkins: { 3: c.checkin_3, 10: c.checkin_10, 30: c.checkin_30 } };
+    checkins: { 3: c.checkin_3, 10: c.checkin_10, 30: c.checkin_30 },
+    student_checkin: (studentCheckinsOf_(c).slice(-1)[0] || null), // 19_MakeItRight.gs
+    harm: c.harm_repaired ? { answer: c.harm_repaired, note: String(c.harm_note || ''), at: String(c.harm_answered_at || '') } : null };
 }
 
 /** The check-in page: the signed-in adult's open cases (panel leads and the coordinator see all). */
@@ -249,8 +251,8 @@ function repairReminders_(preview) {
     // The morning a check-in is due.
     CHECKIN_SCHOOL_DAYS_.forEach(function (n) {
       if (c['checkin_' + n] !== today || c.checkin_notes[n] || !adults || !once('tb-ci-' + c.case_id + '-' + n)) return;
-      sent.push(sendTrailbackMail_(adults, 'Trailback check-in today: ' + (c.student_name || c.case_id) + ' (' + n + ' school days)',
-        emailShell_('&#9989;', n + '-school-day check-in', who,
+      sent.push(sendTrailbackMail_(adults, 'Trailback check-in today: ' + (c.student_name || c.case_id) + ' (' + checkinLabel_(n) + ')',
+        emailShell_('&#9989;', 'Check-in: ' + checkinLabel_(n), who,
           actions.map(function (a) { return emailInfoRow_(escHtml_(a.action), ({ done: '✓ done', partly: 'partly', not_yet: 'not yet', open: 'open' })[a.status] + (a.due ? ' · due ' + a.due : ''), t); }).join('') +
           emailCallout_('One tap', '<a href="' + escHtml_(checkinUrl_(c.case_id)) + '">Open the check-in</a>: mark each action and how it\'s going. Every action done closes the case.', null, t), t), preview));
     });

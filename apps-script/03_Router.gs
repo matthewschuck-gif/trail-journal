@@ -162,6 +162,16 @@ function dispatch_(body) {
       case 'trailbackOutcomes': // 18_Outcomes.gs (leads + coordinator)
         result = trailbackOutcomes_(body);
         break;
+      // Making it right (19_MakeItRight.gs): public, the student's 800# + first name, or a one-time link.
+      case 'selfcheckLookup':
+        result = selfcheckLookup_(body);
+        break;
+      case 'selfcheckSave':
+        result = selfcheckSave_(body);
+        break;
+      case 'harmAnswer':
+        result = harmAnswer_(body);
+        break;
       case 'consentLookup':
         result = consentLookup_(body);
         break;

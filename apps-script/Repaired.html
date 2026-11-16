@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>window.TJ_BOOT = <?!= boot ?>; // page, staff, siteUrl, beaconUrl, beaconToken, params (08_Web.gs)</script>
+<?!= include('TjBridge'); ?>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailback · Thank you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --trail: #243d2d; --trail-lt: #d6e8db; --ink: #1e190f; --ink-lt: #6f6250; --paper: #f6efe1; --paper-dkr: #cbbfa5; --cream: #faf5eb; --error: #9e2a2a; --error-lt: #fceeee; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: var(--paper); color: var(--ink); line-height: 1.6; }
+  main { max-width: 620px; margin: 0 auto; padding: 30px 16px 60px; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 30px; color: var(--trail); line-height: 1.15; }
+  p { margin-top: 12px; font-size: 17px; }
+  .card { background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: 14px; padding: 18px 20px; margin-top: 18px; }
+  textarea { display: block; width: 100%; margin-top: 6px; font: 16px 'Lora', Georgia, serif; padding: 10px; border: 1px solid var(--paper-dkr); border-radius: 8px; background: #fff; }
+  button { font: 700 16px 'Lora', Georgia, serif; padding: 10px 16px; border-radius: 12px; border: 2px solid var(--trail); background: var(--trail); color: #fff; cursor: pointer; margin-top: 12px; }
+  .msg { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--trail-lt); color: var(--trail); font-size: 17px; }
+  .msg.err { background: var(--error-lt); color: var(--error); }
+</style>
+</head>
+<body>
+<main>
+  <div style="font-size:38px">🤝</div>
+  <h1>Thank you</h1>
+  <div id="body"><p>Saving your answer…</p></div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var p = TJ_BOOT.params || {};
+  var label = { yes: 'Yes, it is repaired', partly: 'Partly', no: 'Not yet' };
+  function call(a, x) { return window.tjCall_({ action: a, payload: x || {} }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r.data; }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  call('harmAnswer', { t: p.t, a: p.a }).then(function (d) {
+    $('body').innerHTML = '<div class="msg">Saved: <b>' + esc(label[d.answer]) + '</b>. Only the Trailback coordinator sees it.</div>' +
+      '<div class="card"><p>Anything to add? (optional)</p><textarea id="nt" rows="3" maxlength="600"></textarea><button id="sv" type="button">Add my note</button><div id="out"></div></div>';
+    $('sv').onclick = function () {
+      $('sv').disabled = true;
+      call('harmAnswer', { t: p.t, a: d.answer, note: $('nt').value }).then(function () { $('out').innerHTML = '<div class="msg">Note saved. Thank you!</div>'; })
+        .catch(function (e) { $('sv').disabled = false; $('out').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+    };
+  }).catch(function (e) { $('body').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+})();
+</script>
+</body>
+</html>

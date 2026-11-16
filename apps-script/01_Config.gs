@@ -240,7 +240,10 @@ const SCHEMA = {
     // How the student is doing since the panel, written once a day by Climb-er (Trailback.gs there).
     'climber_outcome', 'climber_outcome_at',
     // Redemption at the Summit (16_Summit.gs): the Clash points, the note home, Trail Guide eligibility.
-    'redemption_at', 'redemption_points', 'family_summit_sent_at', 'guide_eligible_at'],
+    'redemption_at', 'redemption_points', 'family_summit_sent_at', 'guide_eligible_at',
+    // Making it right (19_MakeItRight.gs): the student's own check-ins, and the affected staff's
+    // one-click answer 10 school days after the panel.
+    'student_checkins', 'affected_staff', 'harm_token', 'harm_asked_at', 'harm_repaired', 'harm_answered_at', 'harm_note'],
 };
 
 /**

@@ -287,5 +287,46 @@ test('Trail Guide: 60 school days after the Summit with no new Master Log entry 
   assert.strictEqual(w.trailGuides_().length, 0, 'once');
   void b;
 });
+test('making it right: Logical Consequence ideas in the plan builder; the student checks in by 800# + first name; the affected staff answer "was the harm repaired?" once at day 10', () => {
+  const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['STUDENT_EXEC_URL', 'https://x/exec', '']] });
+  const ideasTab = makeSheet([['Behavior', 'Logical consequence (what the student does)', 'Where / with whom', 'Added by'], ['Damage / vandalism', 'Repair what was damaged with the custodian', 'Custodian', '']]);
+  const base = w.SpreadsheetApp.openById;
+  w.SpreadsheetApp.openById = id => id === ACC_ID ? { getSheetByName: n => n === 'Logical Consequence Ideas' ? ideasTab : base(id).getSheetByName(n) } : base(id);
+  const ideas = w.call({ action: 'actionIdeas', payload: {} }).data.ideas;
+  assert.ok(ideas.some(i => i.idea === 'Repair what was damaged with the custodian' && i.menu === 'Repair' && i.test === 'With: Custodian'));
+
+  const today = w.todayYmd_();
+  const id = heardWithPlan(w, PLAN, { followup_dates: { checkin_3: today, checkin_10: today, checkin_30: '2099-02-01' } });
+  w.step(id, 'edit', { fields: { affected_staff: 'Ms. Sub <sub@easdpa.org>' } });
+  // The student self check-in (public: no sign-in).
+  w.user.email = '';
+  assert.ok(/No open Trailback plan/.test(w.call({ action: 'selfcheckLookup', payload: { id: '8012345', first: 'Sam' } }).error), 'the first name has to match');
+  const look = w.call({ action: 'selfcheckLookup', payload: { id: '801-2345', first: 'pat' } }).data;
+  assert.strictEqual(look.first, 'Pat');
+  assert.strictEqual(look.actions.length, 2);
+  assert.ok(!JSON.stringify(look).includes('dean@'), 'no adult emails on the student page');
+  const a1 = look.actions[0].id;
+  assert.ok(w.call({ action: 'selfcheckSave', payload: { id: '8012345', first: 'Pat', answers: { [a1]: 'done' }, notes: { [a1]: 'Deleted it' }, note: 'Need help with the PSA' } }).ok);
+  w.user.email = 'dean@easdpa.org';
+  const mine = w.call({ action: 'repairCheckins', payload: {} }).data.cases[0];
+  assert.strictEqual(mine.student_checkin.answers[a1], 'done');
+  assert.strictEqual(mine.student_checkin.note, 'Need help with the PSA');
+  // The morning emails: the student's link, and the one-click question to the affected staff (once).
+  w.sent.length = 0;
+  w.selfcheckReminders_(false);
+  assert.ok(w.sent.some(m => m.to === '8012345@gomounts.org' && m.htmlBody.includes('page=selfcheck')));
+  w.harmRepairedEmails_(false); w.harmRepairedEmails_(false);
+  const harm = w.sent.filter(m => /harm repaired/.test(m.subject));
+  assert.strictEqual(harm.length, 1, 'once');
+  assert.strictEqual(harm[0].to, 'sub@easdpa.org');
+  const t = harm[0].htmlBody.match(/page=repaired&amp;t=([a-z0-9]+)&amp;a=partly/)[1];
+  w.user.email = '';
+  assert.strictEqual(w.call({ action: 'harmAnswer', payload: { t, a: 'partly' } }).data.answer, 'partly');
+  assert.ok(w.call({ action: 'harmAnswer', payload: { t, a: 'partly', note: 'Better, not all the way' } }).ok);
+  w.user.email = 'dean@easdpa.org';
+  const after = w.call({ action: 'repairCheckins', payload: {} }).data.cases[0];
+  assert.deepStrictEqual([after.harm.answer, after.harm.note], ['partly', 'Better, not all the way']);
+  assert.ok(/not complete/.test(w.call({ action: 'harmAnswer', payload: { t: 'x', a: 'yes' } }).error));
+});
 
 console.log('\n' + passed + ' tests passed');

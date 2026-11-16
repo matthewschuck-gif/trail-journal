@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>window.TJ_BOOT = <?!= boot ?>; // page, staff, siteUrl, beaconUrl, beaconToken, params (08_Web.gs)</script>
+<?!= include('TjBridge'); ?>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Trailback Check-In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --trail: #243d2d; --trail-lt: #d6e8db; --gold: #b8821e; --ink: #1e190f; --ink-lt: #6f6250; --paper: #f6efe1; --paper-dkr: #cbbfa5; --cream: #faf5eb; --error: #9e2a2a; --error-lt: #fceeee; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: var(--paper); color: var(--ink); line-height: 1.6; }
+  main { max-width: 620px; margin: 0 auto; padding: 30px 16px 60px; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 30px; color: var(--trail); line-height: 1.15; }
+  p { margin-top: 12px; font-size: 17px; }
+  .card { background: var(--cream); border: 1px solid var(--paper-dkr); border-radius: 14px; padding: 18px 20px; margin-top: 18px; }
+  label { display: block; font-size: 14px; color: var(--ink-lt); margin-top: 14px; }
+  input, textarea { display: block; width: 100%; margin-top: 4px; font: 16px 'Lora', Georgia, serif; padding: 10px; border: 1px solid var(--paper-dkr); border-radius: 8px; background: #fff; }
+  button { font: 700 17px 'Lora', Georgia, serif; padding: 12px 18px; border-radius: 12px; border: 2px solid var(--trail); background: var(--trail); color: #fff; cursor: pointer; margin-top: 16px; width: 100%; }
+  button:disabled { opacity: .5; }
+  .act { border-top: 1px solid var(--paper-dkr); padding: 14px 0 6px; }
+  .act b { display: block; font-size: 17px; }
+  .act .k { font-size: 14px; color: var(--ink-lt); }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .seg button { width: auto; margin: 0; font-size: 15px; padding: 8px 14px; background: #fff; color: var(--trail); }
+  .seg button.on { background: var(--trail); color: #fff; }
+  .msg { margin-top: 16px; padding: 14px; border-radius: 10px; background: var(--trail-lt); color: var(--trail); font-size: 17px; }
+  .msg.err { background: var(--error-lt); color: var(--error); }
+</style>
+</head>
+<body>
+<main>
+  <div style="font-size:38px">✅</div>
+  <h1 id="title">My Trailback check-in</h1>
+  <div id="body">
+    <p>How is your plan going? Type your 800# and first name to see your actions.</p>
+    <div class="card">
+      <label>800#<input id="sid" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+      <label>First name<input id="first" maxlength="40" autocomplete="given-name"></label>
+      <button id="go" type="button">Open my plan</button>
+      <div id="err"></div>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function call(a, p) { return window.tjCall_({ action: a, payload: p || {} }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r.data; }); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function nice(ymd) { if (!ymd) return ''; return new Date(ymd + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+  function msg(box, text, err) { box.innerHTML = ''; box.appendChild(el('div', 'msg' + (err ? ' err' : ''), text)); }
+  var who = {};
+  $('go').onclick = function () {
+    who = { id: $('sid').value, first: $('first').value };
+    $('go').disabled = true;
+    call('selfcheckLookup', who).then(show).catch(function (e) { $('go').disabled = false; msg($('err'), e.message, true); });
+  };
+  function show(d) {
+    $('title').textContent = 'Hi ' + d.first + '!';
+    var body = $('body'); body.innerHTML = '';
+    body.appendChild(el('p', '', 'For each action, how is it going? Your check-in adult will see this.'));
+    var card = el('div', 'card'), answers = {}, notes = {};
+    d.actions.forEach(function (a) {
+      var row = el('div', 'act');
+      row.appendChild(el('b', '', a.action));
+      if (a.due) row.appendChild(el('div', 'k', 'Due ' + nice(a.due)));
+      var seg = el('div', 'seg');
+      [['done', '✓ Done'], ['partly', 'Partly'], ['not_yet', 'Not yet']].forEach(function (o) {
+        var b = el('button', '', o[1]); b.type = 'button';
+        b.onclick = function () { answers[a.id] = o[0]; Array.prototype.forEach.call(seg.children, function (x) { x.className = ''; }); b.className = 'on'; };
+        seg.appendChild(b);
+      });
+      row.appendChild(seg);
+      var n = el('input'); n.placeholder = 'What did you do? (optional)'; n.maxLength = 300;
+      n.oninput = function () { notes[a.id] = n.value; };
+      row.appendChild(n);
+      card.appendChild(row);
+    });
+    if (!d.actions.length) card.appendChild(el('p', '', 'Your plan has no actions listed yet. Talk to your check-in adult.'));
+    var note = el('textarea'); note.rows = 2; note.maxLength = 600; note.placeholder = 'Anything else? Do you need help with something?';
+    card.appendChild(el('label', '', 'Anything else'));
+    card.appendChild(note);
+    var save = el('button', '', 'Send my check-in'); save.type = 'button';
+    var out = el('div');
+    save.onclick = function () {
+      save.disabled = true;
+      call('selfcheckSave', { id: who.id, first: who.first, answers: answers, notes: notes, note: note.value }).then(function () {
+        body.innerHTML = ''; msg(body, 'Thank you, ' + d.first + '! Your check-in adult will see it. Keep going: you are making it right.');
+      }).catch(function (e) { save.disabled = false; msg(out, e.message, true); });
+    };
+    card.appendChild(save); card.appendChild(out);
+    body.appendChild(card);
+  }
+})();
+</script>
+</body>
+</html>

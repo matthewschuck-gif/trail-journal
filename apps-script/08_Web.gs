@@ -52,7 +52,7 @@ const WEB_DEFAULTS_ = [
   ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', 'Trailback Panel: the Accountability & Intervention Log Sheet. Its Master Log Status changes when a case is held, resolved or reverted.'],
   ['TRAILBACK_REFERRAL_FORM_ID', '19qZF3mndYFktrkrwHZz-lr5IGSJUAoU46w99rUTShvc', 'Trailback Panel: the "Trailback Panel Staff Referral" Google Form. Connect it from the menu.'],
 ];
-const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet', consent: 'Consent', outcomes: 'Outcomes' };
+const PAGES_ = { journal: 'Journal', respond: 'Respond', admin: 'Admin', panel: 'Panel', followup: 'Followup', signup: 'Signup', checkin: 'Checkin', givget: 'GiveGet', consent: 'Consent', outcomes: 'Outcomes', selfcheck: 'Selfcheck', repaired: 'Repaired' };
 
 function webSetting_(key) {
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WEB_SETTINGS_TAB_);
@@ -102,7 +102,7 @@ function serveTrailPage_(e) {
   });
   return t.evaluate()
     .setTitle({ journal: 'Trail Journal — Camp Mountaineer', respond: 'Your Side of the Trail — Camp Mountaineer', admin: 'Trail Journal Admin',
-      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In', givget: 'Give / Get · EMS', consent: 'Trailback Panel · Ephrata Middle School', outcomes: 'Trailback Outcomes' }[page])
+      panel: 'Trailback Panel · Camp Mountaineer', followup: 'Trailback Panel Follow-Up', signup: 'Trailback Panel Sign-Up', checkin: 'Trailback Check-In', givget: 'Give / Get · EMS', consent: 'Trailback Panel · Ephrata Middle School', outcomes: 'Trailback Outcomes', selfcheck: 'My Trailback Check-In', repaired: 'Trailback · Thank you' }[page])
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // trailjournal.org shows it in a frame
 }
@@ -141,6 +141,7 @@ function onOpen() {
       .addItem('Run the autopilot now (suggest, remind, schedule, seats)', 'menuRunPipeline_')
       .addItem('Open the outcomes dashboard', 'showOutcomesLink')
       .addItem('Preview the overdue check-in email (nothing sent)', 'previewOverdueEmail')
+      .addItem('Preview the "was the harm repaired?" email (nothing sent)', 'previewHarmEmails')
       .addItem('Add missing questions to the staff referral form', 'addReferralQuestions')
       .addItem('Connect the staff referral form', 'connectReferralForm')
       .addItem('Show the key for other tools', 'showTrailbackKey')

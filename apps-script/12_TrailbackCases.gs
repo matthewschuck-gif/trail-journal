@@ -143,7 +143,7 @@ function createTrailbackCase_(body) {
 }
 
 // ── MOVING A CASE ───────────────────────────────────────────────────
-const EDITABLE_CASE_FIELDS_ = ['student_id', 'student_name', 'grade', 'squad', 'behavior_type', 'referring_staff', 'family_email',
+const EDITABLE_CASE_FIELDS_ = ['student_id', 'student_name', 'grade', 'squad', 'behavior_type', 'referring_staff', 'family_email', 'affected_staff',
   'consequence_type', 'consequence_original_date', 'master_log_row', 'checkin_person', 'completion_criteria',
   'incident_summary', 'behavior_pattern'];
 
@@ -566,6 +566,8 @@ function trailbackDailyCheck() {
   try { pipelineDaily_(); } catch (e) { console.error(e); } // 17_Pipeline.gs: spot, remind, schedule, fill seats
   trailbackOverdueEmail_(false);
   try { repairReminders_(false); } catch (e) { console.error(e); } // 14_RepairPlan.gs: check-in links, due-soon and past-due notes
+  try { selfcheckReminders_(false); } catch (e) { console.error(e); } // 19_MakeItRight.gs: the student's self check-in link
+  try { harmRepairedEmails_(false); } catch (e) { console.error(e); } // 19_MakeItRight.gs: "was the harm repaired?" at day 10
 }
 
 function setupTrailbackTriggers() {

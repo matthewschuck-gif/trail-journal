@@ -93,7 +93,10 @@ function actionIdeas_(body) {
     return { menu: String(r['Menu'] || ''), type: String(r['Consequence Type'] || ''), idea: String(r['Idea']), test: String(r['Done When'] || ''), need: String(r['Need'] || '') };
   });
   const offers = tabRows_(GIVEGET_TAB_).map(giveGetView_).filter(function (g) { return g.active && g.what; });
-  return { ideas: ideas, offers: offers };
+  // The Accountability Log's Logical Consequence Ideas (19_MakeItRight.gs), after the panel's own.
+  let logical = [];
+  try { logical = logicalIdeasFromAccountability_(); } catch (e) { logical = []; }
+  return { ideas: ideas.concat(logical), offers: offers };
 }
 
 /** The Give / Get page: everyone's active rows (the building's needs and offers) and my rows. */
