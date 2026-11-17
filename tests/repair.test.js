@@ -329,4 +329,23 @@ test('making it right: Logical Consequence ideas in the plan builder; the studen
   assert.ok(/not complete/.test(w.call({ action: 'harmAnswer', payload: { t: 'x', a: 'yes' } }).error));
 });
 
+test('the Accountability Form can log a Trailback follow-up as the check-in (with the tools key)', () => {
+  const w = world();
+  w.props.TRAILBACK_API_KEY = 'k1';
+  const id = heardWithPlan(w, PLAN);
+  w.user.email = '';
+  assert.ok(/Wrong or missing/.test(w.post({ action: 'logTrailbackCheckin', key: 'nope', payload: { student_id: '8012345' } }).error));
+  const r = w.post({ action: 'logTrailbackCheckin', key: 'k1', caller: 'Accountability Log', payload: { student_id: '801-2345', which: 'next', how: 'On track', note: 'Took the post down', by: 'Ms. AP' } });
+  assert.ok(r.ok, r.error);
+  assert.deepStrictEqual([r.data.logged, r.data.n], [true, 3]);
+  w.user.email = 'kelly@easdpa.org';
+  const c = w.call({ action: 'trailbackCase', payload: { case_id: id } }).data;
+  assert.ok(/On track\. Took the post down/.test(c.checkin_notes[3].note));
+  assert.strictEqual(c.checkin_notes[3].by, 'Ms. AP');
+  // "extra" = the next one not logged yet (10).
+  w.user.email = '';
+  assert.strictEqual(w.post({ action: 'logTrailbackCheckin', key: 'k1', payload: { student_id: '8012345', which: 'extra' } }).data.n, 10);
+  assert.strictEqual(w.post({ action: 'logTrailbackCheckin', key: 'k1', payload: { student_id: '8099999' } }).data.logged, false, 'no open plan');
+});
+
 console.log('\n' + passed + ' tests passed');

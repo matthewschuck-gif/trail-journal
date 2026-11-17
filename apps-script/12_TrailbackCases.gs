@@ -694,7 +694,7 @@ function onTrailbackReferral(e) {
 }
 
 // ── OTHER TOOLS (server to server) ──────────────────────────────────
-const TRAILBACK_API_ACTIONS_ = ['createTrailbackCase', 'trailbackCasesByStudent'];
+const TRAILBACK_API_ACTIONS_ = ['createTrailbackCase', 'trailbackCasesByStudent', 'logTrailbackCheckin'];
 
 /** doPost route for the Accountability system and Climb-er: { action, key, payload }. */
 function trailbackApi_(body) {
@@ -706,7 +706,26 @@ function trailbackApi_(body) {
     const f = Object.assign({}, call.payload, { status: call.payload.status === 'suggested' ? 'suggested' : 'offered' });
     return createCase_(f, call._caller);
   }
+  if (body.action === 'logTrailbackCheckin') return logCheckinFromTool_(call);
   return trailbackCasesByStudent_(call);
+}
+
+/**
+ * The Accountability Form's "Trailback Follow-Up" answer: { student_id, which: 'next'|'10'|'30'|'extra',
+ * how, note, by }. Logs that check-in on the student's open plan (the next one due when "extra" or
+ * blank). No open plan = a clear message, nothing changed.
+ */
+function logCheckinFromTool_(call) {
+  const p = call.payload || {}, sid = digits800_(p.student_id);
+  if (!/^80\d{5}$/.test(sid)) throw new Error('student_id (800#) is required.');
+  const open = allCases_().filter(function (c) { return digits800_(c.student_id) === sid && c.status === 'repair_in_progress'; })[0];
+  if (!open) return { logged: false, why: 'No open Trailback plan for that 800#.' };
+  const map = { next: 3, '1': 3, '3': 3, '10': 10, '30': 30 };
+  let n = map[String(p.which || '').toLowerCase()] || null;
+  if (!n) { const due = CHECKIN_SCHOOL_DAYS_.filter(function (k) { return !open.checkin_notes[k]; }); n = due[0] || 30; }
+  const note = [p.how ? 'How it is going: ' + p.how : '', p.note || ''].filter(String).join('. ');
+  updateTrailbackCase_({ _staffEmail: String(p.by || call._caller || 'Accountability form').slice(0, 80), payload: { case_id: open.case_id, op: 'checkin', n: n, note: note } });
+  return { logged: true, case_id: open.case_id, n: n };
 }
 
 function showTrailbackKey() {
