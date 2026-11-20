@@ -331,6 +331,7 @@ function casePanelSubmitted_(caseId, record, by) {
   saveCase_(c, { status: 'repair_in_progress', checkin_3: d.checkin_3 || '', checkin_10: d.checkin_10 || '', checkin_30: d.checkin_30 || '',
     checkin_person: record.followup_person || (actions[0] && actions[0].adult) || '', completion_criteria: record.fu_criteria || tests,
     repair_actions: JSON.stringify(actions) }, by, c.status, 'Panel record submitted' + (actions.length ? ': ' + actions.length + ' action' + (actions.length === 1 ? '' : 's') : ''));
+  autoPlanDoc_(caseId, by); // 20_PlanDoc.gs: the Trailback Plan Google Doc
 }
 
 // ── TRAIL JOURNAL AUTO-LINK ─────────────────────────────────────────

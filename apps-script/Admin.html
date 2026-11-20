@@ -2938,10 +2938,24 @@ function tbButtons(c) {
     case 'consented': return b('schedule', 'Schedule', 1) + b('link_tj', 'Link Trail Journal') + b('decline', 'Declined') + b('edit', 'Edit');
     case 'tj_done': return b('schedule', 'Schedule', 1) + b('decline', 'Declined') + b('edit', 'Edit');
     case 'scheduled': return b('schedule', 'Reschedule') + b('decline', 'Declined') + b('edit', 'Edit');
-    case 'heard_approved': return b('fixit', 'Fix-it meeting') + b('close_reverted', 'Close reverted');
-    case 'repair_in_progress': return b('checkin', 'Log check-in', 1) + b('fixit', 'Fix-it meeting') + b('close_completed', 'Close completed') + b('close_reverted', 'Close reverted') + b('edit', 'Edit');
+    case 'heard_approved': return b('fixit', 'Fix-it meeting') + b('close_reverted', 'Close reverted') + tbPlanDocButtons(c);
+    case 'repair_in_progress': return b('checkin', 'Log check-in', 1) + b('fixit', 'Fix-it meeting') + b('close_completed', 'Close completed') + b('close_reverted', 'Close reverted') + b('edit', 'Edit') + tbPlanDocButtons(c);
     default: return '';
   }
+}
+
+// The Trailback Plan Google Doc (20_PlanDoc.gs): open the newest one, or make one from the plan.
+function tbPlanDocButtons(c) {
+  const open = c.plan_doc_url ? `<a class="flt-btn" href="${tbEsc(c.plan_doc_url)}" target="_blank" rel="noopener">📄 Plan doc</a>` : '';
+  return open + `<button class="flt-btn" onclick="tbPlanDoc('${tbEsc(c.case_id)}', this)">${c.plan_doc_url ? 'Make a new plan doc' : '📄 Make the plan doc'}</button>`;
+}
+async function tbPlanDoc(caseId, btn) {
+  btn.disabled = true; btn.textContent = 'Making the doc…';
+  try {
+    const r = await callBackend({ action: 'makePlanDoc', payload: { case_id: caseId } }, true);
+    loadTrailbackBoard();
+    if (r && r.url) window.open(r.url, '_blank', 'noopener');
+  } catch (e) { alert('The plan doc was not made: ' + (e && e.message || e)); btn.disabled = false; btn.textContent = '📄 Make the plan doc'; }
 }
 
 async function tbToggleDetail(caseId) {

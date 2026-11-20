@@ -31,6 +31,10 @@ const WEB_DEFAULTS_ = [
   ['PANEL_ROOM', '', 'Trailback Panel: the usual room. A lead can change it per case.'],
   ['PANEL_SEATS', '6', 'Trailback Panel: staff seats per case on the sign-up page.'],
   ['TRAILBACK_REDEMPTION_POINTS', '75', 'Redemption: Clash points for the student\'s squad when their Trailback Summit is recorded (posted straight away, no approval). The student chooses whether their first name and last initial show. 0 = the old 1-point request when the case closes.'],
+  ['TRAILBACK_PLAN_DOCS', 'ON', 'Trailback Plan doc (20_PlanDoc.gs): ON = when the panel record is submitted, a Google Doc "Trailback Plan - XX" is made from the plan (same layout as the hand-made ones) and linked on the case. Menu › Trailback › Make the plan doc for a case… makes one any time.'],
+  ['TRAILBACK_PLAN_FOLDER_ID', '1jFzbHBIMK38cL35pKvG22EDRKFioUfGE', 'Trailback Plan docs go in this Drive folder (link or ID; the shared-drive folder that holds the DR / JL / TG plans). Blank = a "Trailback Plans" folder in your Drive.'],
+  ['TRAILBACK_PLAN_SIGNER', 'Mr. Schuck', 'Trailback Plan doc: the third signature box.'],
+  ['TRAILBACK_PLAN_TAKES_PLACE', 'This plan takes the place of your {consequence}. Following through is what keeps it that way.', 'Trailback Plan doc: the line above the plan ({consequence} = the consequence on the case).'],
   ['TRAILBACK_GUIDE_DAYS', '60', 'Trail Guide: this many school days after the Summit with no new Master Log entry = eligible to sit on a panel as a student panelist (the coordinator is told).'],
   ['TRAILBACK_AUTOMATION', 'ON', 'Trailback autopilot (17_Pipeline.gs): ON = suggest cases from repeat patterns and Trail Journals, send the family consent link and the student\'s Trail Journal link, schedule when the journal is done, and call for panel seats. OFF = all by hand.'],
   ['TRAILBACK_PATTERN_COUNT', '3', 'Autopilot: this many Master Log rows with the same Behavior Type ...'],
@@ -137,6 +141,7 @@ function onOpen() {
       .addItem('Preview the next case briefs (nothing sent)', 'previewPanelBriefs')
       .addItem('Open the panel sign-up page', 'showPanelSignupLink')
       .addItem('Open the one-tap check-in page', 'showCheckinLink')
+      .addItem('Make the plan doc for a case…', 'menuMakePlanDoc') // 20_PlanDoc.gs
       .addItem('Open Give / Get for staff', 'showGiveGetLink')
       .addItem('Run the autopilot now (suggest, remind, schedule, seats)', 'menuRunPipeline_')
       .addItem('Open the outcomes dashboard', 'showOutcomesLink')

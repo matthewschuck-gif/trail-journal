@@ -26,7 +26,7 @@ const ADMIN_ONLY_TABLES_ = ['panel_sessions', 'incident_reports', 'clash_request
 // Staff-only actions added with the Trailback pipeline (11_Trailback.gs, 07_ClashOfClasses.gs).
 // approvePanelPlan also needs a Google sign-in, not just the password (checked in its function).
 const STAFF_ACTIONS_ = ['followupDates', 'approvePanelPlan', 'submitPanelSession', 'clashRequests', 'decideClashRequest',
-  'trailbackCases', 'trailbackCase', 'updateTrailbackCase', 'createTrailbackCase', 'trailbackCasesByStudent'];
+  'trailbackCases', 'trailbackCase', 'updateTrailbackCase', 'createTrailbackCase', 'trailbackCasesByStudent', 'makePlanDoc'];
 
 // AI proxy "type" values that are staff-only tools, not part of the student-facing flow.
 const ADMIN_ONLY_AI_TYPES_ = ['pattern_analysis', 'parent_letter', 'panel_inquiry_analysis', 'panel_recommendation_draft'];

@@ -100,6 +100,9 @@ function dispatch_(body) {
       case 'trailbackCases': // 12_TrailbackCases.gs
         result = trailbackCases_(body);
         break;
+      case 'makePlanDoc': // 20_PlanDoc.gs
+        result = makePlanDocAction_(body);
+        break;
       case 'trailbackCase':
         result = trailbackCase_(body);
         break;

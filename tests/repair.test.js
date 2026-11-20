@@ -348,4 +348,48 @@ test('the Accountability Form can log a Trailback follow-up as the check-in (wit
   assert.strictEqual(w.post({ action: 'logTrailbackCheckin', key: 'k1', payload: { student_id: '8099999' } }).data.logged, false, 'no open plan');
 });
 
+
+test('Trailback Plan doc: made at submit like the DR / JL / TG plans (strengths, climb, plan table, check-ins, signatures), linked on the case; menu and staff action; OFF = none', () => {
+  const w = world();
+  const docs = [];
+  const fakeText = () => { const t = { setBold: () => t, setFontSize: () => t, setForegroundColor: () => t, setItalic: () => t }; return t; };
+  const para = text => { const p = { text, getText: () => text, editAsText: fakeText, setSpacingBefore: () => p, setSpacingAfter: () => p, setGlyphType: () => p, getType: () => 'PARAGRAPH', asParagraph: () => p }; return p; };
+  w.DocumentApp = { ElementType: { PARAGRAPH: 'PARAGRAPH' }, GlyphType: { BULLET: 'B' }, create: title => {
+    const parts = [], body = { parts, setMarginTop: () => body, setMarginBottom: () => body, setMarginLeft: () => body, setMarginRight: () => body,
+      appendParagraph: t => { parts.push(['p', t]); return para(t); }, appendListItem: t => { parts.push(['li', t]); return para(t); },
+      appendTable: rows => { parts.push(['table', rows]); const cell = () => ({ setBackgroundColor() {}, editAsText: fakeText }); return { getCell: cell, getNumRows: () => rows.length }; },
+      getChild: () => para('x'), removeChild() {} };
+    const d = { title, body, getBody: () => body, saveAndClose() {}, getId: () => 'doc' + docs.length, getUrl: () => 'https://docs.google.com/document/d/doc' + docs.length };
+    docs.push(d); return d; } };
+  w.DriveApp = { getFileById: () => ({ moveTo() {} }), getFolderById: () => ({}) };
+  const id = heardWithPlan(w, PLAN, { panel_strengths: [{ panelist: 'A', strength: 'You are a people person' }, { panelist: 'B', strength: 'You know your way around a bike.' }],
+    strengths_notes: 'You stick with hard things' });
+  assert.strictEqual(docs.length, 1, 'made at submit');
+  const d = docs[0], flat = JSON.stringify(d.body.parts);
+  assert.strictEqual(d.title, 'Trailback Plan - PQ');
+  assert.ok(/Pat Quill  \|  Grade 8  \|  Panel: \w+day, /.test(flat), 'header line');
+  ['WHAT WE SEE IN YOU', 'YOUR CLIMB', 'YOUR PLAN', 'YOUR PEOPLE AND CHECK-INS'].forEach(h => assert.ok(flat.includes(h), h));
+  assert.ok(flat.includes('You are a people person.') && flat.includes('You stick with hard things.'));
+  assert.ok(flat.includes('Posts first, thinks later.'));
+  assert.ok(flat.includes('This plan takes the place of your after school detention.'));
+  const plan = d.body.parts.find(p => p[0] === 'table' && /Staff Signature/.test(p[1][0][0]))[1];
+  assert.deepStrictEqual(J(plan[1].slice(1)), ['Delete the post and apologize to the classmate.', 'Dean', 'The classmate says it happened.']);
+  assert.strictEqual(plan[3][1], 'Show up for your check-ins.');
+  const ck = d.body.parts.find(p => p[0] === 'table' && p[1][0][0] === 'CHECK-IN')[1];
+  assert.strictEqual(ck.length, 4);
+  assert.ok(/Week of/.test(ck[1][1]) && /Date: _+/.test(ck[1][1]));
+  assert.ok(/Student/.test(JSON.stringify(d.body.parts[d.body.parts.length - 1])) && /Mr\. Schuck/.test(JSON.stringify(d.body.parts[d.body.parts.length - 1])));
+  const c = w.call({ action: 'trailbackCase', payload: { case_id: id } }).data;
+  assert.ok(/docs\.google\.com/.test(c.plan_doc_url));
+  // The staff action makes another one.
+  const r = w.call({ action: 'makePlanDoc', payload: { case_id: id } });
+  assert.ok(r.ok, r.error);
+  assert.strictEqual(docs.length, 2);
+  // OFF: nothing at submit.
+  const w2 = world({ settings: [['TRAILBACK_PLAN_DOCS', 'OFF', '']] });
+  w2.DocumentApp = w.DocumentApp; w2.DriveApp = w.DriveApp;
+  heardWithPlan(w2, PLAN);
+  assert.strictEqual(docs.length, 2);
+});
+
 console.log('\n' + passed + ' tests passed');
