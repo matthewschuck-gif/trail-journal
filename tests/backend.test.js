@@ -183,4 +183,65 @@ test('staff sessions: the password is traded for a token once; tokens work, end 
   assert.ok(w2.tjStaffSignIn('staffpw'), 'student calls with no password never lock staff out');
 });
 
+test('Staff Access (21_StaffAccess.gs): after setup, the admin tools need the list; any school account still counts for sign-up; password fallback, OFF switch, Staff Actions, alerts', () => {
+  const w = world();
+  const call = b => JSON.parse(w.tjCall(JSON.stringify(b)));
+  const tabs = {};
+  const mkSheet = (name, rows) => {
+    const s = { rows, getName: () => name, getLastRow: () => s.rows.length, getMaxRows: () => 50,
+      getDataRange: () => ({ getValues: () => s.rows.map(r => r.slice()) }),
+      getRange: (r, c, nr, nc) => {
+        const api = { getValues: () => s.rows.slice(r - 1, r - 1 + (nr || 1)).map(x => { const o = x.slice(c - 1, c - 1 + (nc || 1)); while (o.length < (nc || 1)) o.push(''); return o; }),
+          setValues: v => { v.forEach((row, i) => { s.rows[r - 1 + i] = s.rows[r - 1 + i] || []; row.forEach((x, j) => { s.rows[r - 1 + i][c - 1 + j] = x; }); }); return px; },
+          setValue: v => api.setValues([[v]]) };
+        const px = new Proxy(api, { get: (t, p) => p in t ? t[p] : () => px });
+        return px;
+      },
+      appendRow: r => s.rows.push(r), setFrozenRows() {} };
+    tabs[name] = s; return s;
+  };
+  mkSheet('Staff Access', [['Email', 'Name', 'Role', 'Active', 'Last Sign-in'], ['lead@easdpa.org', 'Ms. Lead', 'Counselor', true, '']]);
+  const mails = [];
+  w.SpreadsheetApp.getActiveSpreadsheet = () => ({ getSheetByName: n => tabs[n] || null, insertSheet: n => mkSheet(n, []), getId: () => 'TJ' });
+  w.Session.getEffectiveUser = () => ({ getEmail: () => 'owner@easdpa.org' });
+  w.Session.getScriptTimeZone = () => 'America/New_York';
+  w.Utilities.formatDate = d => d.toISOString().slice(0, 16).replace('T', ' ');
+  w.MailApp = { sendEmail: o => mails.push(o) };
+  w.PropertiesService = { getScriptProperties: () => { const p = w.__p || (w.__p = {}); return { getProperty: k => p[k] || null, setProperty: (k, v) => { p[k] = v; } }; } };
+  // On the list: the admin tools, no password, and the change is logged.
+  w.user.email = 'lead@easdpa.org';
+  let r = call({ action: 'query', table: 'reflections', filters: {} });
+  assert.ok(r.ok && r.data.length === 2, JSON.stringify(r));
+  // A teacher at the school domain but not on the list: refused for the admin tools...
+  w.user.email = 'teacher@easdpa.org';
+  r = call({ action: 'query', table: 'reflections', filters: {} });
+  assert.ok(!r.ok && /staff password/i.test(r.error), JSON.stringify(r));
+  // ...unless they have the shared password while PASSWORD_SIGN_IN is ON.
+  r = call({ action: 'query', table: 'reflections', filters: {}, adminPassword: 'staffpw' });
+  assert.ok(r.ok, JSON.stringify(r));
+  // Unticking Active takes it away on the next call; the owner always counts.
+  tabs['Staff Access'].rows[1][3] = false;
+  w.user.email = 'lead@easdpa.org';
+  assert.ok(!call({ action: 'query', table: 'reflections', filters: {} }).ok);
+  w.user.email = 'owner@easdpa.org';
+  assert.ok(call({ action: 'query', table: 'reflections', filters: {} }).ok);
+  // Wrong passwords: alerts at 5.
+  w.user.email = 'teacher@easdpa.org';
+  for (let i = 0; i < 5; i++) call({ action: 'query', table: 'reflections', filters: {}, adminPassword: 'nope' + i });
+  assert.ok(mails.some(m => /5 wrong staff passwords/.test(m.subject)), JSON.stringify(mails.map(m => m.subject)));
+  // PASSWORD_SIGN_IN = OFF: the password stops working and the message says why.
+  mkSheet('Settings', [['Key', 'Value', 'Notes'], ['PASSWORD_SIGN_IN', 'OFF', '']]);
+  delete w.CacheService.__c; // the wrong-password count runs out
+  r = call({ action: 'query', table: 'reflections', filters: {}, adminPassword: 'staffpw' });
+  assert.ok(!r.ok && /not on the Trail Journal Staff Access list/.test(r.error), JSON.stringify(r));
+  assert.throws(() => w.tjStaffSignIn('staffpw'), /turned off/);
+  // Staff Actions: gated changes are logged; reads are not.
+  call({ action: 'update', table: 'panel_cases', match: { id: 'c1' }, patch: { status: 'x' } });
+  w.user.email = 'owner@easdpa.org';
+  call({ action: 'update', table: 'panel_cases', match: { id: 'c1' }, patch: { status: 'x' } });
+  const acts = (tabs['Staff Actions'] || { rows: [] }).rows;
+  assert.ok(acts.some(a => a[2] === 'owner@easdpa.org' && /update panel_cases/.test(a[4]) && a[5] === 'row c1'), JSON.stringify(acts));
+  assert.ok(!acts.some(a => /query reflections/.test(a[4])), 'reads are not logged');
+});
+
 console.log('\n' + passed + ' tests passed');

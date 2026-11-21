@@ -50,7 +50,8 @@ function handleRequest_(e, method) {
       };
     }
 
-    delete body._staffEmail; // only tjCall (08_Web.gs) sets this, from the Google sign-in
+    delete body._staffEmail; // only tjCall (08_Web.gs) sets these, from the Google sign-in
+    delete body._staffAdmin;
     delete body._caller;
     // Other EMS tools (Accountability system, Climb-er) reach two Trailback actions with their
     // own key (Script Property TRAILBACK_API_KEY), even after LEGACY_API is OFF. 12_TrailbackCases.gs

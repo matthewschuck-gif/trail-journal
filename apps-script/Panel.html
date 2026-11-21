@@ -1369,7 +1369,7 @@ let ADMIN_PW_VALUE = null;
 let _savedPanelPw = null;
 try { sessionStorage.removeItem('panel-auth-pw'); _savedPanelPw = sessionStorage.getItem('panel-auth-session'); } catch (e) { /* storage blocked */ } // an old saved password is wiped
 if (_savedPanelPw) ADMIN_PW_VALUE = _savedPanelPw;
-if (_savedPanelPw || TJ_BOOT.staff) document.getElementById('pw-gate-full').classList.add('hidden');
+if (_savedPanelPw || TJ_BOOT.staffAdmin) document.getElementById('pw-gate-full').classList.add('hidden');
 
 // ── ADMIN PREVIEW (?preview=true) ─────────────────────────────────────────
 // For practice runs and the mock panel: jump to any screen, fill a made-up case, and click

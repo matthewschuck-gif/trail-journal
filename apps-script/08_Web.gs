@@ -35,6 +35,7 @@ const WEB_DEFAULTS_ = [
   ['TRAILBACK_PLAN_FOLDER_ID', '1jFzbHBIMK38cL35pKvG22EDRKFioUfGE', 'Trailback Plan docs go in this Drive folder (link or ID; the shared-drive folder that holds the DR / JL / TG plans). Blank = a "Trailback Plans" folder in your Drive.'],
   ['TRAILBACK_PLAN_SIGNER', 'Mr. Schuck', 'Trailback Plan doc: the third signature box.'],
   ['TRAILBACK_PLAN_TAKES_PLACE', 'This plan takes the place of your {consequence}. Following through is what keeps it that way.', 'Trailback Plan doc: the line above the plan ({consequence} = the consequence on the case).'],
+  ['TRAILBACK_GUIDE_POINTS', '10', 'Trail Guides (22_GuidePoints.gs): Clash points for a student panelist\'s own squad for each Summit they sit on (ticked on the Summit form). Staff approve each one in Admin › Clash requests. 0 = off.'],
   ['TRAILBACK_GUIDE_DAYS', '60', 'Trail Guide: this many school days after the Summit with no new Master Log entry = eligible to sit on a panel as a student panelist (the coordinator is told).'],
   ['TRAILBACK_AUTOMATION', 'ON', 'Trailback autopilot (17_Pipeline.gs): ON = suggest cases from repeat patterns and Trail Journals, send the family consent link and the student\'s Trail Journal link, schedule when the journal is done, and call for panel seats. OFF = all by hand.'],
   ['TRAILBACK_PATTERN_COUNT', '3', 'Autopilot: this many Master Log rows with the same Behavior Type ...'],
@@ -97,10 +98,11 @@ function serveTrailPage_(e) {
   const p = (e && e.parameter) || {};
   const page = PAGES_[String(p.page || 'journal').toLowerCase()] ? String(p.page || 'journal').toLowerCase() : 'journal';
   const t = HtmlService.createTemplateFromFile(PAGES_[page]);
+  noteStaffVisit_(staffAdminEmail_(), page); // 21_StaffAccess.gs: Last Sign-in, first-time alert
   let token = '';
   try { token = getProp_('APP_TOKEN'); } catch (err) { /* not set: exit auto-save just won't send */ }
   t.boot = JSON.stringify({
-    page: page, staff: staffEmail_(), siteUrl: webSetting_('SITE_URL').replace(/\/+$/, ''),
+    page: page, staff: staffEmail_(), staffAdmin: staffAdminEmail_(), siteUrl: webSetting_('SITE_URL').replace(/\/+$/, ''),
     beaconUrl: webSetting_('STUDENT_EXEC_URL') || ScriptApp.getService().getUrl(), beaconToken: token,
     params: p,
   });
@@ -117,9 +119,11 @@ function include(name) { return HtmlService.createHtmlOutputFromFile(name).getCo
 function tjCall(bodyJson) {
   try {
     const body = JSON.parse(bodyJson || '{}');
-    delete body._staffEmail;
+    delete body._staffEmail; delete body._staffAdmin;
     const staff = staffEmail_();
     if (staff) body._staffEmail = staff;
+    const admin = staff ? staffAdminEmail_() : ''; // 21_StaffAccess.gs: on Staff Access (or STAFF_ACCESS = DOMAIN)
+    if (admin) body._staffAdmin = admin;
     return JSON.stringify({ ok: true, data: dispatch_(body) });
   } catch (err) {
     return JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) });
@@ -131,6 +135,7 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('Trail Journal')
     .addItem('Run setup (Settings tab + new columns)', 'setupTrailWeb')
     .addItem('Scramble gate passwords', 'scrambleGatePasswords')
+    .addItem('Turn on nightly backup', 'menuTurnOnBackup') // 21_StaffAccess.gs
     .addSeparator()
     .addItem('Turn on the record safety net', 'setupRecordSafetyNet') // 10_Records.gs
     .addItem('Email all journal records once…', 'emailAllRecordsOnce')
@@ -165,5 +170,7 @@ function setupTrailWeb() {
   ensureGiveGetTabs_(); // 15_GiveGet.gs: the Action Ideas bank and the Give / Get board
   ensureNoSchoolTab_();
   ensurePanelMembersTab_(); // 12_TrailbackCases.gs
+  setupStaffAccess_(); // 21_StaffAccess.gs: Staff Access + Staff Actions tabs
+  ensureGuideColumns_(); // 22_GuidePoints.gs: 800# and Squad on Panel Members
   safeAlert_('Trail Journal is set up: Settings tab (with PANEL_APPROVERS and TRAILBACK_CLASH_POINTS), the 800# columns, the new panel_sessions and followup_records columns, the clash_requests tab, and a No School Dates tab. Add the school\'s days off to No School Dates.');
 }

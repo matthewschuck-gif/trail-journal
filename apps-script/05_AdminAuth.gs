@@ -40,6 +40,7 @@ const ADMIN_ONLY_AI_TYPES_ = ['pattern_analysis', 'parent_letter', 'panel_inquir
 const STAFF_SESSION_HOURS_ = 8;
 function requireStaffPassword_(provided) {
   provided = String(provided || '');
+  if (!passwordSignInOn_()) throw new Error('The shared staff password is turned off. Open the staff link signed in with your school account (you need to be on the Staff Access list).');
   if (/^tjs_[A-Za-z0-9]{40,}$/.test(provided)) {
     if (CacheService.getScriptCache().get('tj-staff-sess-' + provided)) return { ok: true };
     throw new Error('Incorrect staff password. (Your staff session ended: sign in again.)');
@@ -56,12 +57,17 @@ function staffPasswordMatches_(pw) {
   const expected = getProp_('ADMIN_PASSWORD');
   if (pw && expected && pw.length === expected.length && pw === expected) return true;
   cache.put('admin-pw-fails', String(fails + 1), 600);
+  if (fails + 1 === 5 || fails + 1 === 10) securityAlert_('pw-' + (fails + 1), (fails + 1) + ' wrong staff passwords in 10 minutes', [ // 21_StaffAccess.gs
+    'Someone typed the wrong Trail Journal staff password ' + (fails + 1) + ' times in 10 minutes' + (fails + 1 >= 10 ? '; password sign-in is locked for 10 minutes.' : '.'),
+    'If that was not your staff: set PASSWORD_SIGN_IN = OFF on the Settings tab so only school accounts on Staff Access get in.']);
   return false;
 }
 
 /** Called by the pages (google.script.run): trades the password for a staff session token. */
 function tjStaffSignIn(pw) {
-  if (!staffPasswordMatches_(String(pw || ''))) throw new Error('Incorrect password. Try again.');
+  if (!passwordSignInOn_()) throw new Error('The shared staff password is turned off. Open the staff link signed in with your school account.');
+  if (!staffPasswordMatches_(String(pw || ''))) { logStaffAction_('', staffEmail_(), 'Staff password', 'Refused sign-in', 'Wrong staff password'); throw new Error('Incorrect password. Try again.'); }
+  logStaffAction_('Shared password', staffEmail_(), 'Staff password', 'Signed in', '');
   const token = 'tjs_' + (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
   CacheService.getScriptCache().put('tj-staff-sess-' + token, '1', STAFF_SESSION_HOURS_ * 3600);
   return token;
@@ -169,7 +175,7 @@ function isStudentHistoryQuery_(body) {
 // True when the request comes from signed-in staff (tjCall) or carries the correct staff
 // password (never throws).
 function hasStaffPassword_(body) {
-  if (body._staffEmail) return true;
+  if (body._staffAdmin) return true; // on Staff Access (21_StaffAccess.gs)
   try { requireStaffPassword_(body.adminPassword); return true; } catch (e) { return false; }
 }
 
@@ -228,6 +234,9 @@ function enforceAdminGate_(body) {
     (body.table === 'site_config' && (body.action === 'insert' || body.action === 'update'));
 
   if (!needsAdmin) return null;
-  if (body._staffEmail) return { ok: true }; // signed in on the staff link (tjCall, 08_Web.gs)
-  return requireStaffPassword_(body.adminPassword);
+  if (body._staffAdmin) { logGatedAction_(body); return { ok: true }; } // on Staff Access, signed in on the staff link (21_StaffAccess.gs)
+  if (body._staffEmail && !passwordSignInOn_()) throw new Error(body._staffEmail + ' is not on the Trail Journal Staff Access list. Ask Mr. Schuck.');
+  const ok = requireStaffPassword_(body.adminPassword);
+  logGatedAction_(body);
+  return ok;
 }

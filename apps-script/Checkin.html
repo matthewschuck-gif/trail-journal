@@ -44,6 +44,7 @@
   .hidden { display: none; }
   .summit { border-color: var(--gold); background: linear-gradient(180deg, #fff8e8, var(--cream)); }
   .summit label { display: block; font-size: 14px; font-weight: 600; margin-top: 12px; }
+  .summit label.guide { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-top: 6px; }
   .done-list { margin: 8px 0 0 18px; font-size: 14px; }
   button:focus-visible, input:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
 </style>
@@ -148,6 +149,7 @@
       sec('What the adults noticed', a.noticed) + '<div class="f">Ephrata Middle School · Camp Mountaineer · ' + e(String(v.summit_at || '').slice(0, 10)) + '</div></div></body></html>');
     w.document.close(); setTimeout(function () { w.focus(); w.print(); }, 400);
   }
+  var guides = { list: [], points: 0 };
   function summitForm(v, qs) {
     var art = el('article', 'case summit');
     art.appendChild(el('div', 'who', '🏔️ ' + (v.student_name || 'A student')));
@@ -166,13 +168,24 @@
       seg2.appendChild(b2);
     });
     art.appendChild(seg2);
+    // Trail Guides: student panelists earn their own squad points (staff approve them).
+    var guideBoxes = [];
+    if (guides.list.length && guides.points) {
+      art.appendChild(el('label', '', '🧭 Trail Guides who sat on this Summit (' + guides.points + ' points each to their own squad, after staff approve)'));
+      guides.list.forEach(function (g) {
+        var row = el('label', 'guide'); var cb = el('input'); cb.type = 'checkbox'; cb.value = g.id;
+        row.appendChild(cb); row.appendChild(document.createTextNode(' ' + g.name + (g.squad ? ' · ' + g.squad : '')));
+        art.appendChild(row); guideBoxes.push(cb);
+      });
+    }
     if (v.family) art.appendChild(el('div', 'k', 'The family gets the Summit card by email when you save.'));
     var b = el('button', 'save', 'Save the Summit'); b.type = 'button';
     b.addEventListener('click', function () {
       var ans = {}; Object.keys(inputs).forEach(function (k) { ans[k] = inputs[k].value; });
       b.disabled = true;
-      call('summitSave', { case_id: v.case_id, answers: ans, noticed: nt.value, present: pr.value, share_name: share }).then(function (saved) {
-        say('🏔️ Saved. ' + (saved.redemption ? saved.redemption + ' Redemption points went to the squad on Clash. ' : '') + (saved.warnings && saved.warnings.length ? '(' + saved.warnings.join(' ') + ') ' : '') + 'Print the Summit card below.'); summitCard(saved); return loadSummits();
+      var picked = guideBoxes.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
+      call('summitSave', { case_id: v.case_id, answers: ans, noticed: nt.value, present: pr.value, share_name: share, guides: picked }).then(function (saved) {
+        say('🏔️ Saved. ' + (saved.redemption ? saved.redemption + ' Redemption points went to the squad on Clash. ' : '') + (saved.guideRequests ? saved.guideRequests + ' Trail Guide point request' + (saved.guideRequests === 1 ? '' : 's') + ' wait for approval in Admin. ' : '') + (saved.warnings && saved.warnings.length ? '(' + saved.warnings.join(' ') + ') ' : '') + 'Print the Summit card below.'); summitCard(saved); return loadSummits();
       }).catch(function (e) { b.disabled = false; say(e.message, true); });
     });
     art.appendChild(b);
@@ -180,6 +193,7 @@
   }
   function loadSummits() {
     return call('summitList').then(function (d) {
+      guides = { list: d.guides || [], points: d.guidePoints || 0 };
       var box = $('summits'); box.textContent = '';
       if (!d.toHold.length && !d.held.length) { box.appendChild(el('div', 'empty', 'No finished plans yet.')); return; }
       d.toHold.forEach(function (v) { box.appendChild(summitForm(v, d.questions)); });

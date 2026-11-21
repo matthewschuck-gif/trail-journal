@@ -50,6 +50,24 @@ finished: detention served.
 Tabs added by **Run setup**: `panel_cases`, `clash_requests`, `No School Dates`, `Panel Members`
 (Name | Email | Role | Active; Role "Student" never gets the brief).
 
+## Staff Access, Staff Actions, backups (21_StaffAccess.gs)
+
+- Any school account (STAFF_DOMAIN) is still staff for panel sign-up, check-ins and Give / Get.
+- The admin tools (admin dashboard, Trailback Panel, follow-up scheduler, every staff-only action) need the
+  person on the **Staff Access** tab (Email, Name, Role, Active, Last Sign-in) with Active ticked, once Run setup
+  has made that tab. Setup fills it with the owner and the emails already in PANEL_ADMINS, PANEL_APPROVERS,
+  STAFF_EMAILS and TRAILBACK_COORDINATOR_EMAIL. STAFF_ACCESS = DOMAIN goes back to any school account.
+- The shared ADMIN_PASSWORD still works while PASSWORD_SIGN_IN is ON; turn it OFF once the list is filled in.
+- **Staff Actions** tab: password sign-ins, refused passwords, every staff-only change (not reads), first visits.
+- Alerts (SECURITY_ALERT_EMAILS, blank = owner): first time in the admin tools, 5 and 10 wrong staff passwords.
+- Trail Journal menu › Turn on nightly backup: "Trail Journal Backups" folder, BACKUP_KEEP copies.
+
+## Trail Guide points (22_GuidePoints.gs)
+
+Student panelists (Panel Members rows with Role "Student", an 800# and a Squad) ticked on the Summit form each
+get a Clash request for TRAILBACK_GUIDE_POINTS (10) for their own squad. Staff approve it in Admin › Clash requests;
+only then do the points reach Clash. The student who reached the Summit still gets the 75 Redemption points at once.
+
 ## Tests
 ```bash
 node tests/backend.test.js

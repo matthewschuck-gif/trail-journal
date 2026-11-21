@@ -147,7 +147,8 @@ function decideClashRequest_(body) {
       if (!sheet) throw new Error('Could not find the "' + COC_EVENTS_TAB_ + '" tab on the Clash of Classes Points sheet.');
       const pts = Number(req.points) > 0 ? Number(req.points) : 1;
       const today = Utilities.formatDate(new Date(), 'America/New_York', 'yyyy-MM-dd');
-      sheet.appendRow(['', 'Trailback Panel', 'trailback_panel', today, TRAILBACK_CLASH_NOTE_, '',
+      const guide = /^trail_guide/.test(String(req.source || '')); // 22_GuidePoints.gs
+      sheet.appendRow(['', guide ? 'Trail Guide: sat on a Summit panel' : 'Trailback Panel', 'trailback_panel', today, guide ? TRAIL_GUIDE_NOTE_ : TRAILBACK_CLASH_NOTE_, '',
         squad === 'BLACK' ? pts : '', squad === 'GOLD' ? pts : '', squad === 'GREY' ? pts : '', squad === 'PURPLE' ? pts : '']);
     }
     const patch = { status: decision === 'approve' ? 'approved' : 'declined', decided_by: body._staffEmail || 'staff password', decided_at: nowIso_() };

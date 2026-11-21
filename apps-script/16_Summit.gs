@@ -118,6 +118,8 @@ function summitList_(body) {
     toHold: mine.filter(function (c) { return !c.summit_at; }).map(summitView_),
     held: mine.filter(function (c) { return c.summit_at; }).sort(function (a, b) { return String(b.summit_at).localeCompare(String(a.summit_at)); }).slice(0, 10).map(summitView_),
     questions: SUMMIT_QUESTIONS_.map(function (q) { return { key: q[0], q: q[1] }; }),
+    guides: guidePoints_() ? trailGuideList_().map(function (g) { return { id: g.id, name: g.name, squad: titleSquad2_(g.squad) }; }) : [], // 22_GuidePoints.gs
+    guidePoints: guidePoints_(),
   };
 }
 
@@ -139,6 +141,7 @@ function summitSave_(body) {
   if (!s.accomplished && !s.proud) throw new Error('Write what they accomplished or what they are proud of.');
   saveCase_(c, { summit_at: nowIso_(), summit_json: JSON.stringify(s) }, me, c.status, 'Summit celebration held');
   const fresh = getCase_(c.case_id);
-  const warnings = postRedemption_(fresh, s.shareName).concat(familySummitEmail_(fresh, s));
-  return Object.assign(summitView_(getCase_(c.case_id)), { redemption: redemptionPoints_(), warnings: warnings });
+  const asked = Array.isArray(p.guides) ? p.guides : [];
+  const warnings = postRedemption_(fresh, s.shareName).concat(familySummitEmail_(fresh, s)).concat(requestGuidePoints_(fresh, asked, me)); // 22_GuidePoints.gs
+  return Object.assign(summitView_(getCase_(c.case_id)), { redemption: redemptionPoints_(), guideRequests: guidePoints_() ? asked.length : 0, warnings: warnings });
 }

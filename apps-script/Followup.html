@@ -576,7 +576,7 @@ let ADMIN_PW_VALUE = null; // a staff session token (never the password)
 try { sessionStorage.removeItem('panel-auth-pw'); ADMIN_PW_VALUE = sessionStorage.getItem('panel-auth-session') || null; } catch (e) { /* storage blocked */ }
 // Staff signed in with Google on the staff link don't need the password (08_Web.gs).
 let _sessionReady = Promise.resolve();
-if (!ADMIN_PW_VALUE && !TJ_BOOT.staff) {
+if (!ADMIN_PW_VALUE && !TJ_BOOT.staffAdmin) {
   let typed = null;
   try { typed = window.prompt('Staff password (from the Trailback Panel):') || null; } catch (e) { /* no pop-ups here */ }
   if (typed) _sessionReady = new Promise(function (ok) {

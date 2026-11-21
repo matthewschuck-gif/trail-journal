@@ -271,6 +271,36 @@ test('Redemption at the Summit: 75 points to the squad on Clash (name only if th
   assert.strictEqual(w2.clashEvents.rows[1][1], 'Redemption: a Gold climber reached the Summit');
 });
 
+test('Trail Guide points (22_GuidePoints.gs): ticked student panelists each get a pending Clash request for their own squad; points reach Clash only when staff approve; once per guide per case', () => {
+  const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', '']] });
+  const tabs = { events: w.clashEvents };
+  w.SpreadsheetApp.openById = id => id === '1wF01Limr7uO36DRGC6qh3XfYA7dBdXEfGRWuasmEf0w' ? { getSheetByName: n => tabs[n] || null, insertSheet: n => (tabs[n] = makeSheet([])) } : null;
+  const pm = w.SpreadsheetApp.getActiveSpreadsheet().insertSheet('Panel Members');
+  pm.rows.push(['Name', 'Email', 'Role', 'Active', '800#', 'Squad'],
+    ['Ms. Dean', 'dean@easdpa.org', 'Staff', true, '', ''],
+    ['Riley Guide', '', 'Student', true, '8070001', 'Purple'],
+    ['Sam Guide', '8070002@gomounts.org', 'Student', true, '', 'Black'],
+    ['Old Guide', '', 'Student', false, '8070003', 'Gold']);
+  const id = heardWithPlan(w, [PLAN[0]]);
+  w.genericUpdate_('panel_cases', { case_id: id }, { status: 'closed_completed' });
+  w.user.email = 'dean@easdpa.org';
+  const list = w.call({ action: 'summitList', payload: {} }).data;
+  assert.deepStrictEqual(J(list.guides), [{ id: '8070001', name: 'Riley Guide', squad: 'Purple' }, { id: '8070002', name: 'Sam Guide', squad: 'Black' }], 'active Student rows with an 800# (or a student email) and a squad');
+  assert.strictEqual(list.guidePoints, 10);
+  const r = w.call({ action: 'summitSave', payload: { case_id: id, answers: { proud: 'I owned it' }, guides: ['8070001', '8070002', '8070001'] } });
+  assert.ok(r.ok, r.error);
+  const reqs = w.genericQuery_('clash_requests', {}).filter(x => /^trail_guide/.test(x.source));
+  assert.deepStrictEqual(J(reqs.map(x => [x.squad, Number(x.points), x.status])), [['PURPLE', 10, 'pending'], ['BLACK', 10, 'pending']], 'one per guide, waiting for approval');
+  assert.strictEqual(w.clashEvents.rows.filter(x => /Trail Guide/.test(x[1])).length, 0, 'nothing on Clash before approval');
+  w.user.email = 'kelly@easdpa.org';
+  const d = w.call({ action: 'decideClashRequest', payload: { id: reqs[0].id, decision: 'approve' } });
+  assert.ok(d.ok, d.error);
+  const ev = w.clashEvents.rows.find(x => /Trail Guide/.test(x[1]));
+  assert.deepStrictEqual(J([ev[1], ev[9]]), ['Trail Guide: sat on a Summit panel', 10], 'Purple gets 10');
+  w.requestGuidePoints_(w.getCase_(id), ['8070001'], 'x');
+  assert.strictEqual(w.genericQuery_('clash_requests', {}).filter(x => /^trail_guide/.test(x.source)).length, 2, 'once per guide per case');
+});
+
 test('Trail Guide: 60 school days after the Summit with no new Master Log entry = eligible, the coordinator is told; a new entry means not yet', () => {
   const w = world({ settings: [['TRAILBACK_EMAILS', 'ON', ''], ['TRAILBACK_COORDINATOR_EMAIL', 'kelly@easdpa.org', ''], ['ACCOUNTABILITY_SHEET_ID', '1IVFnkQQvSvNSY_OZPMutPzkTqmJ1j5XYRoT9YvNy-v4', '']] });
   const old = new Date(); old.setDate(old.getDate() - 120); const longAgo = w.ymdOf_(old);
