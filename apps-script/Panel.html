@@ -571,7 +571,7 @@ body.is-preview main { padding-bottom: 110px; }
     <div class="pw-gate-icon">⛺</div>
     <h2>Trailback Panel</h2>
     <p>This tool is for trained panel members and staff only. Enter the staff password to access the session.</p>
-    <input type="password" class="pw-gate-input" id="pw-gate-input"
+    <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-gate-input" id="pw-gate-input"
       placeholder="Staff password"
       onkeydown="if(event.key==='Enter')checkGatePW()">
     <button class="pw-gate-btn" onclick="checkGatePW()">Enter Panel →</button>
@@ -1332,21 +1332,23 @@ function refreshFuStrip() {
 // Hook into goTo so strip refreshes automatically when Screen 7 opens
 
 
+// The staff password is traded for a session once (05_AdminAuth.gs tjStaffSignIn) and never stored.
+function tjSignIn_(pw) { return new Promise(function (ok, no) { google.script.run.withSuccessHandler(ok).withFailureHandler(no).tjStaffSignIn(pw); }); }
 async function checkGatePW() {
   const err = document.getElementById('pw-gate-error');
   const pw = document.getElementById('pw-gate-input').value;
-  ADMIN_PW_VALUE = pw;
+  document.getElementById('pw-gate-input').value = '';
   try {
+    ADMIN_PW_VALUE = await tjSignIn_(pw);
     await callBackend({ action: 'query', table: 'panel_sessions', filters: {} }, true);
     document.getElementById('pw-gate-full').classList.add('hidden');
-    // Store the actual password (not just a flag) so panel/followup/index.html -- a
-    // separate page on the same origin -- can reuse it without prompting again.
-    sessionStorage.setItem('panel-auth-pw', pw);
+    // Only the session token is kept (it ends on its own), never the password, so the
+    // Follow-Up page can reuse it without prompting again.
+    try { sessionStorage.setItem('panel-auth-session', ADMIN_PW_VALUE); sessionStorage.removeItem('panel-auth-pw'); } catch (x) { /* storage blocked */ }
     if (document.getElementById('screen-queue').classList.contains('active')) loadQueue();
   } catch (e) {
     ADMIN_PW_VALUE = null;
-    err.textContent = 'Incorrect password. Try again.';
-    document.getElementById('pw-gate-input').value = '';
+    err.textContent = /Too many/.test(String(e && e.message)) ? 'Too many wrong passwords. Wait 10 minutes.' : 'Incorrect password. Try again.';
     setTimeout(() => err.textContent = '', 4000);
   }
 }
@@ -1365,7 +1367,7 @@ let ADMIN_PW_VALUE = null;
 // the password was already entered this session. (This used to run above the `let` and threw
 // whenever a saved password existed, which stopped the whole page script.)
 let _savedPanelPw = null;
-try { _savedPanelPw = sessionStorage.getItem('panel-auth-pw'); } catch (e) { /* storage blocked */ }
+try { sessionStorage.removeItem('panel-auth-pw'); _savedPanelPw = sessionStorage.getItem('panel-auth-session'); } catch (e) { /* storage blocked */ } // an old saved password is wiped
 if (_savedPanelPw) ADMIN_PW_VALUE = _savedPanelPw;
 if (_savedPanelPw || TJ_BOOT.staff) document.getElementById('pw-gate-full').classList.add('hidden');
 
@@ -2473,5 +2475,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<style>[data-pw]{-webkit-text-security:disc;text-security:disc}</style>
+<script>
+/* Password boxes are plain text boxes drawn as dots, so Chrome, Safari and password managers never offer to save or fill them. Browsers that can't draw the dots get a password box that asks not to be filled. */
+(function () {
+  try { if (window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')) return; } catch (e) { return; }
+  function fix(root) { if (!root || !root.querySelectorAll) return; root.querySelectorAll('input[data-pw]').forEach(function (i) { if (i.type !== 'password') { i.type = 'password'; i.setAttribute('autocomplete', 'new-password'); } }); }
+  fix(document);
+  new MutationObserver(function (list) { list.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) fix(n.parentNode || n); }); }); }).observe(document.documentElement, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>

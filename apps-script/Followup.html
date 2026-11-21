@@ -572,15 +572,21 @@ window.TJ_SEARCH = '?' + Object.keys(TJ_BOOT.params || {}).filter(function (k) {
 const APP_URL   = TJ_BOOT.beaconUrl;
 const APP_TOKEN = TJ_BOOT.beaconToken; // only the exit auto-save beacon sends it // must match the APP_TOKEN Script Property
 
-let ADMIN_PW_VALUE = null;
-try { ADMIN_PW_VALUE = sessionStorage.getItem('panel-auth-pw') || null; } catch (e) { /* storage blocked */ }
+let ADMIN_PW_VALUE = null; // a staff session token (never the password)
+try { sessionStorage.removeItem('panel-auth-pw'); ADMIN_PW_VALUE = sessionStorage.getItem('panel-auth-session') || null; } catch (e) { /* storage blocked */ }
 // Staff signed in with Google on the staff link don't need the password (08_Web.gs).
+let _sessionReady = Promise.resolve();
 if (!ADMIN_PW_VALUE && !TJ_BOOT.staff) {
-  try { ADMIN_PW_VALUE = window.prompt('Staff password (from the Trailback Panel):') || null; } catch (e) { /* no pop-ups here */ }
-  if (ADMIN_PW_VALUE) sessionStorage.setItem('panel-auth-pw', ADMIN_PW_VALUE);
+  let typed = null;
+  try { typed = window.prompt('Staff password (from the Trailback Panel):') || null; } catch (e) { /* no pop-ups here */ }
+  if (typed) _sessionReady = new Promise(function (ok) {
+    google.script.run.withSuccessHandler(function (t) { ADMIN_PW_VALUE = t; try { sessionStorage.setItem('panel-auth-session', t); } catch (x) {} ok(); })
+      .withFailureHandler(function () { ok(); }).tjStaffSignIn(typed);
+  });
 }
 
 async function callBackend(body) {
+  await _sessionReady;
   const json = await window.tjCall_(Object.assign({ token: APP_TOKEN, adminPassword: ADMIN_PW_VALUE }, body)); // google.script.run (08_Web.gs tjCall)
   if (!json.ok) throw new Error(json.error || 'Request failed');
   return json.data;

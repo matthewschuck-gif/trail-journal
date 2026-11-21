@@ -1609,7 +1609,7 @@ body.squad-purple {
     <h3>Save & Stop Here</h3>
     <p>An adult can enter the staff password to save everything written so far. This marks the record as incomplete — it does not submit the journal as finished, and the student can still resume on this device later.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="rot-pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')submitRanOutOfTime()">
+      <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-input" id="rot-pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')submitRanOutOfTime()">
       <button class="pw-btn" onclick="submitRanOutOfTime()">Save Progress</button>
     </div>
     <div class="pw-error" id="rot-pw-error">Incorrect password. Try again.</div>
@@ -1731,7 +1731,7 @@ body.squad-purple {
     <h3>Staff Check-In Required</h3>
     <p>Before starting Part 1, the adult in the room needs to enter the staff password to confirm they're present.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input-0" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('0')">
+      <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-input" id="pw-input-0" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('0')">
       <button class="pw-btn" onclick="checkGatePassword('0')">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error-0">Incorrect password. Try again.</div>
@@ -2113,7 +2113,7 @@ body.squad-purple {
       <div class="staff-review-body" id="staff-review-1-body"></div>
     </div>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input-1" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
+      <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-input" id="pw-input-1" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('1')">
       <button class="pw-btn" onclick="checkGatePassword('1')">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error-1">Incorrect password. Try again.</div>
@@ -2643,7 +2643,7 @@ body.squad-purple {
       <div class="staff-review-body" id="staff-review-2-body"></div>
     </div>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input-2" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
+      <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-input" id="pw-input-2" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkGatePassword('2')">
       <button class="pw-btn" onclick="checkGatePassword('2')">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error-2">Incorrect password. Try again.</div>
@@ -2815,7 +2815,7 @@ body.squad-purple {
     <h3>Staff Access</h3>
     <p>Enter the staff password to unlock this student's full plan summary and send it as a PDF directly to your inbox.</p>
     <div class="pw-input-row">
-      <input type="password" class="pw-input" id="pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
+      <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="pw-input" id="pw-input" aria-label="Staff password" placeholder="Staff password" onkeydown="if(event.key==='Enter')checkPW()">
       <button class="pw-btn" onclick="checkPW()">Unlock</button>
     </div>
     <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
@@ -6183,6 +6183,16 @@ function resetFuScheduler() {
     b.style.color = i===0 ? 'white' : 'var(--ink)';
   });
 }
+</script>
+<style>[data-pw]{-webkit-text-security:disc;text-security:disc}</style>
+<script>
+/* Password boxes are plain text boxes drawn as dots, so Chrome, Safari and password managers never offer to save or fill them. Browsers that can't draw the dots get a password box that asks not to be filled. */
+(function () {
+  try { if (window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')) return; } catch (e) { return; }
+  function fix(root) { if (!root || !root.querySelectorAll) return; root.querySelectorAll('input[data-pw]').forEach(function (i) { if (i.type !== 'password') { i.type = 'password'; i.setAttribute('autocomplete', 'new-password'); } }); }
+  fix(document);
+  new MutationObserver(function (list) { list.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) fix(n.parentNode || n); }); }); }).observe(document.documentElement, { childList: true, subtree: true });
+})();
 </script>
 </body>
 </html>

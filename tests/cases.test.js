@@ -51,6 +51,7 @@ function world(opts) {
       openById: id => id === ACC_ID ? { getSheetByName: n => n === 'Master Log' ? masterLog : null } : { getSheetByName: n => n === 'events' ? clashEvents : null },
       getUi: () => { throw new Error('no ui'); },
     },
+    CacheService: { getScriptCache: function () { const c = this.__c || (this.__c = {}); return { get: k => c[k] || null, put: (k, v) => { c[k] = v; }, remove: k => { delete c[k]; } }; } },
     Session: { getActiveUser: () => ({ getEmail: () => user.email }), getEffectiveUser: () => ({ getEmail: () => 'me@easdpa.org' }) },
     Utilities: { formatDate: d => d.toISOString().slice(0, 10), getUuid: () => Math.random().toString(16).slice(2, 10) + '-3456-7890-abcd-ef1234567890' },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },

@@ -31,12 +31,46 @@ const STAFF_ACTIONS_ = ['followupDates', 'approvePanelPlan', 'submitPanelSession
 // AI proxy "type" values that are staff-only tools, not part of the student-facing flow.
 const ADMIN_ONLY_AI_TYPES_ = ['pattern_analysis', 'parent_letter', 'panel_inquiry_analysis', 'panel_recommendation_draft'];
 
-function requireStaffPassword_(providedPassword) {
-  const expected = getProp_('ADMIN_PASSWORD');
-  if (!providedPassword || providedPassword !== expected) {
-    throw new Error('Incorrect staff password.');
+/**
+ * The staff gate. Takes either a SESSION (what the pages send now: "tjs_" + random, made by
+ * tjStaffSignIn below, good for STAFF_SESSION_HOURS) or, for older pages, the password itself.
+ * The password is never kept in the browser any more: the page trades it for a session once
+ * and forgets it. Wrong passwords: after 10 in 10 minutes, password sign-in waits 10 minutes.
+ */
+const STAFF_SESSION_HOURS_ = 8;
+function requireStaffPassword_(provided) {
+  provided = String(provided || '');
+  if (/^tjs_[A-Za-z0-9]{40,}$/.test(provided)) {
+    if (CacheService.getScriptCache().get('tj-staff-sess-' + provided)) return { ok: true };
+    throw new Error('Incorrect staff password. (Your staff session ended: sign in again.)');
   }
+  if (!staffPasswordMatches_(provided)) throw new Error('Incorrect staff password.');
   return { ok: true };
+}
+
+function staffPasswordMatches_(pw) {
+  if (!pw) return false; // most calls carry no password (students): never counted as a wrong try
+  const cache = CacheService.getScriptCache();
+  const fails = Number(cache.get('admin-pw-fails')) || 0;
+  if (fails >= 10) throw new Error('Too many wrong passwords. Wait 10 minutes.');
+  const expected = getProp_('ADMIN_PASSWORD');
+  if (pw && expected && pw.length === expected.length && pw === expected) return true;
+  cache.put('admin-pw-fails', String(fails + 1), 600);
+  return false;
+}
+
+/** Called by the pages (google.script.run): trades the password for a staff session token. */
+function tjStaffSignIn(pw) {
+  if (!staffPasswordMatches_(String(pw || ''))) throw new Error('Incorrect password. Try again.');
+  const token = 'tjs_' + (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+  CacheService.getScriptCache().put('tj-staff-sess-' + token, '1', STAFF_SESSION_HOURS_ * 3600);
+  return token;
+}
+
+/** Ends a staff session on the server (Sign out). */
+function tjStaffSignOut(token) {
+  if (/^tjs_[A-Za-z0-9]{40,}$/.test(String(token || ''))) CacheService.getScriptCache().remove('tj-staff-sess-' + token);
+  return true;
 }
 
 /**
