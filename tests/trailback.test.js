@@ -41,6 +41,7 @@ function world(opts) {
   const prompts = [];
   const ctx = { console, JSON, Math, Date, Object, Array, String, Number,
     SpreadsheetApp: { getActiveSpreadsheet: () => ss, openById: () => ({ getSheetByName: n => n === 'events' ? clashEvents : null }), getUi: () => { throw new Error('no ui'); } },
+    CacheService: { getScriptCache: function () { const c = this.__c || (this.__c = {}); return { get: k => c[k] || null, put: (k, v) => { c[k] = v; }, remove: k => { delete c[k]; } }; } },
     Session: { getActiveUser: () => ({ getEmail: () => user.email }), getEffectiveUser: () => ({ getEmail: () => 'me@easdpa.org' }) },
     Utilities: { formatDate: () => '2026-12-09', getUuid: () => 'u' + Math.random().toString(36).slice(2) },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },

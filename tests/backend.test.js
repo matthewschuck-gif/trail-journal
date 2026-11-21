@@ -14,6 +14,8 @@ function world() {
   const user = { email: '' };
   const ctx = { console, JSON, Math, Date, Object, Array, String, Number,
     SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: () => null }) }, // no Settings tab: defaults
+    CacheService: { getScriptCache: function () { const c = this.__c || (this.__c = {}); return { get: k => c[k] || null, put: (k, v) => { c[k] = v; }, remove: k => { delete c[k]; } }; } },
+    Utilities: { getUuid: () => require('crypto').randomUUID() },
     Session: { getActiveUser: () => ({ getEmail: () => user.email }) } };
   ctx.user = user;
   vm.createContext(ctx);
@@ -161,6 +163,24 @@ test('Clash point for a high-insight journal: the row sent to the public Clash s
   assert.deepStrictEqual([sent[0][1], sent[0][2]], ['Trail Journal Growth', 'trail_journal']);
   assert.ok(!JSON.stringify(sent[0]).includes('Jamie'), 'no name in the Clash row');
   assert.strictEqual(sent[0][7], 1, 'GOLD column');
+});
+
+
+test('staff sessions: the password is traded for a token once; tokens work, end on sign-out, and wrong tries lock out', () => {
+  const w = world();
+  assert.throws(() => w.tjStaffSignIn('nope'), /Incorrect/);
+  const tok = w.tjStaffSignIn('staffpw');
+  assert.ok(/^tjs_[A-Za-z0-9]{40,}$/.test(tok), 'a long random token, not the password');
+  const ok = w.call({ action: 'query', table: 'reflections', filters: {}, adminPassword: tok });
+  assert.ok(!ok.error, JSON.stringify(ok));
+  assert.ok(w.call({ action: 'query', table: 'reflections', filters: {}, adminPassword: 'tjs_' + 'a'.repeat(64) }).error, 'a made-up token fails');
+  w.tjStaffSignOut(tok);
+  assert.ok(/staff/i.test(w.call({ action: 'query', table: 'reflections', filters: {}, adminPassword: tok }).error), 'signed out on the server');
+  for (let i = 0; i < 10; i++) { try { w.tjStaffSignIn('wrong' + i); } catch (e) { /* counted */ } }
+  assert.throws(() => w.tjStaffSignIn('staffpw'), /Too many/, 'locked for 10 minutes after 10 wrong tries');
+  const w2 = world();
+  for (let i = 0; i < 30; i++) w2.call({ action: 'query', table: 'reflections', filters: { initial: 'A' } });
+  assert.ok(w2.tjStaffSignIn('staffpw'), 'student calls with no password never lock staff out');
 });
 
 console.log('\n' + passed + ' tests passed');

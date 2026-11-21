@@ -228,7 +228,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="login-logo">⛺</div>
     <h1>Trail Journal</h1>
     <p>Admin Dashboard — Staff Only</p>
-    <input type="password" class="login-inp" id="lpw" aria-label="Admin password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="text" data-pw="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" class="login-inp" id="lpw" aria-label="Admin password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Sign In</button>
     <div class="login-err" id="lerr">Incorrect password. Try again.</div>
   </div>
@@ -1600,12 +1600,15 @@ async function saveOfficeRecordRecipients() {
 // ── AUTH ──────────────────────────────────────────────────────────────────
 // Password is checked server-side in Apps Script (05_AdminAuth.gs) -- never compared
 // client-side, unlike the original hardcoded check.
+// The staff password is traded for a session once (05_AdminAuth.gs tjStaffSignIn) and never stored.
+function tjSignIn_(pw) { return new Promise(function (ok, no) { google.script.run.withSuccessHandler(ok).withFailureHandler(no).tjStaffSignIn(pw); }); }
 async function doLogin() {
   const err = document.getElementById('lerr');
   err.style.display = 'none';
   const pw = document.getElementById('lpw').value;
-  ADMIN_PW_VALUE = pw;
+  document.getElementById('lpw').value = '';
   try {
+    ADMIN_PW_VALUE = await tjSignIn_(pw); // a session token, held in memory for this page only
     // A reflections read the staff password must unlock (matches no row). site_config reads are open
     // to students since 10/31, so they no longer prove the password.
     await callBackend({ action: 'query', table: 'reflections', filters: { session_id: '__login_check__' } }, /* admin */ true);
@@ -1614,12 +1617,13 @@ async function doLogin() {
     loadDash();
   } catch (e) {
     ADMIN_PW_VALUE = null;
-    err.textContent = 'Incorrect password. Try again.';
+    err.textContent = /Too many/.test(String(e && e.message)) ? 'Too many wrong passwords. Wait 10 minutes.' : 'Incorrect password. Try again.';
     err.style.display = 'block';
-    document.getElementById('lpw').value = '';
   }
 }
 function doLogout() {
+  try { if (ADMIN_PW_VALUE) google.script.run.tjStaffSignOut(ADMIN_PW_VALUE); } catch (e) { /* the session still ends on its own */ }
+  ADMIN_PW_VALUE = null;
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-shell').style.display = 'none';
 }
@@ -3116,6 +3120,16 @@ window.showPage = function (name) {
   _origShowPageTrailback(name);
   if (name === 'trailback') loadTrailbackBoard();
 };
+</script>
+<style>[data-pw]{-webkit-text-security:disc;text-security:disc}</style>
+<script>
+/* Password boxes are plain text boxes drawn as dots, so Chrome, Safari and password managers never offer to save or fill them. Browsers that can't draw the dots get a password box that asks not to be filled. */
+(function () {
+  try { if (window.CSS && CSS.supports && CSS.supports('-webkit-text-security', 'disc')) return; } catch (e) { return; }
+  function fix(root) { if (!root || !root.querySelectorAll) return; root.querySelectorAll('input[data-pw]').forEach(function (i) { if (i.type !== 'password') { i.type = 'password'; i.setAttribute('autocomplete', 'new-password'); } }); }
+  fix(document);
+  new MutationObserver(function (list) { list.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) fix(n.parentNode || n); }); }); }).observe(document.documentElement, { childList: true, subtree: true });
+})();
 </script>
 </body>
 </html>
