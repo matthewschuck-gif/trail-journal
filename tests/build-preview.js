@@ -14,7 +14,7 @@ http.createServer((req, res) => {
   const q = new URL(req.url, 'http://x').searchParams;
   const page = PAGES[q.get('page')] ? q.get('page') : 'journal';
   const params = Object.fromEntries(q.entries());
-  const boot = { page, staff: q.get('staff') ? 'teacher@easdpa.org' : '', siteUrl: 'https://trailjournal.org', beaconUrl: 'about:blank', beaconToken: '', params };
+  const boot = { page, staff: q.get('staff') ? 'teacher@easdpa.org' : '', staffLink: q.get('link') ? 'https:' + '//example.org/exec?page=' + page : '', siteUrl: 'https://trailjournal.org', beaconUrl: 'about:blank', beaconToken: '', params };
   const stub = `<script>window.__calls = [];
 window.google = { script: { run: (function make(ok) { return new Proxy({}, { get(_, fn) {
   if (fn === 'withSuccessHandler') return h => make(h);

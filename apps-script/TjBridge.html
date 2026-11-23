@@ -28,6 +28,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var gate = document.getElementById('pw-gate-full');    // Trailback Panel
     if (gate) gate.classList.add('hidden');
+  } else if (TJ_BOOT.staffLink) {
+    // trailjournal.org can't see the school account: offer the staff link (08_Web.gs staffLinkFor_).
+    [['login-screen', '.login-card'], ['pw-gate-full', '.pw-gate-box']].forEach(function (p) {
+      var screen = document.getElementById(p[0]), box = screen && screen.querySelector(p[1]);
+      var pw = box && box.querySelector('input[data-pw]');
+      if (!pw) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = pw.nextElementSibling && pw.nextElementSibling.className || '';
+      btn.style.cssText = 'display:block;width:100%;margin:0 0 10px';
+      btn.textContent = 'Sign in with my school account';
+      btn.onclick = function () {
+        var w = window.open(TJ_BOOT.staffLink, '_blank');
+        if (w) { try { w.opener = null; } catch (e) {} } else { btn.textContent = 'Your browser blocked the new tab. Allow pop-ups and try again.'; }
+      };
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 12px';
+      note.textContent = 'Opens the staff link in a new tab. Or use the staff password below.';
+      try { note.style.color = getComputedStyle(box.querySelector('p') || box).color; } catch (e) {}
+      pw.parentNode.insertBefore(btn, pw);
+      pw.parentNode.insertBefore(note, pw);
+    });
   }
 });
 

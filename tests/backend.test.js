@@ -244,4 +244,20 @@ test('Staff Access (21_StaffAccess.gs): after setup, the admin tools need the li
   assert.ok(!acts.some(a => /query reflections/.test(a[4])), 'reads are not logged');
 });
 
+test('trailjournal.org staff gates: Sign in with my school account opens STAFF_EXEC_URL (+ ?page=) only when this deployment cannot see a staff account', () => {
+  const w = world();
+  const real = w.webSetting_;
+  w.webSetting_ = k => k === 'STAFF_EXEC_URL' ? 'https:' + '//script.google.com/a/macros/easdpa.org/s/STAFF/exec' : real(k);
+  w.user.email = '';
+  assert.strictEqual(w.staffLinkFor_('admin'), 'https:' + '//script.google.com/a/macros/easdpa.org/s/STAFF/exec?page=admin');
+  assert.strictEqual(w.staffLinkFor_('panel'), 'https:' + '//script.google.com/a/macros/easdpa.org/s/STAFF/exec?page=panel');
+  w.user.email = 'teacher@easdpa.org';
+  assert.strictEqual(w.staffLinkFor_('admin'), '', 'already on the staff link: no button');
+  w.user.email = '';
+  w.webSetting_ = k => k === 'STAFF_EXEC_URL' ? '' : real(k);
+  assert.strictEqual(w.staffLinkFor_('admin'), '', 'no staff link set: password only');
+  const bridge = fs.readFileSync(path.join(dir, 'TjBridge.html'), 'utf8');
+  assert.ok(bridge.includes('window.open(TJ_BOOT.staffLink'));
+});
+
 console.log('\n' + passed + ' tests passed');

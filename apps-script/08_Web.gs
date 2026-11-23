@@ -23,6 +23,7 @@ const WEB_DEFAULTS_ = [
   ['SITE_URL', 'https://trailjournal.org', 'The address students and staff use (links between pages go here).'],
   ['STAFF_DOMAIN', 'easdpa.org', 'Google accounts at this domain count as staff on the staff link.'],
   ['STAFF_EMAILS', '', 'Optional: only these staff emails (comma separated) get staff access. Blank = anyone at STAFF_DOMAIN.'],
+  ['STAFF_EXEC_URL', '', 'The staff deployment\'s /exec link (Who has access: Anyone within EASD). On trailjournal.org the admin dashboard and the Trailback Panel then show "Sign in with my school account", which opens it in a new tab. Blank = password only there.'],
   ['STUDENT_EXEC_URL', '', 'The student deployment\'s /exec link (Deploy › Manage deployments). The journal\'s exit auto-save goes there. Blank = this deployment.'],
   ['PANEL_ADMINS', '', 'Trailback Panel leads (comma separated emails): they set panel details and send briefs on the sign-up page. Blank = only the account that owns this script.'],
   ['PANEL_QUESTION_SHEET_URL', 'https://docs.google.com/document/d/15XwkkH-JA5m5jgz4UsZ0A0Obs3SoGkrUhCz3sSCrkTU/edit', 'The panelist question sheet, linked in the panel invite and the case brief. Blank = no link.'],
@@ -93,6 +94,18 @@ function staffEmail_() {
   return !only.length || only.indexOf(email) > -1 ? email : '';
 }
 
+// "Sign in with my school account" on trailjournal.org: that site shows the public deployment in a
+// frame, which can't see the school account, so the staff gates offer STAFF_EXEC_URL (+ ?page=PAGE)
+// in a new tab. '' when this deployment already sees a staff account, or no staff link is set.
+function staffLinkFor_(page) {
+  if (staffEmail_()) return '';
+  let link = String(webSetting_('STAFF_EXEC_URL') || '').trim().split('#')[0];
+  if (!link) return '';
+  page = String(page || '').replace(/[^a-z]/g, '');
+  if (page && !new RegExp('[?&]page=' + page + '(&|$)').test(link)) link += (link.indexOf('?') > -1 ? '&' : '?') + 'page=' + page;
+  return link;
+}
+
 // ── PAGES ───────────────────────────────────────────────────────────
 function serveTrailPage_(e) {
   const p = (e && e.parameter) || {};
@@ -102,7 +115,7 @@ function serveTrailPage_(e) {
   let token = '';
   try { token = getProp_('APP_TOKEN'); } catch (err) { /* not set: exit auto-save just won't send */ }
   t.boot = JSON.stringify({
-    page: page, staff: staffEmail_(), staffAdmin: staffAdminEmail_(), siteUrl: webSetting_('SITE_URL').replace(/\/+$/, ''),
+    page: page, staff: staffEmail_(), staffAdmin: staffAdminEmail_(), staffLink: staffLinkFor_(page), siteUrl: webSetting_('SITE_URL').replace(/\/+$/, ''),
     beaconUrl: webSetting_('STUDENT_EXEC_URL') || ScriptApp.getService().getUrl(), beaconToken: token,
     params: p,
   });
