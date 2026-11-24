@@ -45,8 +45,9 @@ function world(opts) {
     Session: { getActiveUser: () => ({ getEmail: () => user.email }), getEffectiveUser: () => ({ getEmail: () => 'me@easdpa.org' }) },
     Utilities: { formatDate: () => '2026-12-09', getUuid: () => 'u' + Math.random().toString(36).slice(2) },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
-    UrlFetchApp: { fetch: (u, o) => { prompts.push(JSON.parse(o.payload)); return { getResponseCode: () => 200, getContentText: () => JSON.stringify({ content: [{ text: '{"analysis":"ok","recommendation":"ok"}' }] }) }; } },
+    UrlFetchApp: { fetch: (u, o) => { prompts.push(Object.assign(JSON.parse(o.payload), { _url: u })); const t = '{"analysis":"ok","recommendation":"ok"}'; return { getResponseCode: () => 200, getContentText: () => JSON.stringify(/generativelanguage/.test(u) ? { candidates: [{ content: { parts: [{ text: '```json ' + t + ' ```' }] }, finishReason: 'STOP' }] } : { content: [{ text: t }] }) }; } },
     Logger: { log() {} },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: k => (opts.props || { ANTHROPIC_API_KEY: 'k' })[k] || null, setProperty() {} }) },
   };
   vm.createContext(ctx);
   vm.runInContext(fs.readdirSync(dir).filter(f => f.endsWith('.gs')).sort().map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n') + ';this.SCHEMA = SCHEMA; this.TABS = TABS;', ctx);
@@ -109,6 +110,15 @@ test('old rows keep reading: two_days/one_week/... still come back with their ol
     ['2 days=2026-10-03', '1 week=', '2 weeks=', '1 month=2026-11-01']);
   assert.deepStrictEqual(J(w.panelCheckins_({ checkin_3: 'a', checkin_10: 'b', checkin_30: 'c' })).map(c => c.label),
     ['next school day', '10 school days', '30 school days']);
+});
+
+// ── AI switch ──
+test('AI switch: with Gemini on, the same prompt goes to Gemini and the JSON comes back the same', () => {
+  const w = world({ props: { AI_PROVIDER_HERE: 'GEMINI', GEMINI_API_KEY: 'g' } });
+  const r = w.call({ action: 'ai', type: 'panel_inquiry_analysis', payload: { initials: 'P.Q.', incident: 'x', inquiryNotes: [] } });
+  assert.ok(/generativelanguage/.test(w.prompts[0]._url), 'sent to Gemini');
+  assert.ok(/Student initials: P.Q./.test(w.prompts[0].contents[0].parts[0].text));
+  assert.strictEqual(JSON.stringify(r).includes('"analysis":"ok"'), true, JSON.stringify(r));
 });
 
 // ── AI: no names ──

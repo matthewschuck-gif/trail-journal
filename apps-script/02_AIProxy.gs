@@ -8,24 +8,24 @@
  * and the API key comes from Script Properties instead of a Supabase secret.
  *
  * Call this from the router (03_Router.gs) as: callAiProxy_(type, payload)
- * Returns the parsed JSON object (or {_raw, _parseError:true} if Claude's reply wasn't valid JSON).
+ * Returns the parsed JSON object (or {_raw, _parseError:true} if the AI's reply wasn't valid JSON).
+ * The AI is Claude or Gemini: see AiSwitch.gs (master switch Sheet + Trail Journal › AI: Claude or Gemini).
  */
 
 const CLAUDE_MODEL_ = 'claude-sonnet-4-6'; // matches the live ai-proxy function's MODEL constant
 
 function callAiProxy_(type, payload) {
-  const KEY = getProp_('ANTHROPIC_API_KEY');
   const prompt = buildAiPrompt_(type, payload);
 
   if (prompt === null) {
     return { error: 'Unknown type: ' + type };
   }
 
-  const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+  // Claude or Gemini, whichever the EMS AI switch has on (AiSwitch.gs); Gemini answers come back in Claude's shape.
+  const response = emsAiFetch_({
     method: 'post',
     contentType: 'application/json',
     headers: {
-      'x-api-key': KEY,
       'anthropic-version': '2023-06-01',
     },
     payload: JSON.stringify({
@@ -45,7 +45,7 @@ function callAiProxy_(type, payload) {
   });
 
   if (response.getResponseCode() !== 200) {
-    throw new Error('Anthropic ' + response.getResponseCode() + ': ' + response.getContentText());
+    throw new Error('AI ' + response.getResponseCode() + ': ' + response.getContentText());
   }
 
   const ad = JSON.parse(response.getContentText());

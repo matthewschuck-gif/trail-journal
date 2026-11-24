@@ -149,6 +149,7 @@ function onOpen() {
     .addItem('Run setup (Settings tab + new columns)', 'setupTrailWeb')
     .addItem('Scramble gate passwords', 'scrambleGatePasswords')
     .addItem('Turn on nightly backup', 'menuTurnOnBackup') // 21_StaffAccess.gs
+    .addSubMenu(emsAiMenu_(SpreadsheetApp.getUi())) // AiSwitch.gs: Claude or Gemini, keys
     .addSeparator()
     .addItem('Turn on the record safety net', 'setupRecordSafetyNet') // 10_Records.gs
     .addItem('Email all journal records once…', 'emailAllRecordsOnce')

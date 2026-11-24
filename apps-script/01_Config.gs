@@ -8,7 +8,8 @@
  * 3. Paste each 0N_*.gs file from this package into the Apps Script editor as its own file
  *    (File -> New -> Script file, name it to match, e.g. "01_Config").
  * 4. In the Apps Script editor: Project Settings -> Script Properties -> add:
- *      ANTHROPIC_API_KEY   = sk-ant-...          (Matt adds this directly, never in chat)
+ *      ANTHROPIC_API_KEY   = sk-ant-...          (Matt adds this directly, never in chat; or use the menu
+ *                           Trail Journal › AI: Claude or Gemini, which also saves GEMINI_API_KEY)
  *      APP_TOKEN            = <any random string you make up> (shared token, see 03_Router.gs)
  *      ADMIN_PASSWORD       = <a password for staff> (checked server-side, see 05_AdminAuth.gs)
  *      OFFICE_NOTIFY_EMAIL  = <office/record-keeping inbox> (OPTIONAL -- every submission,
